@@ -1,0 +1,80 @@
+source("./R/generic_scraper.R")
+source("./R/utilities.R")
+
+hawaii_extract <- function(x){
+    
+    col_name_mat <- matrix(c(
+        "Facilities", "0", "Name",
+        "Tested", "1", "Residents.Tested",
+        "Results Pending", "2", "Residents.Pending",
+        "Negative", "3", "Residents.Negative",
+        "Inconclusive", "4", "Residents.Inconclusive",
+        "Positive", "5", "Residents.Confirmed",
+        "Number of Persons in Medical Isolation", "6", "Residents.Isolation",
+        "Number of Persons in Quarantine", "7", "Residents.Quarantine",
+        "Hospitalization", "8", "Residents.Hospitalized",
+        "Recovered", "9", "Residents.Recovered",
+        "Deaths", "10", "Resident.Deaths"
+    ), ncol = 3, nrow = 11, byrow = TRUE)
+    
+    colnames(col_name_mat) <- c("check", "raw", "clean")
+    col_name_df <- as_tibble(col_name_mat)
+    df_ <- as_tibble(x[[1]])
+    check_names_extractable(df_, col_name_df)
+    renamed_df <- rename_extractable(df_, col_name_df)
+
+    hw <- renamed_df %>%
+        filter(Name!= "Facilities") %>%
+        clean_scraped_df() %>%
+        mutate(Residents.Quarantine = Residents.Quarantine + 
+                   Residents.Isolation) %>%
+        select(
+            -Residents.Hospitalized,
+            -Residents.Isolation, 
+            -Residents.Inconclusive) %>%
+        as_tibble()
+    
+    hw
+}
+
+hawaii_scraper <- R6Class(
+    "hawaii_scraper",
+    inherit = generic_scraper,
+    public = list(
+        log = NULL,
+        initialize = function(
+            log,
+            url = str_c(
+                "https://dps.hawaii.gov/blog/2020/03/17/",
+                "coronavirus-covid-19-information-and-resources/"),
+            id = "hawaii",
+            type = "img",
+            # restructuring the data means pulling out the data portion of the json
+            pull_func = function(x) {
+                get_src_by_attr(
+                    x, "img", attr = "src", attr_regex = "(?i)Inmate-Test-Report") %>%
+                    {gsub("-[0-9]+x[0-9]+", "", .)} %>%
+                    magick::image_read()
+            },
+            # TODO: we are not currently extracting the last updated section
+            # but it looks somewhat scrape-able.
+            restruct_func = function(x) ExtractTable(x),
+            # Rename the columns to appropriate database names and do some minor
+            # minor cleaning
+            extract_func = hawaii_extract){
+            super$initialize(
+                url, id, pull_func, type, restruct_func, extract_func, log)
+        }
+    )
+)
+
+if(sys.nframe() == 0){
+    hawaii <- hawaii_scraper$new(log=FALSE)
+    hawaii$raw_data
+    hawaii$pull_raw()
+    hawaii$raw_data
+    hawaii$restruct_raw()
+    hawaii$restruct_data
+    hawaii$extract_from_raw()
+    hawaii$extract_data
+}

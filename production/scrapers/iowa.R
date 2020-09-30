@@ -1,0 +1,68 @@
+source("./R/generic_scraper.R")
+source("./R/utilities.R")
+
+iowa_restruct <- function(ia_html){
+    ia_html %>%
+        rvest::html_nodes("table") %>%
+        # there is only one table on the page and it has no names
+        # associated with it
+        .[[1]] %>%
+        rvest::html_table(header = TRUE)
+}
+
+iowa_extract <- function(x){
+    names(x) <- str_squish(names(x))
+    expected_names <- c(
+        "Prison", "Inmates Tested", "Inmates Positive", "Inmates Recovered", 
+        "Staff Positive*", "Staff Recovered", "COVID Related Inmate Deaths")
+    
+    check_names(x, expected_names)
+    
+    Iowa <- x
+    names(Iowa) <- c(
+        "Name", "Residents.Tested", "Residents.Confirmed",
+        "Residents.Recovered", "Staff.Confirmed", "Staff.Recovered",
+        "Resident.Deaths")
+
+    Iowa <- subset(Iowa, Name!= "Prison")
+    Iowa <- subset(Iowa,Name!="Total")
+    Iowa <- subset(Iowa,Name!="Prison")
+    
+    Iowa <- clean_scraped_df(Iowa)
+    
+    Iowa$Residents.Confirmed <- Iowa$Residents.Confirmed +
+        Iowa$Residents.Recovered
+    Iowa$Staff.Confirmed     <- Iowa$Staff.Confirmed +
+        Iowa$Staff.Recovered 
+    
+    Iowa
+}
+
+iowa_scraper <- R6Class(
+    "iowa_scraper",
+    inherit = generic_scraper,
+    public = list(
+        log = NULL,
+        initialize = function(
+            log,
+            url = "https://doc.iowa.gov/COVID19",
+            id = "iowa",
+            type = "html",
+            pull_func = xml2::read_html,
+            restruct_func = iowa_restruct,
+            extract_func = iowa_extract){
+            super$initialize(
+                url, id, pull_func, type, restruct_func, extract_func, log)
+            })
+)
+
+if(sys.nframe() == 0){
+    iowa <- iowa_scraper$new(log = FALSE)
+    iowa$raw_data
+    iowa$pull_raw()
+    iowa$raw_data
+    iowa$restruct_raw()
+    iowa$restruct_data
+    iowa$extract_from_raw()
+    iowa$extract_data
+}

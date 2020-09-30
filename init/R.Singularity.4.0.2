@@ -1,0 +1,94 @@
+BootStrap: docker
+From: ubuntu:18.04
+
+%labels
+  Maintainer ucla law covid behind bars
+  R_Version 4.0.2
+
+%apprun R
+  exec R "${@}"
+
+%apprun Rscript
+  exec Rscript "${@}"
+
+%runscript
+  exec R "${@}"
+
+%environment
+  R_LIBS_USER="/library"
+  export R_LIBS_USER
+
+%post
+  # BUILD CODE 
+  # sudo singularity build singularity-r.simg R.Singularity.4.0.2
+  # RUN CODE EXAMPLE
+  # 
+  # Software versions
+  export R_VERSION=4.0.2-1.2004.0
+
+  # Get dependencies
+  apt-get update
+  apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common \
+    locales gnupg git less libstdc++6
+
+  # Configure default locale
+  echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+  locale-gen en_US.utf8
+  /usr/sbin/update-locale LANG=en_US.UTF-8
+  export LC_ALL=en_US.UTF-8
+  export LANG=en_US.UTF-8
+
+  # SET NOninteractive installation
+  export DEBIAN_FRONTEND=noninteractive
+  #install tzdata package
+  apt-get install -y tzdata
+  # set your timezone
+  ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+  dpkg-reconfigure --frontend noninteractive tzdata
+
+  # Install R
+  echo "deb http://cran.r-project.org/bin/linux/ubuntu bionic-cran40/" > /etc/apt/sources.list.d/r.list
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+  apt-get update
+  apt-get install -y --no-install-recommends \
+    r-base=${R_VERSION}* \
+    r-base-core=${R_VERSION}* \
+    r-base-dev=${R_VERSION}* \
+    r-recommended=${R_VERSION}* \
+    r-base-html=${R_VERSION}* \
+    r-doc-html=${R_VERSION}* \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libcairo2-dev \
+    libxt-dev \
+    libudunits2-dev \
+    libftgl2 libcgal-dev libglu1-mesa-dev libglu1-mesa-dev libx11-dev libfreetype6-dev
+  apt-get install -y --no-install-recommends binutils libgdal-dev gdal-bin libproj-dev proj-data proj-bin libgeos-dev
+
+
+  # selenium server
+  docker run -d -p 4445:4444 selenium/standalone-firefox:2.53.1
+
+  # Add a default CRAN mirror
+  echo "options(repos = c(CRAN = 'https://cran.rstudio.com/'), download.file.method = 'libcurl')" >> /usr/lib/R/etc/Rprofile.site
+
+  # Add a directory for host R libraries
+  mkdir -p /library
+  echo "R_LIBS_SITE=/library:\${R_LIBS_SITE}" >> /usr/lib/R/etc/Renviron.site
+
+  # install r libraries
+  R --slave -e 'install.packages("rgl")'
+  R --slave -e 'install.packages("tidyverse")'
+  R --slave -e 'install.packages("rvest")'
+  R --slave -e 'install.packages("httr")'
+  R --slave -e 'install.packages("xml2")'
+  R --slave -e 'install.packages("RSelenium")'
+
+  # Clean up
+  rm -rf /var/lib/apt/lists/*
