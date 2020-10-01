@@ -1,5 +1,31 @@
 source("./R/generic_scraper.R")
 
+#' Scraper class for general Georgia COVID data
+#' 
+#' @name georgia_scraper
+#' @description This will be a description of Georgia data and what the scraper
+#' does
+#' \describe{
+#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Latitude}{Lat.}
+#'   \item{Longitude}{Long.}
+#'   \item{Address}{Address of the facility.}
+#'   \item{City}{City location of facility.}
+#'   \item{State}{State location of facility (should always be Georgia).}
+#'   \item{Zip}{Zip code of facility.}
+#'   \item{Staff Confirmed}{Cumulative staff confirmed.}
+#'   \item{Staff Deaths}{Cumulative staff deaths.}
+#'   \item{Staff Recovered}{Cumulative staff recovered.}
+#'   \item{Inmate Confirmed}{Cumulative resident confirmed.}
+#'   \item{Inmate Deaths}{Cumulative resident deaths.}
+#'   \item{Inmate Recovered}{Cumulative resident recovered.}
+#'   \item{Private Prison}{Y/N is this a private prison.}
+#'   \item{Confirmed Display}{Display format for vizualizations.}
+#'   \item{Death Dispaly}{Display format for vizualizations.}
+#'   \item{Recovered Display}{Display format for vizualizations.}
+#'   \item{FID}{Georgia internal facility id.}
+#' }
+
 georgia_scraper <- R6Class(
     "georgia_scraper",
     inherit = generic_scraper,
@@ -15,6 +41,7 @@ georgia_scraper <- R6Class(
                 "&cacheHint=true"),
             id = "georgia",
             type = "json",
+            state = "GA",
             # pull the JSON data directly from the API
             pull_func = function(...) jsonlite::read_json(..., simplifyVector = TRUE),
             # restructuring the data means pulling out the data portion of the json
@@ -29,7 +56,9 @@ georgia_scraper <- R6Class(
                         Residents.Recovered = Inmate_Recovered, 
                         Residents.Deaths = Inmate_Deaths)}){
             super$initialize(
-                url, id, pull_func, type, restruct_func, extract_func, log)
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
         }
     )
 )

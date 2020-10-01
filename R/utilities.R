@@ -43,7 +43,18 @@ get_src_by_attr <- function(
     xml2::url_absolute(url_portion, base)
     
 }
-# received 
+
+clean_fac_col_txt <- function(x){
+    # get rid of excessive white space
+    str_squish(x) %>%
+        # remove trailing stars
+        str_remove("[\\*]+$") %>%
+        # capitalize COVID wherever its found
+        str_replace_all("(?i)covid", "COVID") %>%
+        # replace COVID - 19 with  some form of spaces with COVID-19
+        str_replace_all("COVID[ ]*-[ ]*19", "COVID-19")
+}
+
 check_names <- function(DF, expected_names){
     true_names <- names(DF)
     if(length(true_names) != length(expected_names)){
@@ -52,7 +63,8 @@ check_names <- function(DF, expected_names){
 
     for(i in length(expected_names)){
         if(!is.na(expected_names[i]) & length(true_names) <= i){
-            if(expected_names[i] != true_names[i]){
+            if(clean_fac_col_txt(expected_names[i]) != 
+               clean_fac_col_txt(true_names[i])){
                 warning(str_c(
                     "Extracted column ", i, " does not match expected name. ",
                     "Expected: ", expected_names[i], " Received: ", true_names[i]))
@@ -67,7 +79,7 @@ check_names_extractable <- function(df_, col_name_df){
         col_name_df,
         tibble(
             raw = names(df_),
-            true_ = str_squish(unname(unlist(df_[1,])))
+            true_ = clean_fac_col_txt(unname(unlist(df_[1,])))
         ),
         by = "raw")
     
@@ -78,7 +90,7 @@ check_names_extractable <- function(df_, col_name_df){
                     "Extracted column ", i, " does not match expected name. ",
                     "Expected: ", check_df$check[i], " Received: ", check_df$true_[i]))
             }
-            else if(check_df$check[i] != check_df$true_[i]){
+            else if(clean_fac_col_txt(check_df$check[i]) != check_df$true_[i]){
                 warning(str_c(
                     "Extracted column ", i, " does not match expected name. ",
                     "Expected: ", check_df$check[i], " Received: ", check_df$true_[i]))
@@ -92,7 +104,7 @@ rename_extractable <- function(df_, col_name_df){
         col_name_df,
         tibble(
             raw = names(df_),
-            true_ = str_squish(unname(unlist(df_[1,])))
+            true_ = clean_fac_col_txt(unname(unlist(df_[1,])))
         ),
         by = "raw")
     
@@ -319,4 +331,31 @@ clean_scraped_df <- function(df) {
     out <- bind_cols(df_clean, cols_to_bind_back_on)
     
     return(out)
+}
+
+info_scraper <- function(scraper){
+    c(
+        id = scraper$id,
+        url = scraper$url,
+        type = scraper$type,
+        last_update = scraper$last_update()
+    )
+}
+
+get_scraper_vec <- function(){
+    # initiate all scrapers in the production folders
+    sapply(list.files("production/scrapers", full.names = TRUE), source)
+    
+    # grab only the scrapers and put their names in a vector
+    obj_space <- sapply(sapply(ls(), get), class)
+    scraper_space <- sapply(obj_space, function(x) "R6ClassGenerator" %in% x)
+    scraper_name_vec <- names(scraper_space[scraper_space]) %>%
+        .[. != "generic_scraper"]
+    names(scraper_name_vec) <- str_remove(scraper_name_vec, "_scraper")
+    scraper_name_vec
+}
+
+document_scrapers <- function(){
+    scraper_name_vec <- get_scraper_vec()
+    bind_rows(lapply(scraper_name_vec, function(x) NULL))
 }

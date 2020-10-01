@@ -126,6 +126,7 @@ oklahoma_scraper <- R6Class(
                 "http://doc.publishpath.com/Default.aspx?shortcut=",
                 "covid-19-stats-report"),
             id = "oklahoma",
+            state = "OK",
             type = "html",
             # pull the JSON data directly from the API
             pull_func = xml2::read_html,
@@ -135,7 +136,9 @@ oklahoma_scraper <- R6Class(
             # minor cleaning
             extract_func = oklahoma_extract){
             super$initialize(
-                url, id, pull_func, type, restruct_func, extract_func, log)
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
         })
 )
 
@@ -144,8 +147,10 @@ if(sys.nframe() == 0){
     oklahoma$raw_data
     oklahoma$pull_raw()
     oklahoma$raw_data
+    oklahoma$save_raw()
     oklahoma$restruct_raw()
     oklahoma$restruct_data
     oklahoma$extract_from_raw()
     oklahoma$extract_data
+    oklahoma$save_extract()
 }

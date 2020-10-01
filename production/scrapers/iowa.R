@@ -47,12 +47,15 @@ iowa_scraper <- R6Class(
             log,
             url = "https://doc.iowa.gov/COVID19",
             id = "iowa",
+            state = "IA",
             type = "html",
             pull_func = xml2::read_html,
             restruct_func = iowa_restruct,
             extract_func = iowa_extract){
             super$initialize(
-                url, id, pull_func, type, restruct_func, extract_func, log)
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
             })
 )
 

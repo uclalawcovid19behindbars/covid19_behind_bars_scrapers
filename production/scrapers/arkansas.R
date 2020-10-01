@@ -82,6 +82,40 @@ arkansas_restruct <- function(img, enhancements = seq(100, 500, by = 50)){
     dat_df
 }
 
+#' Process an image multiple times to increase chance of successful extraction
+#' 
+#' @description Sometimes an image cannot be extracted with the numbers placed
+#' in a cell with the default values for extraction. In this case we loop over
+#' several values of extraction parameters to try and get the cell values.
+#' 
+#' @param url_ the url of the image
+#' @param enhancements list of enhancements to use for extraction
+#' 
+#' @return data frame with values extracted from image
+arkansas_extract <- function(x){
+    x %>%
+        mutate(Name = "state-wide") %>%
+        mutate(Residents.Confirmed = 
+                   Residents.Recovered + Residents.Not.Recovered) %>%
+        mutate(Staff.Confirmed = 
+                   Staff.Recovered + Staff.Not.Recovered) %>%
+        select(-Staff.Not.Recovered, -Residents.Not.Recovered)
+}
+
+#' Scraper class for general Arkansas COVID data
+#' 
+#' @name arkansas_scraper
+#' @description This will be a description of Arkansas data and what the scraper
+#' does
+#' \describe{
+#'   \item{Residents Tested}{Residents Tested.}
+#'   \item{Residents Recovered}{Residents Recovered.}
+#'   \item{Residents Positive Not Recovered}{Residents Positive Not Recovered.}
+#'   \item{Staff Tested}{Staff Tested.}
+#'   \item{Staff Recovered}{Staff Recovered.}
+#'   \item{Staff Positive Not Recovered}{Staff Positive Not Recovered.}
+#' }
+
 arkansas_scraper <- R6Class(
     "arkansas_scraper",
     inherit = generic_scraper,
@@ -91,6 +125,7 @@ arkansas_scraper <- R6Class(
             log,
             url = "https://adc.arkansas.gov/coronavirus-covid-19-updates",
             id = "arkansas",
+            state = "AR",
             type = "img",
             # restructuring the data means pulling out the data portion of the json
             pull_func = function(x) {
@@ -106,9 +141,11 @@ arkansas_scraper <- R6Class(
             # restructuring the data means pulling out the data portion of the json
             restruct_func = function(x, ...) arkansas_restruct(x, ...),
             # Rename the columns to appropriate database names
-            extract_func = function(x) mutate(x, Name = "state-wide")){
+            extract_func = arkansas_extract){
             super$initialize(
-                url, id, pull_func, type, restruct_func, extract_func, log)
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
         }
     )
 )
@@ -119,7 +156,7 @@ if(sys.nframe() == 0){
     arkansas$pull_raw()
     arkansas$raw_data
     arkansas$save_raw()
-    arkansas$restruct_raw(enhancements = seq(100, 500, by = 50))
+    arkansas$restruct_raw()
     arkansas$restruct_data
     arkansas$extract_from_raw()
     arkansas$extract_data

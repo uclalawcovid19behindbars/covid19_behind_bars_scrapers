@@ -21,17 +21,17 @@ ohio_extract <- function(x){
     col_name_mat <- matrix(c(
         "Institution", "0", "Name",
         "Housing Type (cell, open bay, combo)", "1", "Housing.Type",
-        "# of Confirmed COVID-19 Related Inmate Deaths", "2", "Staff.Confirmed",
-        "# of Inmates who have Pending Results", "3", "Staff.Deaths",
-        "# of current Inmates who have Recovered", "4", "Staff.Recovered",
-        "# of Staff who have Reported Positive Tests", "5", "Units.Quarantine",
-        "# of COVID- 19 Related Staff Deaths", "6", "Residents.Quarantine",
-        "# of Staff who have Recovered", "7", "Residents.Isolation",
-        "Units in Quarantine", "8", "Residents.Confirmed",
-        "# of Inmates in Quarantine", "9", "Resident.Probable.Deaths",
-        "# of Inmates in Isolation", "10", "Resident.Deaths",
-        "# of inmates currently Positive for COVID-19*", "11", "Residents.Pending",
-        "# of Probable COVID-19 Related Inmate Deaths", "12", "Residents.Recovered"
+        "# of Staff who have Reported Positive Tests", "2", "Staff.Confirmed",
+        "# of COVID- 19 Related Staff Deaths", "3", "Staff.Deaths",
+        "# of Staff who have Recovered", "4", "Staff.Recovered",
+        "Units in Quarantine", "5", "Units.Quarantine",
+        "# of Inmates in Quarantine", "6", "Residents.Quarantine",
+        "# of Inmates in Isolation", "7", "Residents.Isolation",
+        "# of inmates currently Positive for COVID-19", "8", "Residents.Confirmed",
+        "# of Probable COVID-19 Related Inmate Deaths", "9", "Resident.Probable.Deaths",
+        "# of Confirmed COVID-19 Related Inmate Deaths", "10", "Resident.Deaths",
+        "# of Inmates who have Pending Results",  "11", "Residents.Pending",
+        "# of current Inmates who have Recovered", "12", "Residents.Recovered"
     ), ncol = 3, nrow = 13, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
@@ -70,11 +70,14 @@ ohio_scraper <- R6Class(
                 "DRCCOVID-19Information.pdf"),
             id = "ohio",
             type = "pdf",
-            pull_func = xml2::read_html,
+            state = "OH",
+            pull_func = function(x) x,
             restruct_func = ohio_restruct,
             extract_func = ohio_extract){
             super$initialize(
-                url, id, pull_func, type, restruct_func, extract_func, log)
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
         })
 )
 
@@ -88,4 +91,5 @@ if(sys.nframe() == 0){
     ohio$restruct_data
     ohio$extract_from_raw()
     ohio$extract_data
+    ohio$save_extract()
 }

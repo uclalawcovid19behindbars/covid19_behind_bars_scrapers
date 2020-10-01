@@ -27,11 +27,12 @@ generic_scraper <- R6Class(
         raw_data = NULL,
         restruct_data = NULL,
         extract_data = NULL,
+        state = NULL,
         err_log = NULL,
         raw_dest = NULL,
         extract_dest = NULL,
         initialize = function(
-            url, id, pull_func, type, restruct_func, extract_func, log){
+            url, id, pull_func, type, restruct_func, extract_func, log, state){
 
             valid_types <- c(
                 html = ".html", img = ".png", json = ".json", pdf = ".pdf"
@@ -45,6 +46,7 @@ generic_scraper <- R6Class(
             self$type = type
             self$url = url
             self$id = id
+            self$state = state
             self$raw_data = NULL
             self$restruct_data = NULL
             self$extract_data = NULL
@@ -86,7 +88,13 @@ generic_scraper <- R6Class(
                 json = jsonlite::write_json, pdf = utils::download.file
             )
             
-            valid_types[[self$type]](self$raw_data, dest)
+            if(self$log){
+                tryLog(valid_types[[self$type]](self$raw_data, dest))
+            }
+            else{
+                valid_types[[self$type]](self$raw_data, dest)
+            }
+            invisible(self)
         },
 
         restruct_raw = function(raw = self$raw_data, ...){
@@ -109,11 +117,35 @@ generic_scraper <- R6Class(
             invisible(self)
         },
         
+        save_extract = function(extract = self$extract_data){
+            if(self$log){
+                tryLog(write_csv(self$extract_data, self$extract_dest))
+            }
+            else{
+                write_csv(self$extract_data, self$extract_dest)
+            }
+            invisible(self)
+        },
+        
+        last_update = function(){
+            list.files("./results/extracted_data") %>%
+                {.[str_ends(., str_c(self$id, ".csv"))]} %>%
+                str_extract("\\d+-\\d+-\\d+") %>%
+                lubridate::as_date() %>%
+                max()
+        },
+        
+        
+        validate_extract = function(){
+            
+        },
+        
         run_all = function(){
             self$pull_raw()
             self$save_raw()
             self$restruct_raw()
             self$extract_from_raw()
+            self$save_extract()
         }
     )
 )

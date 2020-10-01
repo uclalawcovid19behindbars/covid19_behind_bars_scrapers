@@ -37,6 +37,28 @@ hawaii_extract <- function(x){
     hw
 }
 
+#' Scraper class for general Hawaii COVID data
+#' 
+#' @name hawaii_scraper
+#' @description This will be a description of Hawaii data and what the scraper
+#' does
+#' \describe{
+#'   \item{Facilities}{The faciilty name}
+#'   \item{Tested}{Cumulative residents tested. No indication as to who 
+#'   gets tested.}
+#'   \item{Results Pending}{Current Residents who are tested but no outcome 
+#'   yet reported.}
+#'   \item{Negative}{Cumulative number of residents who are negative.}
+#'   \item{Inconclusive}{Cumulative number of residents who have neither
+#'   positive nor negative results.}
+#'   \item{Positive}{Cumulative number of residents who are positive.}
+#'   \item{Number of Persons in Medical Isolation}{Residents in isolation.}
+#'   \item{Number of Persons in Quarantine}{Residents in quarantine.}
+#'   \item{Hospitilization}{Current residents hospitalized.}
+#'   \item{Recovered}{Cumulative residents recovered.}
+#'   \item{Deaths}{Cumulative residents who have died.}
+#' }
+
 hawaii_scraper <- R6Class(
     "hawaii_scraper",
     inherit = generic_scraper,
@@ -48,6 +70,7 @@ hawaii_scraper <- R6Class(
                 "https://dps.hawaii.gov/blog/2020/03/17/",
                 "coronavirus-covid-19-information-and-resources/"),
             id = "hawaii",
+            state = "HI",
             type = "img",
             # restructuring the data means pulling out the data portion of the json
             pull_func = function(x) {
@@ -63,7 +86,9 @@ hawaii_scraper <- R6Class(
             # minor cleaning
             extract_func = hawaii_extract){
             super$initialize(
-                url, id, pull_func, type, restruct_func, extract_func, log)
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
         }
     )
 )
