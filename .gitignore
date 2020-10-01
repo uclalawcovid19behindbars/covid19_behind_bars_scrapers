@@ -39,7 +39,8 @@ vignettes/*.pdf
 *.jpg
 *.jpeg
 *.pdf
-
+*.html
+init/singularity-r.simg
 
 # data files
 data/*

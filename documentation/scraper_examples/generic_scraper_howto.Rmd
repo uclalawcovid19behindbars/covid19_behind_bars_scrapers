@@ -1,0 +1,294 @@
+---
+title: "Building Scrapers Using the generic_scraper R6 class"
+author: "Neal Marquez"
+date: "9/30/2020"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+In our new proposed model for building reproducible and testable web scrapers we will be relying heavily on `R6` classes. `R6` classes, unlike more traditional classes `S3` and `S4`, are mutable and thus allow for methods that can update the object in place. This is ideal for a web scraping undertaking that is varied and has well defined segments of data processing, such as the *COVID-19 Behind Bars* project.
+
+Before we get into the weeds it is helpful to understand the web scraping process at a high level. First, when we say web scraping in this team we mean a mixture of methods for pulling data from web accessible formats. Getting the COVID-19 data that we need for analysis does not come from a single source and depending on the specific department of corrections or county facility website, the process for obtaining data can be very different. Despite these differences the overall goal is the same. The website is host to the data we want in some raw form. We want to download that data in its raw from, transform it into something that `R` is good at working with natively, such as a list, matrix, or data frame, and then clean that data so it matches measures of the COVID-19 that we are interested in. The diagram below shows a schematic of the process with the data items in each step of the way in boxes and the process to get from one box to another adjacent to the arrows.
+
+![](https://i.imgur.com/coLzYFF.png)
+
+Our code will mimic this process of downloading raw data, restructuring the data into something `R` can work with, and cleaning the data. We can ensure that the data scraping process follows this paradigm by using `R6` classes and inheritance. Below is a copy of the code, specifically the parent class constructor, we will use to ensure a uniform process of collecting data. The details of the code aren't important and we will walk through a specific example of how to use it but know that the benefit of using a parent class means that we can ensure quality checks of the data, logging of the scraping process, and saving raw and final versions of the data for each new scraper without having to write extra code. Class inheritance gets all of those benefits for little extra code overhead much like the bourgeoisie class passes their wealth and to their children tax and stigma free. 
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(R6)
+library(tryCatchLog)
+library(futile.logger)
+
+generic_scraper <- R6Class(
+    "generic_scraper",
+    list(
+        # URL where the data lives can be a url that holds an iframe
+        # but the pull function will use this as the first argument
+        url=NULL,
+        # how we are referencing this scraper, usually a state name
+        id=NULL,
+        # one of either html, img, json, or pdf. Whatever the raw data
+        # format is
+        type = NULL,
+        log = NULL,
+        # how to pull the data using the URL provided above
+        pull_func = NULL,
+        # restructure the data into a data frame like object
+        restruct_func = NULL,
+        # extract the data to have the appropriate names
+        extract_func = NULL,
+        # the date of the run (usually auto populated)
+        date = Sys.Date(),
+        # no need to populate the remaining cells, they will be populated later
+        raw_data = NULL,
+        restruct_data = NULL,
+        extract_data = NULL,
+        err_log = NULL,
+        raw_dest = NULL,
+        extract_dest = NULL,
+        initialize = function(
+            url, id, pull_func, type, restruct_func, extract_func, log){
+
+            valid_types <- c(
+                html = ".html", img = ".png", json = ".json", pdf = ".pdf",
+                sheet = ".csv"
+            )
+
+            stopifnot(is.character(url), length(url) == 1)
+            stopifnot(is.character(id), length(id) == 1)
+            stopifnot((type %in% names(valid_types)))
+            
+            self$log = log
+            self$type = type
+            self$url = url
+            self$id = id
+            self$raw_data = NULL
+            self$restruct_data = NULL
+            self$extract_data = NULL
+            self$pull_func = pull_func
+            self$restruct_func = restruct_func
+            self$extract_func = extract_func
+            self$err_log = paste0(
+                "./results/log_files/", self$date, "_", id, ".log")
+
+            if(file.exists(self$err_log)){
+                file.remove(self$err_log)
+            }
+
+            self$raw_dest = paste0(
+                "./results/raw_files/", self$date, "_", id, valid_types[type])
+            self$extract_dest = paste0(
+                "./results/extracted_data/", self$date, "_", id, ".csv")
+            
+            
+            
+            # initiate logger
+            flog.appender(appender.file(self$err_log))
+            flog.threshold(WARN)
+        },
+
+        pull_raw = function(url = self$url, ...){
+            if(self$log){
+                tryLog(self$raw_data <- self$pull_func(url, ...))
+            }
+            else{
+                self$raw_data <- self$pull_func(url, ...)
+            }
+            invisible(self)
+        },
+
+        save_raw = function(dest=self$raw_dest){
+            valid_types <- list(
+                html = xml2::write_html, img = magick::image_write, 
+                json = jsonlite::write_json, pdf = utils::download.file
+            )
+            
+            valid_types[[self$type]](self$raw_data, dest)
+        },
+
+        restruct_raw = function(raw = self$raw_data, ...){
+            if(self$log){
+                tryLog(self$restruct_data <- self$restruct_func(raw, ...))
+            }
+            else{
+                self$restruct_data <- self$restruct_func(raw, ...)
+            }
+            invisible(self)
+        },
+        
+        extract_from_raw = function(raw = self$restruct_data, ...){
+            if(self$log){
+                tryLog(self$extract_data <- self$extract_func(raw, ...))
+            }
+            else{
+                self$extract_data <- self$extract_func(raw, ...)
+            }
+            invisible(self)
+        },
+        
+        save_extract = function(extract = self$extract_data){
+            write_csv(self$extract_data, self$extract_dest)
+        },
+        
+        validate_extract = function(){
+            
+        },
+        
+        run_all = function(){
+            self$pull_raw()
+            self$save_raw()
+            self$restruct_raw()
+            self$extract_from_raw()
+        }
+    )
+)
+```
+
+That's a lot of code to deal with but if you want to build your own scraper the important part that you need to know is how the website you want to scrape hosts their data, how do I get it into `R`, how to restructure, and finally how to clean. The most common ways in which facilities present data are in [raw html](https://doc.iowa.gov/COVID19), [json](https://services5.arcgis.com/mBtYHKRd2hqJxboF/arcgis/rest/services/COVID19Statewide/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset=0&resultRecordCount=1000&resultType=standard&cacheHint=true) through an [API](http://www.dcor.state.ga.us/content/CVD_Dashboard), [img](https://adc.arkansas.gov/coronavirus-covid-19-updates) or [pdf](https://coronavirus.ohio.gov/static/reports/DRCCOVID-19Information.pdf) files hosted somewhere on the website itself and sheet data objects like excel, csvs, or Google sheet files. Lets walk through an example using Iowa to show how we can go from raw to clean data.
+
+
+First thing to note is the arguments that we will need to supply in order to build a scraper. These are listed below with explanations for each.
+
+ - `url`: The url where new data may be found every day (not static for any given day)
+ - `id`: the name of the scraper. Each url should have a unique id and one associated scraper.
+ - `type`: the type of raw data we are dealing with i.e. html, img, json, pdf, or sheet
+ - `pull_func`: the function to pull data from online to R this function should take the url as its first argument and return either an R object of class xml_document, magick-image, json restructured list, url for where a pdf resides in the form of a character string, or data.frame like object for html, img, json, pdf, or sheet types respectively.
+ - `restruct_func`: the function to restructure the raw data into something more `R` friendly
+ - `extract_func`: the function to clean the data and get the COVID variables we are interested in. This should always return a data.frame like object
+
+First lets look at the code and then we can walk through where each argument is placed.
+
+```{r message=FALSE, warning=FALSE}
+source("../../R/utilities.R")
+
+iowa_url <- "https://doc.iowa.gov/COVID19"
+iowa_id <- "iowa"
+iowa_type <- "html"
+
+# how to get the data into r given the url input
+iowa_pull <- function(url){
+    xml2::read_html(url)
+}
+
+# manipulate the raw data loaded into R so its in a table like object
+# the first argument should be the output of the pull function
+iowa_restruct <- function(ia_html){
+    ia_html %>%
+        # there is only one table on the page and it has no names
+        # associated with it
+        rvest::html_node("table") %>%
+        rvest::html_table(header = TRUE)
+}
+
+# clean the data for addition to the data base
+# the first argument should be the output of the restruct function
+iowa_extract <- function(x){
+    names(x) <- str_squish(names(x))
+    expected_names <- c(
+        "Prison", "Inmates Tested", "Inmates Positive", "Inmates Recovered", 
+        "Staff Positive*", "Staff Recovered", "COVID Related Inmate Deaths")
+    
+    check_names(x, expected_names)
+    
+    Iowa <- x
+    names(Iowa) <- c(
+        "Name", "Residents.Tested", "Residents.Confirmed",
+        "Residents.Recovered", "Staff.Confirmed", "Staff.Recovered",
+        "Resident.Deaths")
+
+    Iowa <- subset(Iowa, Name!= "Prison")
+    Iowa <- subset(Iowa,Name!="Total")
+    Iowa <- subset(Iowa,Name!="Prison")
+    
+    Iowa <- clean_scraped_df(Iowa)
+    
+    Iowa$Residents.Confirmed <- Iowa$Residents.Confirmed +
+        Iowa$Residents.Recovered
+    Iowa$Staff.Confirmed     <- Iowa$Staff.Confirmed +
+        Iowa$Staff.Recovered 
+    
+    Iowa
+}
+
+iowa_scraper <- R6Class(
+    # this is the class name which should also be the same as the object name
+    # where we save this class constructor
+    str_c(iowa_id, "_scraper"),
+    # all scrapers should inherit from the parent class generic scraper
+    inherit = generic_scraper,
+    # these are the items that we have to define specific to the scraper
+    public = list(
+        # all scrapers should have a log option here
+        log = NULL,
+        # we now have an initialize function which is populated with
+        # arguments that were defined above
+        initialize = function(
+            # again we need to place log here
+            log,
+            # add in the base URL of the scraper
+            url = iowa_url,
+            # what is the unique id of the scraper
+            id = iowa_id,
+            # the type of raw data
+            type = iowa_type,
+            # the rest are the functions defined above
+            pull_func = iowa_pull,
+            restruct_func = iowa_restruct,
+            extract_func = iowa_extract){
+            # the contents of the initialize function should always be this
+            super$initialize(
+                url, id, pull_func, type, restruct_func, extract_func, log)
+            })
+)
+```
+
+Iowa presents COVID-19 data in the form of raw html. With raw html we want to grab the html as it was presented on that data. Pulling the raw data into R is easy and we can use the function `xml2::read_html` with the website name directly. Note that we explicitly reference the library that the function comes from rather than loading the library. Because we are using many libraries for scraping that often have conflicting names we need to not load in any libraries through a library call. The only exceptions to this are the libraries `tidyverse`, `R6`, `tryCatchLog`, `futile.logger`. The functions in these libraries may be referenced directly. In addition we define a set of useful function in `R/utilities.R` that may be used for pulling, restructuring, and cleaning. 
+
+Next we define the restructuring function for Iowa. This function traverses the html data we have to extract the table like information that we want. The `rvest` package makes this process just a few lines and we extract the one table on the website. The `extract_func` is the most involved. It relies on a couple of functions defined in `R/utilities.R` and includes steps for checking expectations of the data. For instance, we rename columns based on position so we check here if the original column names are similar to what we expected. If not, a warning is thrown and the class auto documents that warning so we can look at it later. An important thing to note is that this class constructor does not actually do anything until we run it later in production to collect data. When we run production code it looks something like this.
+
+```{r message=FALSE, warning=FALSE}
+# we always need to supply a log argument by name to tell the scraper
+# whether to save log outputs or not. In production this will always be TRUE
+iowa <- iowa_scraper$new(log = FALSE)
+# not that wehn we make this object there is no raw data to start
+iowa$raw_data
+```
+
+Initiating an instance of the class `iowa_scraper` is the first step. Before we run anything else `iowa` object wont hold much information. We can first grab the raw data using the pull function that we defined by running `iowa$pull_raw()`. This function pulls the data from the website and loads the information into R.
+
+```{r message=FALSE, warning=FALSE}
+iowa$pull_raw()
+iowa$raw_data
+```
+
+Generally speaking we will want to save this raw data as well. As the data scientist here this isn't something that you should have to worry about every time you write a scraper and this may change over time as we change our production pipeline. The information that was provided above is sufficient to saving the file where the team needs and you don't have to write anything more than whats below.
+
+```{r message=FALSE, warning=FALSE, eval=FALSE}
+iowa$save_raw()
+```
+
+
+Next we restructure the data into something that is more helpful using the restructure function.
+
+```{r message=FALSE, warning=FALSE}
+iowa$restruct_raw()
+iowa$restruct_data
+```
+
+And now we can get the final out we want the data frame like object that we can use for `COVID-19` analysis.
+
+```{r message=FALSE, warning=FALSE}
+iowa$extract_from_raw()
+iowa$extract_data
+```
+
+Again we can do some final inspections of the data and save the final product without writing any additional code.
+
+```{r message=FALSE, warning=FALSE, eval=FALSE}
+iowa$validate_extract()
+iowa$save_extract()
+```
+
+By building scrapers in this structured way we may seamlessly integrate new scrapers into our production code which gathers COVID-19 data for analysis by the rest of the team. 
