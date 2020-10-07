@@ -117,12 +117,16 @@ generic_scraper <- R6Class(
             invisible(self)
         },
         
-        save_extract = function(extract = self$extract_data){
+        save_extract = function(){
             if(self$log){
-                tryLog(write_csv(self$extract_data, self$extract_dest))
+                tryLog(self$extract_data %>%
+                           mutate(State = self$state) %>%
+                           write_csv(self$extract_dest))
             }
             else{
-                write_csv(self$extract_data, self$extract_dest)
+                self$extract_data %>%
+                    mutate(State = self$state) %>%
+                    write_csv(self$extract_dest)
             }
             invisible(self)
         },
