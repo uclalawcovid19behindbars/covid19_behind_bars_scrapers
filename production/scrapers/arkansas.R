@@ -151,7 +151,7 @@ arkansas_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    arkansas <- arkansas_scraper$new(log=FALSE)
+    arkansas <- arkansas_scraper$new(log=T)
     arkansas$raw_data
     arkansas$pull_raw()
     arkansas$raw_data

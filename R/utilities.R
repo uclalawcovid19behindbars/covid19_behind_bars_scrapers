@@ -55,12 +55,12 @@ clean_fac_col_txt <- function(x){
         str_replace_all("COVID[ ]*-[ ]*19", "COVID-19")
 }
 
-check_names <- function(DF, expected_names){
-    true_names <- names(DF)
+
+basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
     }
-
+    
     for(i in length(expected_names)){
         if(!is.na(expected_names[i]) & length(true_names) <= i){
             if(clean_fac_col_txt(expected_names[i]) != 
@@ -71,6 +71,11 @@ check_names <- function(DF, expected_names){
             }
         }
     }
+}
+
+check_names <- function(DF, expected_names){
+    true_names <- names(DF)
+    basic_check(true_names, expected_names)
 }
 
 check_names_extractable <- function(df_, col_name_df){
@@ -272,7 +277,7 @@ string_to_clean_numeric <- function(column) {
     expected.nonnumeric.values <- 
         c("-", "N/A", "na", "n/a", "NA", "", " +",
           NA, "T", "[", "]", "o", "O",
-          "PENDING DOH RESULTS", "S")
+          "PENDING DOH RESULTS", "S", "")
     
     unexpected.nonnumeric.values <- column[
         !(grepl(column, pattern = "[0-9]+") | 
@@ -281,8 +286,10 @@ string_to_clean_numeric <- function(column) {
     ] %>% unique()
     
     if(length(unexpected.nonnumeric.values) != 0) {
-        print(unexpected.nonnumeric.values)
-        stop("Unexpected nonnumeric values were scraped that we haven't seen before (above), check them.")
+        bad_str <- str_c(unexpected.nonnumeric.values, collapse = ", ")
+        warning(str_c(
+            "Unexpected nonnumeric values were scraped that we haven't",
+            " seen before. They are... ", bad_str))
     }
     
     # clean

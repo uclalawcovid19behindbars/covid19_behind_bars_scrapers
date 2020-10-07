@@ -137,6 +137,112 @@ generic_scraper <- R6Class(
         
         
         validate_extract = function(){
+            valid_columns <- c(
+                "Name", "Residents.Confirmed", "Residents.Confirmed",
+                "Staff.Deaths", "Resident.Deaths", "Staff.Recovered",
+                "Residents.Recovered", "Staff.Tested", "Residents.Tested", 
+                "Staff.Negative", "Residents.Negative", "Staff.Pending",
+                "Residents.Pending", "Staff.Quarantine", "Residents.Quarantine"
+            )
+            
+            for(i in names(self$extract_data)){
+                if(!(i %in% valid_columns)){
+                    warning(str_c(i, " not a valid column name. Being removed."))
+                    self$extract_data <- self$extract_data %>%
+                        select(-!!i)
+                }
+                else{
+                    if(any(self$extract_data < 0, na.rm = TRUE)){
+                        warning(str_c(i, " has negative values. Being removed."))
+                        self$extract_data[,i] <- ifelse(
+                            self$extract_data[,i] < 0, NA, self$extract_data[,i])
+                    }
+                }
+            }
+            
+            ext_names <- names(self$extract_data)
+            
+            ### sanity checks no changes made only warnings thrown
+            if(all(c("Staff.Confirmed", "Staff.Recovered") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Staff.Confirmed` <
+                    self$extract_data$`Staff.Recovered`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Staff confirmed less than recovered ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Residents.Confirmed", "Residents.Recovered") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Residents.Confirmed` <
+                    self$extract_data$`Residents.Recovered`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Residents confirmed less than recovered ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Staff.Confirmed", "Staff.Deaths") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Staff.Confirmed` <
+                    self$extract_data$`Staff.Deaths`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Staff confirmed less than deaths ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Residents.Confirmed", "Residents.Deaths") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Residents.Confirmed` <
+                    self$extract_data$`Residents.Deaths`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Residents confirmed less than deaths ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Staff.Confirmed", "Staff.Tested") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Staff.Confirmed` >
+                    self$extract_data$`Staff.Tested`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Staff confirmed more than tested ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Residents.Confirmed", "Residents.Tested") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Residents.Confirmed` >
+                    self$extract_data$`Residents.Tested`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Residents confirmed more than tested ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Staff.Negative", "Staff.Tested") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Staff.Negative` >
+                    self$extract_data$`Staff.Tested`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Staff negative more than tested ",
+                        "for some facilities"))
+                }
+            }
+            
+            if(all(c("Residents.Negative", "Residents.Tested") %in% ext_names)){
+                if(any(
+                    self$extract_data$`Residents.Negative` >
+                    self$extract_data$`Residents.Tested`, na.rm = TRUE)){
+                    warning(str_c(
+                        "Residents negative more than tested ",
+                        "for some facilities"))
+                }
+            }
+            
             
         },
         
@@ -145,6 +251,7 @@ generic_scraper <- R6Class(
             self$save_raw()
             self$restruct_raw()
             self$extract_from_raw()
+            self$validate_extract()
             self$save_extract()
         }
     )

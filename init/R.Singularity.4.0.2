@@ -68,9 +68,16 @@ From: ubuntu:18.04
     libcairo2-dev \
     libxt-dev \
     libudunits2-dev \
-    libftgl2 libcgal-dev libglu1-mesa-dev libglu1-mesa-dev libx11-dev libfreetype6-dev
+    libftgl2 libcgal-dev libglu1-mesa-dev \
+    libglu1-mesa-dev libx11-dev libfreetype6-dev libmagick++-dev
+  
   apt-get install -y --no-install-recommends binutils libgdal-dev gdal-bin libproj-dev proj-data proj-bin libgeos-dev
 
+  add-apt-repository -y ppa:cran/poppler
+  add-apt-repository ppa:cran/tesseract
+  apt-get update
+  apt-get install -y --no-install-recommends libpoppler-cpp-dev
+  apt-get install -y --no-install-recommends libtesseract-dev libleptonica-dev tesseract-ocr-eng
 
   # selenium server
   # docker run -d -p 4445:4444 selenium/standalone-firefox:2.53.1
@@ -95,6 +102,8 @@ From: ubuntu:18.04
   R --slave -e 'install.packages("R6")'
   R --slave -e 'install.packages("futile.logger")'
   R --slave -e 'install.packages("tryCatchLog")'
+  R --slave -e 'install.packages("argparse")'
+  R --slave -e 'install.packages("tesseract")'
 
   # Clean up
   rm -rf /var/lib/apt/lists/*
