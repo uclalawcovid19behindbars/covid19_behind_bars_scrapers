@@ -25,7 +25,10 @@ process_AR_cell <- function(base_image, crop, enhancement = 500){
                          magick::image_resize(paste(enhancement, "x")) %>%
                          magick::image_ocr() %>%
                          stringr::str_remove_all(",|\\n") %>%
-                         as.numeric())
+                         as.numeric() %>%
+                         # sometimes when extraction fails it spits a
+                         # nonsensical negative number
+                         {ifelse(. < 0, NA, .)})
 }
 
 #' Extract information from all cells in an AR image.
@@ -40,13 +43,13 @@ process_AR_cell <- function(base_image, crop, enhancement = 500){
 #' @return data frame with values extracted from image
 process_AR_image <- function(base_image, ...){
     tibble(
-        Residents.Tested = process_AR_cell(base_image, "93x30+599+360", ...),
-        Residents.Recovered = process_AR_cell(base_image, "93x30+599+400", ...),
+        Residents.Tested = process_AR_cell(base_image, "93x30+599+384", ...),
+        Residents.Recovered = process_AR_cell(base_image, "93x30+599+424", ...),
         Residents.Not.Recovered = process_AR_cell(
-            base_image, "93x30+599+440", ...),
-        Staff.Tested = process_AR_cell(base_image, "93x30+599+565", ...),
-        Staff.Recovered = process_AR_cell(base_image, "93x30+599+605", ...),
-        Staff.Not.Recovered = process_AR_cell(base_image, "93x30+599+647", ...)
+            base_image, "93x30+599+464", ...)
+        #Staff.Tested = process_AR_cell(base_image, "93x30+599+565", ...),
+        #Staff.Recovered = process_AR_cell(base_image, "93x30+599+605", ...),
+        #Staff.Not.Recovered = process_AR_cell(base_image, "93x30+599+647", ...)
     )
 }
 
@@ -97,9 +100,9 @@ arkansas_extract <- function(x){
         mutate(Name = "state-wide") %>%
         mutate(Residents.Confirmed = 
                    Residents.Recovered + Residents.Not.Recovered) %>%
-        mutate(Staff.Confirmed = 
-                   Staff.Recovered + Staff.Not.Recovered) %>%
-        select(-Staff.Not.Recovered, -Residents.Not.Recovered)
+        #mutate(Staff.Confirmed = 
+        #           Staff.Recovered + Staff.Not.Recovered) %>%
+        select(-Residents.Not.Recovered)#, -Staff.Not.Recovered)
 }
 
 #' Scraper class for general Arkansas COVID data
@@ -111,8 +114,8 @@ arkansas_extract <- function(x){
 #'   \item{Residents Tested}{Residents Tested.}
 #'   \item{Residents Recovered}{Residents Recovered.}
 #'   \item{Residents Positive Not Recovered}{Residents Positive Not Recovered.}
-#'   \item{Staff Tested}{Staff Tested.}
-#'   \item{Staff Recovered}{Staff Recovered.}
+#'   \item{Staff Tested}{Staff Tested. No Longer Reported.}
+#'   \item{Staff Recovered}{Staff Recovered. No longer reported.}
 #'   \item{Staff Positive Not Recovered}{Staff Positive Not Recovered.}
 #' }
 
@@ -160,4 +163,6 @@ if(sys.nframe() == 0){
     arkansas$restruct_data
     arkansas$extract_from_raw()
     arkansas$extract_data
+    arkansas$validate_extract()
+    arkansas$save_extract()
 }
