@@ -2,13 +2,9 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 florida_url_restruct <- function(x){
-    x %>%
+    fl <- x %>%
         rvest::html_node('table') %>%
         rvest::html_table()
-}
-
-florida_url_extract <- function(x){
-    fl <- x
     
     expected <- c(
         "Facility", "Security Quarantine", "Medical Quarantine", 
@@ -26,7 +22,26 @@ florida_url_extract <- function(x){
     names(fl)[6] <- "Residents.Negative"
     names(fl)[7] <- "Residents.Confirmed"
     names(fl)[8] <- "Staff.Confirmed"
-    fl %>%
+        
+    state_death <- x %>%
+        rvest::html_nodes('.smallTable') %>%
+        .[[3]] %>%
+        rvest::html_table()
+    
+    if(!any(grepl("Inmate Deaths", names(state_death)))){
+        warning(str_c(
+            "Attempted to grab state deaths but column may not be correct."))
+    }
+    
+    bind_rows(
+        fl,
+        tibble(
+            Name = "State-Wide",
+            Deaths = state_death[,2]))
+}
+
+florida_url_extract <- function(x){
+    x %>%
         mutate(Name = str_remove_all(Name, "Operated by.*")) %>%
         filter(Name!= "Facility" & Name!= "Totals") %>%
         clean_scraped_df() %>%
@@ -64,7 +79,6 @@ florida_url_scraper <- R6Class(
             state = "FL",
             # pull the JSON data directly from the API
             pull_func = xml2::read_html,
-            # restructuring the data means pulling out the data portion of the json
             restruct_func = florida_url_restruct,
             # Rename the columns to appropriate database names
             extract_func = florida_url_extract){

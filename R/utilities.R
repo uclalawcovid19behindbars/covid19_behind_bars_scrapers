@@ -218,6 +218,13 @@ ExtractTable <- function(img, file_type = ".png", api_key = NULL) {
     return(all_tables)
 } 
 
+start_splash <- function(
+    host = "splash.hrbrmstr.de", port = 8050,
+    user = Sys.getenv("SPLASH_NAME"), pass = Sys.getenv("SPLASH_PASS")){
+    splashr::splash(host = host, port = port, user = user, pass = pass)
+    
+}
+
 Caps <- function(x) {
     s <- strsplit(x, " ")[[1]]
     paste(toupper(substring(s, 1,1)), substring(s, 2),

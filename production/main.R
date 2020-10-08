@@ -1,3 +1,4 @@
+# singularity run --app Rscript init/singularity-r.simg ./main.R
 rm(list=ls())
 library(tidyverse)
 library(R6)

@@ -3,8 +3,8 @@ source("./R/generic_scraper.R")
 cook_county_restruct <- function(x){
     
     Staff.Txt <- x %>%
-        html_nodes(., 'ul+ p') %>%
-        html_text()
+        rvest::html_nodes(., 'ul+ p') %>%
+        rvest::html_text()
 
     Staff.Active1 <- Staff.Txt %>%
         str_extract("[0-9]+ correctional officers are positive for COVID") %>%
@@ -18,29 +18,29 @@ cook_county_restruct <- function(x){
     
     tibble(
         Residents.Recovered = x %>%
-            html_nodes(., '.col-md-8 li:nth-child(2)') %>%
-            html_text() %>%
+            rvest::html_nodes(., '.col-md-8 li:nth-child(2)') %>%
+            rvest::html_text() %>%
             str_replace_all('(?<=\\d),(?=\\d)', '') %>%
             str_extract("[0-9]+") %>%
             as.numeric(),
         
         Residents.Deaths = x %>%
-            html_nodes(., '.col-md-8 li:nth-child(4)') %>%
-            html_text() %>%
+            rvest::html_nodes(., '.col-md-8 li:nth-child(4)') %>%
+            rvest::html_text() %>%
             str_replace_all('(?<=\\d),(?=\\d)', '') %>%
             str_extract("[0-9]+") %>%
             as.numeric(),
         
         Residents.Active = x %>%
-            html_node(., 'p+ ul li:nth-child(1)') %>%
-            html_text() %>%
+            rvest::html_node(., 'p+ ul li:nth-child(1)') %>%
+            rvest::html_text() %>%
             str_replace_all('(?<=\\d),(?=\\d)', '') %>%
             str_extract("[0-9]+") %>%
             as.numeric(),
         
         Residents.Negative = x %>%
-            html_nodes(., '.col-md-8 li:nth-child(3)') %>%
-            html_text() %>%
+            rvest::html_nodes(., '.col-md-8 li:nth-child(3)') %>%
+            rvest::html_text() %>%
             str_replace_all('(?<=\\d),(?=\\d)', '') %>%
             str_extract("[0-9]*") %>%
             as.numeric(),
@@ -48,15 +48,15 @@ cook_county_restruct <- function(x){
         Staff.Active = Staff.Active1 + Staff.Active2,
         
         Staff.Recovered = x %>%
-            html_nodes(., 'p:nth-child(12)') %>%
-            html_text() %>%
+            rvest::html_nodes(., 'p:nth-child(12)') %>%
+            rvest::html_text() %>%
             str_replace_all('(?<=\\d),(?=\\d)', '') %>%
             gsub("[^0-9]", "", .) %>%
             as.numeric(),
         
         Staff.Deaths = x %>%
-            html_nodes(., 'p:nth-child(13)') %>%
-            html_text() %>%
+            rvest::html_nodes(., 'p:nth-child(13)') %>%
+            rvest::html_text() %>%
             str_replace_all('(?<=\\d),(?=\\d)', '') %>%
             str_remove_all("COVID-19") %>%
             str_extract_all("[0-9]+") %>%

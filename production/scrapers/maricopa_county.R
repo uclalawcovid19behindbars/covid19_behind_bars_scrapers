@@ -3,15 +3,15 @@ source("R/utilities.R")
 
 maricopa_county_restruct <- function(x){
     df_ <- x %>%
-        html_nodes(".dataNumber") %>%
-        html_text() %>%
+        rvest::html_nodes(".dataNumber") %>%
+        rvest::html_text() %>%
         parse_number() %>%
         t() %>%
         as.data.frame()
     
     names(df_) <- x %>%
-        html_nodes(".dataBox") %>%
-        html_text() %>%
+        rvest::html_nodes(".dataBox") %>%
+        rvest::html_text() %>%
         str_replace_all('(?<=\\d),(?=\\d)', '') %>%
         str_remove_all("[0-9]+$") %>%
         str_squish()

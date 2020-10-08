@@ -120,12 +120,12 @@ generic_scraper <- R6Class(
         save_extract = function(){
             if(self$log){
                 tryLog(self$extract_data %>%
-                           mutate(State = self$state) %>%
+                           mutate(State = self$state, Date = self$date) %>%
                            write_csv(self$extract_dest))
             }
             else{
                 self$extract_data %>%
-                    mutate(State = self$state) %>%
+                    mutate(State = self$state, Date = self$date) %>%
                     write_csv(self$extract_dest)
             }
             invisible(self)
@@ -142,11 +142,13 @@ generic_scraper <- R6Class(
         
         validate_extract = function(){
             valid_columns <- c(
-                "Name", "Residents.Confirmed", "Residents.Confirmed",
-                "Staff.Deaths", "Resident.Deaths", "Staff.Recovered",
-                "Residents.Recovered", "Staff.Tested", "Residents.Tested", 
-                "Staff.Negative", "Residents.Negative", "Staff.Pending",
-                "Residents.Pending", "Staff.Quarantine", "Residents.Quarantine"
+                "Name", "Staff.Confirmed", "Residents.Confirmed",
+                "Staff.Deaths", "Residents.Deaths",
+                "Staff.Recovered", "Residents.Recovered",
+                "Staff.Tested", "Residents.Tested", 
+                "Staff.Negative", "Residents.Negative",
+                "Staff.Pending", "Residents.Pending",
+                "Staff.Quarantine", "Residents.Quarantine"
             )
             
             for(i in names(self$extract_data)){
