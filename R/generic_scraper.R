@@ -249,6 +249,12 @@ generic_scraper <- R6Class(
                 }
             }
             
+            if(!("Name" %in% ext_names)){
+                warning(str_c(
+                    "No 'Name' column present. Did you forget to add ",
+                    "the indicator 'State-Wide'?"))
+            }
+            
             
         },
         

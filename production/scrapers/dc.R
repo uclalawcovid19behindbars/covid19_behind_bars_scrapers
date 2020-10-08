@@ -1,5 +1,27 @@
 source("./R/generic_scraper.R")
 
+dc_pull <- function(x){
+    stringr::str_c(
+        "https://em.dcgis.dc.gov/dcgis/rest/services/COVID_19/",
+        "OpenData_COVID19/FeatureServer/10/query?where=1%3D1&",
+        "objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&",
+        "inSR=&spatialRel=esriSpatialRelIntersects&distance=&",
+        "units=esriSRUnit_Foot&relationParam=&outFields=*&",
+        "returnGeometry=true&maxAllowableOffset=&geometryPrecision=&",
+        "outSR=&having=&gdbVersion=&historicMoment=&",
+        "returnDistinctValues=false&returnIdsOnly=false&",
+        "returnCountOnly=false&returnExtentOnly=false&orderByFields=&",
+        "groupByFieldsForStatistics=&outStatistics=&returnZ=false&",
+        "returnM=false&multipatchOption=xyFootprint&",
+        "returnTrueCurves=false&returnCentroid=false&sqlFormat=none&",
+        "resultType=&featureEncoding=esriDefault&f=pjson") %>%
+        jsonlite::read_json(simplifyVector = TRUE)
+}
+
+dc_restruct <- function(x){
+    as_tibble(x$features$attributes)
+}
+
 dc_extract <- function(x){
     x %>%
         # the format is in unix time with extra precision not readable
@@ -9,9 +31,8 @@ dc_extract <- function(x){
         filter(Date == max(Date)) %>%
         rename(Staff.Confirmed = TOTAL_POSITIVE_PSDP) %>%
         rename(Staff.Confirmed = TOTAL_POSITIVE_PSDP)
-    
-    NULL
 }
+
 
 #' Scraper class for general dc COVID data
 #' 
@@ -29,29 +50,19 @@ dc_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = stringr::str_c(
-                "https://em.dcgis.dc.gov/dcgis/rest/services/COVID_19/",
-                "OpenData_COVID19/FeatureServer/10/query?where=1%3D1&",
-                "objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&",
-                "inSR=&spatialRel=esriSpatialRelIntersects&distance=&",
-                "units=esriSRUnit_Foot&relationParam=&outFields=*&",
-                "returnGeometry=true&maxAllowableOffset=&geometryPrecision=&",
-                "outSR=&having=&gdbVersion=&historicMoment=&",
-                "returnDistinctValues=false&returnIdsOnly=false&",
-                "returnCountOnly=false&returnExtentOnly=false&orderByFields=&",
-                "groupByFieldsForStatistics=&outStatistics=&returnZ=false&",
-                "returnM=false&multipatchOption=xyFootprint&",
-                "returnTrueCurves=false&returnCentroid=false&sqlFormat=none&",
-                "resultType=&featureEncoding=esriDefault&f=pjson"),
+            url = str_c(
+                "https://opendata.dc.gov/datasets/",
+                "dc-covid-19-department-of-corrections/",
+                "data?orderBy=DATE_REPORTED&orderByAsc=false"),
             id = "dc",
             type = "json",
             state = "DC",
             # pull the JSON data directly from the API
-            pull_func = function(...) jsonlite::read_json(..., simplifyVector = TRUE),
+            pull_func = dc_pull,
             # restructuring the data means pulling out the data portion of the json
-            restruct_func = function(x) as_tibble(x$features$attributes),
+            restruct_func = dc_restruct,
             # Rename the columns to appropriate database names
-            extract_func = function(x){NULL}){
+            extract_func = dc_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,

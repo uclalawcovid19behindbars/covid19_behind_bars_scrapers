@@ -57,7 +57,7 @@ alaska_scraper <- R6Class(
             url = "https://doc.alaska.gov/covid-19",
             id = "alaska",
             type = "html",
-            state = "MN",
+            state = "AK",
             # pull the JSON data directly from the API
             pull_func = alaska_pull,
             # restructuring the data means pulling out the data portion of the json
