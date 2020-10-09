@@ -35,9 +35,8 @@ arizona_restruct <- function(x){
 
 arizona_extract <- function(x){
     x %>%
-        Residents.Death = Resident.Deaths1 + Resident.Deaths2
-    az1$Resident.Deaths <- az1$Resident.Deaths1 + az1$Resident.Deaths2
-    az1 <- subset(az1, select = -c(Resident.Deaths1, Resident.Deaths2))
+        mutate(Residents.Deaths = Resident.Deaths1 + Resident.Deaths2) %>%
+        select(-Resident.Deaths1, -Resident.Deaths2)
 }
 
 #' Scraper class for general arizona COVID data

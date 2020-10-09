@@ -49,6 +49,8 @@ clean_fac_col_txt <- function(x){
     str_squish(x) %>%
         # remove trailing stars
         str_remove("[\\*]+$") %>%
+        # remove leading stars
+        str_remove("^[\\*]+") %>%
         # capitalize COVID wherever its found
         str_replace_all("(?i)covid", "COVID") %>%
         # replace COVID - 19 with  some form of spaces with COVID-19
