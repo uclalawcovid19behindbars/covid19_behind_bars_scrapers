@@ -1,15 +1,16 @@
 rm(list=ls())
-# library(tabulizer)
-# library(tidyverse)
-# library(rvest)
-# library(httr)
-# library(xml2)
-# library(RSelenium)
-library(magrittr)
+library(tidyverse)
 
+# docker run -d -p 4445:4444 -p 5901:5900 \\
+# -v /tmp/sel_dl:/home/seluser/Downloads \\
+# selenium/standalone-firefox-debug:2.53.1
 
-get_WI_resident <- function(out_file = "~/Downloads/wi_res.pdf"){
-    tmp_dir <- "~/tmp/"
+get_WI_resident <- function(){
+    
+    out_file <- str_c(
+        "/srv/shiny-server/WI_covid_files/", Sys.Date(), "WI_covid.pdf")
+    
+    tmp_dir <- "/tmp/sel_dl"
 
     fprof <- RSelenium::makeFirefoxProfile(list(
         browser.startup.homepage = "about:blank",
@@ -51,7 +52,7 @@ get_WI_resident <- function(out_file = "~/Downloads/wi_res.pdf"){
     remDr$findElement(
         "css", "[data-tb-test-id='DownloadPdf-Button']")$clickElement()
     Sys.sleep(2)
-    remDr$findElement(
+    remDr$findElement( 
         "css", "[data-tb-test-id='PdfDialogCreatePdf-Button']")$clickElement()
     Sys.sleep(2)
 
@@ -59,22 +60,3 @@ get_WI_resident <- function(out_file = "~/Downloads/wi_res.pdf"){
 }
 
 get_WI_resident()
-
-library(tabulizer)
-library(tidyverse)
-# this was found by first running
-pdf_area <- list(c(104.64249, 43.36788, 431.90674, 566.58031))
-
-raw_ex_mat <- extract_tables(
-    "~/Downloads/wi_res.pdf", pages = 1, area = pdf_area)[[1]]
-
-col_names <- apply(raw_ex_mat[1:2,], 2, str_c, collapse=" ") %>%
-    str_trim() %>%
-    # Facility doesnt have a name
-    {ifelse(. == "", "Facility", .)} %>%
-    str_replace_all(" ", ".")
-
-colnames(raw_ex_mat) <- col_names
-
-wi_res_df <- raw_ex_mat[-(1:2),] %>%
-    as_tibble()

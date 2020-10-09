@@ -37,7 +37,7 @@ florida_url_restruct <- function(x){
         fl,
         tibble(
             Name = "State-Wide",
-            Deaths = state_death[,2]))
+            Residents.Deaths = state_death[,2]))
 }
 
 florida_url_extract <- function(x){
@@ -99,5 +99,6 @@ if(sys.nframe() == 0){
     florida_url$restruct_data
     florida_url$extract_from_raw()
     florida_url$extract_data
+    florida_url$validate_extract()
 }
 

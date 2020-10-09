@@ -1,0 +1,155 @@
+---
+title: "Analysis of Jail Population Changes Through July"
+author: "UCLA COVID-19 Behind Bars Team"
+date: "10/8/2020"
+output:
+  pdf_document
+---
+
+# Description
+
+Through the duration of the COVID-19 pandemic in the United States Jail populations have fluctuated in size as facilities attempted to mitigate spread of the virus. This report pulls from data posted by the Vera Institute, [2019 year end jail population data](https://www.vera.org/publications/people-in-jail-in-2019) and [COVID-19 time series population data](https://github.com/vera-institute/jail-population-data), to estimate the total jail population size from February to July 2020.
+
+```{r jail_data_sources, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(readxl)
+library(plotly)
+
+ggplotly <- print
+
+jail_ts_df <- "https://github.com/vera-institute/jail-population-data/blob/" %>%
+    str_c("master/jail_population.csv?raw=true") %>%
+    read_csv()
+
+tf <- tempfile(fileext = ".xlsx")
+
+"https://www.vera.org/downloads/publications/" %>%
+    str_c("people-in-jail-2019-tables.xlsx") %>%
+    download.file(tf, quiet = TRUE)
+
+jail_2019_df <- read_excel(tf)
+total_jail_pop <- sum(jail_2019_df$jail_population)
+```
+
+# Data Sources
+The Vera Institute has two sources of data on Jail populations. The first is an annual report on the total populations residing in jails on December 31st. The 2019 report found that 356,063 individuals were residing in jails in the United States. In addition the Vera Institute has attempted to capture time series data of jail facilities which report total population throughout the pandemic. While both reports have data at the facility level the time series data only has information on a select number of facilities. Below we compare the Vera Jail Population 2019 report to the Time Series population estimates for January 1st, 2020 for all facilities where data is available for both. Though in theory the population numbers are only from one day apart, the plot shows that there are some large discrepancies between two the Vera Institutes estimate sources.
+
+```{r jail_data_analysis, message=FALSE, warning=FALSE, echo=FALSE}
+
+compare_plot <- jail_ts_df %>%
+    group_by(county_name, date, fips, state_name) %>%
+    summarize(jail_population = sum(jail_population), .groups = "drop") %>%
+    mutate(Month = lubridate::month(date)) %>%
+    filter(lubridate::day(date) == 1) %>%
+    filter(Month <= 9 & Month >= 1) %>%
+    mutate(fips = sprintf("%05d", fips)) %>%
+    filter(Month == 1) %>%
+    left_join(
+        jail_2019_df %>%
+            group_by(fips) %>%
+            summarise(jail_pop_2019 = sum(jail_population), .groups = "drop"),
+        by = "fips") %>%
+    rename(
+        pop_dec31st_2019 = jail_pop_2019, pop_jan1st_2020 = jail_population) %>%
+    ggplot(aes(
+        x = pop_dec31st_2019, y = pop_jan1st_2020, 
+        text = str_c("Location: ", county_name, ", ", state_name))) +
+    geom_point() +
+    geom_abline() +
+    theme_bw() +
+    labs(
+        x = "Vera Jail Population December Report Data Dec 30th, 2019",
+        y = "Vera COVID-19 Jail Population Monitoring Jan 1st, 2020") +
+    ggtitle("Vera Jail Population Data Source Comparisons")
+
+ggplotly(compare_plot)
+```
+
+Some of this may be due to oddities on what is reported on Jan. 1st such as in Fulton County below.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+ga_ts <- jail_ts_df %>%
+    filter(county_name == "Fulton County" & state_name == "Georgia") %>%
+    ggplot(aes(x = date, y = jail_population)) +
+    geom_line() +
+    theme_classic() + 
+    labs(x = "Date", y = "Jail Population") +
+    ggtitle("Fulton County, GA Jail Population Vera TS data")
+
+ggplotly(ga_ts)
+
+```
+
+Others may just be due to the high churn within facilities which is likely the case in New York County.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+ny_ts <- jail_ts_df %>%
+    filter(county_name == "New York County" & state_name == "New York") %>%
+    ggplot(aes(x = date, y = jail_population)) +
+    geom_line() +
+    theme_classic() + 
+    labs(x = "Date", y = "Jail Population") +
+    ggtitle("New York County, NY Jail Population Vera TS data") +
+    ylim(c(0, NA))
+
+ggplotly(ny_ts)
+```
+
+# Methods
+
+To get an estimate of the total jail population on any given day in 2020 we obtain all facilities where time series data is available for a particular day, find those facilities population total on Dec 31st 2020, and divide the sum of the given days facilities population by the sum of those same facilities population on Dec 31st, 2020. We limit our analysis to the months of February through July as data significantly drops off in the time series outside of those month ranges.
+
+## Results
+
+Below is the time series plot of the estimated jail population as a percentage of total jail population on December 31st, 2019.
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+jail_res_df <- jail_ts_df %>%
+    group_by(county_name, date, fips, state_name) %>%
+    summarize(jail_population = sum(jail_population), .groups = "drop") %>%
+    mutate(Month = lubridate::month(date)) %>%
+    filter(Month <= 7 & Month >= 2) %>%
+    mutate(fips = sprintf("%05d", fips)) %>%
+    left_join(
+        jail_2019_df %>%
+            group_by(fips) %>%
+            summarise(jail_pop_2019 = sum(jail_population), .groups = "drop"),
+        by = "fips") %>%
+    mutate(
+        jail_population = ifelse(is.na(jail_pop_2019), NA, jail_population),
+        jail_pop_2019 = ifelse(is.na(jail_population), NA, jail_pop_2019)) %>%
+    group_by(date) %>%
+    summarize(
+        facilities = sum(!is.na(jail_population)),
+        jail_population = sum(jail_population, na.rm = TRUE),
+        jail_pop_2019 = sum(jail_pop_2019, na.rm = TRUE), .groups = "drop") %>%
+    mutate(jail_percent_2019 = jail_population / jail_pop_2019 * 100) %>%
+    mutate(est_jail_pop = jail_percent_2019 * total_jail_pop / 100)
+
+jail_pgraph <- jail_res_df %>%
+    ggplot(aes(x = date, y = jail_percent_2019)) +
+    geom_line() +
+    theme_bw() +
+    labs(x = "Date (2020)", y = "Percentage") +
+    ggtitle("Jail Population as a Percentage of Dec. 31st Jail Population") +
+    ylim(c(0, NA))
+
+ggplotly(jail_pgraph)
+```
+
+
+Next is an estimate of the total jail population from February 1st, through July 31st, 2020.
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+jail_dgraph <- jail_res_df %>%
+    ggplot(aes(x = date, y = est_jail_pop)) +
+    geom_line() +
+    theme_bw() +
+    labs(x = "Date", y = "Population") +
+    ggtitle("Estimated Jail Population Total 2020") +
+    scale_y_continuous(labels = scales::comma, limits = c(0, NA))
+
+ggplotly(jail_dgraph)
+```

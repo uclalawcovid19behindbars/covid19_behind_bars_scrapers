@@ -1,0 +1,124 @@
+---
+title: "Analysis of Jail Population Changes Through July"
+author: "UCLA COVID-19 Behind Bars Team"
+date: "10/8/2020"
+output:
+  pdf_document
+---
+
+# Description
+
+Through the duration of the COVID-19 epidemic prison population changes have been a topic of concern as a mechanism for containing viral outbreaks. In this report we gather data from the Vera Institute's 2019 Prison Population report to estimate changes in the total prison population. 
+
+```{r message=FALSE, warning=FALSE}
+knitr::opts_knit$set(echo=FALSE)
+```
+
+```{r prison_data_sources, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(readxl)
+library(plotly)
+library(lubridate)
+
+tf <- tempfile(fileext = ".xlsx")
+
+"https://www.vera.org/downloads/publications/" %>%
+    str_c("people-in-prison-data.xlsx") %>%
+    download.file(tf, quiet = TRUE)
+
+prison_2019_df <- read_excel(tf, skip = 8)
+
+```
+
+# Data Sources
+
+The Vera Institute's 2019 Prison Population report contains estimates for the prison population for all 50 states as well as Federal BOP for Dec 31st 2018 and Dec 31st 2019. For all 51 data points we plot below the comparison between these two dates prison population to highlight the minimal change over in the prison population over the course of one year.
+
+```{r past_change, message=FALSE, warning=FALSE, echo=FALSE}
+past_change <- prison_2019_df %>%
+    filter(!is.na(`State Name`)) %>%
+    ggplot(aes(
+        x = `December 31, 2018 prison`, y = `December 31, 2019 prison`,
+        text = `State Name`)) +
+    geom_point() +
+    theme_bw() +
+    geom_abline() +
+    scale_y_continuous(labels = scales::comma) +
+    scale_x_continuous(labels = scales::comma) +
+    ggtitle("Priosn Population Change: 2018-2019")
+
+#ggplotly(past_change)
+past_change
+```
+
+In addition, the report also has estimates for 45 states+BOP and 41 states+BOP for April 1st, 2020 and May 1st, 2020 respectively. Below we plot comparison between the prison population on December 31st, 2019 and May 1st, 2020 where the data is available. Note that during this time period no observed state nor BOP increased in its prison population.
+
+```{r current_change, message=FALSE, warning=FALSE, echo=FALSE}
+current_change <- prison_2019_df %>%
+    filter(!is.na(`State Name`)) %>%
+    ggplot(aes(
+        x = `December 31, 2019 prison`, y = `April 30/May 1 2020 prison`,
+        text = `State Name`)) +
+    geom_point() +
+    theme_bw() +
+    geom_abline() +
+    scale_y_continuous(labels = scales::comma) +
+    scale_x_continuous(labels = scales::comma) +
+    ggtitle("Priosn Population Change: 2020")
+
+#ggplotly(current_change)
+current_change
+```
+
+# Method
+
+To estimate a more recent total populations in prisons count, we calculate the ratio in prison population between December 31st, 2019 (denominator) and both April 1st and May 1st, 2020 (numerators) for facilities which have data for both comparison dates. This value gives us an estimate for the prison population as a percentage of the Dec 31st, 2019 prison population. The graph below shows the slight decline in the population.
+
+```{r percentage, message=FALSE, warning=FALSE, echo=FALSE}
+date_df <- prison_2019_df %>%
+    filter(!is.na(`State Name`)) %>%
+    select(
+        `State Name`,
+        `2020-01-01` = `December 31, 2019 prison`,
+        `2020-04-01` = `March 31 2020 prison`,
+        `2020-05-01` = `April 30/May 1 2020 prison`) 
+
+
+est_df <- date_df %>%
+    mutate(Base = `2020-01-01`) %>%
+    pivot_longer(
+        `2020-01-01`:`2020-05-01`, names_to = "Month", values_to = "Pop") %>%
+    mutate(Base = ifelse(is.na(Pop), NA, Base)) %>%
+    group_by(Month) %>%
+    summarize_if(is.numeric, sum, na.rm = TRUE) %>%
+    mutate(Month = ymd(Month)) %>%
+    mutate(Percent = Pop / Base * 100) %>%
+    mutate(Estimate = max(Base) * Percent / 100)
+
+pplot <- est_df %>%
+    ggplot(aes(x = Month, y = Percent)) +
+    geom_line() +
+    geom_point() +
+    theme_bw() +
+    scale_y_continuous(limits = c(0, 100)) +
+    ggtitle("Prison Population as a Percentage of Dec. 31st Prison Population")
+
+#ggplotly(pplot)
+pplot
+```
+
+We multiply this percentage times the December 31st, 2019 population count of 1,435,509 to get an estimate of the total population residing in prisons in the United States. Below is a graph showing the minor decline through May. 
+
+```{r est, message=FALSE, warning=FALSE, echo=FALSE}
+eplot <- est_df %>%
+    ggplot(aes(x = Month, y = Estimate)) +
+    geom_line() +
+    geom_point() +
+    theme_bw() +
+    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    ggtitle("Prison Population Estimates")
+
+#ggplotly(eplot)
+eplot
+
+```

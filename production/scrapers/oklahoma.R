@@ -103,7 +103,7 @@ oklahoma_extract <- function(x){
 
     ok <- clean_scraped_df(ok)
 
-    ok$Resident.Deaths <- ok$Resident.Deaths.Presumed + 
+    ok$Residents.Deaths <- ok$Resident.Deaths.Presumed + 
         ok$Resident.Deaths.Confirmed
     ok$Residents.Quarantine <- ok$Residents.Quarantine + 
         ok$Residents.Isolation
@@ -152,5 +152,6 @@ if(sys.nframe() == 0){
     oklahoma$restruct_data
     oklahoma$extract_from_raw()
     oklahoma$extract_data
+    oklahoma$validate_extract()
     oklahoma$save_extract()
 }

@@ -45,7 +45,7 @@ ohio_extract <- function(x){
             filter(Name != "Institution" & Name != "Totals")})) %>%
         clean_scraped_df()
     
-    Ohio$Resident.Deaths <- (Ohio$Resident.Deaths)+
+    Ohio$Residents.Deaths <- (Ohio$Resident.Deaths)+
         (Ohio$Resident.Probable.Deaths)
     Ohio$Residents.Confirmed  <- (Ohio$Residents.Confirmed)+
         (Ohio$Resident.Deaths)+(Ohio$Residents.Recovered)
@@ -91,5 +91,6 @@ if(sys.nframe() == 0){
     ohio$restruct_data
     ohio$extract_from_raw()
     ohio$extract_data
+    ohio$validate_extract()
     ohio$save_extract()
 }

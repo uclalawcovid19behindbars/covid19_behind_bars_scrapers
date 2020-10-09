@@ -25,7 +25,7 @@ maricopa_county_restruct <- function(x){
         "Recovered CasesIn Custody" = "Residents.Recovered",
         "Released Cases" = "Drop2", 
         "Hospitalizations" = "Drop3", 
-        "Deaths" = "Resident.Deaths"
+        "Deaths" = "Residents.Deaths"
     )
     
     check_names(df_, names(expect_names))

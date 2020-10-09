@@ -29,8 +29,16 @@ dc_extract <- function(x){
         mutate(Date = lubridate::as_datetime(DATE_REPORTED/1000)) %>%
         mutate(Date = lubridate::as_date(Date)) %>%
         filter(Date == max(Date)) %>%
-        rename(Staff.Confirmed = TOTAL_POSITIVE_PSDP) %>%
-        rename(Staff.Confirmed = TOTAL_POSITIVE_PSDP)
+        mutate(Staff.Confirmed = TOTAL_POSITIVE_PSDP) %>%
+        mutate(Staff.Recovered = RECOVRD_RETURND_TO_WORK_PSDP) %>%
+        mutate(Staff.Deaths = LIVE_LOST_PERSONNEL_PSDP) %>%
+        mutate(Residents.Confirmed = TOTAL_POSITIVE_PSDR) %>%
+        mutate(Residents.Recovered = RECOVRD_RES_PSDR) %>%
+        mutate(Residents.Quarantine = 
+                   TOTAL_POSITIVE_ISO_PSDR + RES_QUARANTINE_PSDR) %>%
+        mutate(Residents.Deaths = LIVE_LOST_RES_PSDR) %>%
+        select(starts_with("Residents"), starts_with("Staff")) %>%
+        mutate(Name = "State-Wide")
 }
 
 
@@ -80,5 +88,6 @@ if(sys.nframe() == 0){
     dc$restruct_data
     dc$extract_from_raw()
     dc$extract_data
+    dc$validate_extract()
 }
 

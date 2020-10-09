@@ -20,7 +20,7 @@ From: ubuntu:18.04
 
 %post
   # BUILD CODE 
-  # sudo singularity build singularity-r.simg R.Singularity.4.0.2
+  # sudo singularity build singularity-r.simg R.Singularity.4.0.2 &> build.log
   # RUN CODE EXAMPLE
   # 
   # Software versions
@@ -78,6 +78,7 @@ From: ubuntu:18.04
   apt-get update
   apt-get install -y --no-install-recommends libpoppler-cpp-dev
   apt-get install -y --no-install-recommends libtesseract-dev libleptonica-dev tesseract-ocr-eng
+  apt-get install -y default-jre default-jdk
 
   # selenium server
   # docker run -d -p 4445:4444 selenium/standalone-firefox:2.53.1
@@ -104,6 +105,8 @@ From: ubuntu:18.04
   R --slave -e 'install.packages("tryCatchLog")'
   R --slave -e 'install.packages("argparse")'
   R --slave -e 'install.packages("tesseract")'
+  R --slave -e 'install.packages("splashr")'
+  R --slave -e 'install.packages("tabulizer")'
 
   # Clean up
   rm -rf /var/lib/apt/lists/*
