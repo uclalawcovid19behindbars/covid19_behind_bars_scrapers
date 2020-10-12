@@ -38,17 +38,16 @@ wisconsin_extract <- function(x){
         clean_scraped_df()
     
     exp_names <- c(
-        "Name", "Positive.Tests", "Negative.Tests", "Total.Tests", 
-        "Recovered.Positive.Cases", "Released.Positive.Cases", 
-        "Active.PositiveCases"
-    )
+        "Name", "Positive.Tests", "Negative.Tests", "Total.Tests",
+        "Released.Positive.Cases", "Active.Positive.Cases",
+        "Inactive.PositiveCases")
     
     check_names(wis_df, exp_names)
     
     ext_df <- wis_df
     names(ext_df) <- c(
         "Name", "Residents.Confirmed", "Residents.Negative",
-        "Residents.Tested", "Residents.Recovered", "Drop.Release", "Drop.Active"
+        "Residents.Tested", "Drop.Release", "Drop.Active", "Residents.Recovered"
     )
     
     ext_df %>%
