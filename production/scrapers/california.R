@@ -1,0 +1,113 @@
+source("./R/generic_scraper.R")
+source("./R/utilities.R")
+
+california_pull <- function(x, wait = 10){
+    sp <- start_splash()
+    
+    # scrape from the power bi iframe directly
+    y <- "https://app.powerbigov.us/view?r=" %>% 
+        str_c(
+            "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI",
+            "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
+            "pageName=ReportSection90204f76f18a02b19c96")
+    
+    splashr::render_html(splash_obj = sp, wait = wait, url = y)
+    
+}
+
+california_restruct <- function(x){
+    tab <- x %>%
+        rvest::html_node(".tableEx") %>%
+        rvest::html_node(".innerContainer")
+    
+    col_dat <- tab %>%
+        rvest::html_node(".bodyCells") %>%
+        rvest::html_node("div") %>%
+        rvest::html_children()
+    
+    dat_df <- do.call(rbind, lapply(col_dat, function(p){
+        sapply(rvest::html_children(p), function(z){
+            z %>% 
+                rvest::html_nodes("div") %>%
+                rvest::html_attr("title")})})) %>%
+        as.data.frame()
+
+    names(dat_df) <- tab %>%
+        rvest::html_node(".columnHeaders") %>%
+        rvest::html_node("div") %>%
+        rvest::html_nodes("div") %>% 
+        rvest::html_attr("title") %>%
+        na.omit() %>%
+        as.vector()
+    
+    dat_df %>%
+        select(-Institution) %>%
+        rename(Name = "Institution Name") %>%
+        clean_scraped_df() %>%
+        as_tibble()
+}
+
+california_extract <- function(x){
+    ext <- c(
+        "Name", "Confirmed", "New In Last 14 Days", "Active In Custody",
+        "Released While Active", "Resolved", "Deaths"
+    )
+    
+    check_names(x, ext)
+    
+    ext_df <- x
+    names(ext_df) <- c(
+        "Name", "Residents.Confirmed", "Drop.New", "Drop.Active",
+        "Drop.Released", "Drop.Resolved", "Residents.Deaths")
+    
+    ext_df %>%
+        select(-contains("Drop"))
+}
+
+#' Scraper class for general California COVID data
+#' 
+#' @name california_scraper
+#' @description This will be a description of california data and what the scraper
+#' does
+#' \describe{
+#'   \item{Facility_Name}{The faciilty name.}
+#' }
+
+california_scraper <- R6Class(
+    "california_scraper",
+    inherit = generic_scraper,
+    public = list(
+        log = NULL,
+        initialize = function(
+            log,
+            url = "https://www.cdcr.ca.gov/covid19/population-status-tracking/",
+            id = "california",
+            type = "html",
+            state = "CA",
+            # pull the JSON data directly from the API
+            pull_func = california_pull,
+            # restructuring the data means pulling out the data portion of the json
+            restruct_func = california_restruct,
+            # Rename the columns to appropriate database names
+            extract_func = california_extract){
+            super$initialize(
+                url = url, id = id, pull_func = pull_func, type = type,
+                restruct_func = restruct_func, extract_func = extract_func,
+                log = log, state = state)
+        }
+    )
+)
+
+if(sys.nframe() == 0){
+    california <- california_scraper$new(log=TRUE)
+    california$raw_data
+    california$pull_raw()
+    california$raw_data
+    california$restruct_raw()
+    california$restruct_data
+    california$extract_from_raw()
+    california$extract_data
+    california$validate_extract()
+    california$save_extract()
+}
+
