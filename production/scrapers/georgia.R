@@ -1,10 +1,19 @@
 source("./R/generic_scraper.R")
 
+georgia_pull <- function(x){
+    stringr::str_c(
+        "https://services5.arcgis.com/mBtYHKRd2hqJxboF/arcgis/rest/services/",
+        "COVID19Statewide/FeatureServer/0/query?f=json&where=1%3D1&",
+        "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&",
+        "resultOffset=0&resultRecordCount=1000&resultType=standard",
+        "&cacheHint=true") %>%
+        jsonlite::read_json(simplifyVector = TRUE)
+}
+
 #' Scraper class for general Georgia COVID data
 #' 
 #' @name georgia_scraper
-#' @description This will be a description of Georgia data and what the scraper
-#' does
+#' @description Georgia data comes from an api which needs minimal cleaning.
 #' \describe{
 #'   \item{Facility_Name}{The faciilty name.}
 #'   \item{Latitude}{Lat.}
@@ -33,17 +42,12 @@ georgia_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = stringr::str_c(
-                "https://services5.arcgis.com/mBtYHKRd2hqJxboF/arcgis/rest/services/",
-                "COVID19Statewide/FeatureServer/0/query?f=json&where=1%3D1&",
-                "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&",
-                "resultOffset=0&resultRecordCount=1000&resultType=standard",
-                "&cacheHint=true"),
+            url = "http://www.dcor.state.ga.us/content/CVD_Dashboard",
             id = "georgia",
             type = "json",
             state = "GA",
             # pull the JSON data directly from the API
-            pull_func = function(...) jsonlite::read_json(..., simplifyVector = TRUE),
+            pull_func = georgia_pull,
             # restructuring the data means pulling out the data portion of the json
             restruct_func = function(x) as_tibble(x$features$attributes),
             # Rename the columns to appropriate database names

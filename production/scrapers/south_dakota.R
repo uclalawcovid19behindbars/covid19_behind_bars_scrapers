@@ -67,13 +67,22 @@ south_dakota_extract <- function(x){
     sd_df
 }
 
-#' Scraper class for general south_dakota COVID data
+#' Scraper class for general South Dakota COVID data
 #' 
 #' @name south_dakota_scraper
-#' @description This will be a description of south_dakota data and what the scraper
-#' does
+#' @description Data is pulled from a pdf on the page whose link is
+#' occasionally updated. Within the pdf there are two tables with data.
+#' One for staff and another for residents.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility}{The facility name.}
+#'   \item{Staff Positive}{}
+#'   \item{Staff Negative}{}
+#'   \item{Staff Recovered}{}
+#'   \item{Staff Death}{}
+#'   \item{Resident Positive}{}
+#'   \item{Resident Negative}{}
+#'   \item{Resient Recovered}{}
+#'   \item{Resident Death}{}
 #' }
 
 south_dakota_scraper <- R6Class(

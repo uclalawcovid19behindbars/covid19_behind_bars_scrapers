@@ -40,8 +40,8 @@ hawaii_extract <- function(x){
 #' Scraper class for general Hawaii COVID data
 #' 
 #' @name hawaii_scraper
-#' @description This will be a description of Hawaii data and what the scraper
-#' does
+#' @description Data comes from an image which is uploaded to extractable
+#' servers for analysis.
 #' \describe{
 #'   \item{Facilities}{The faciilty name}
 #'   \item{Tested}{Cumulative residents tested. No indication as to who 

@@ -45,10 +45,23 @@ dc_extract <- function(x){
 #' Scraper class for general dc COVID data
 #' 
 #' @name dc_scraper
-#' @description This will be a description of dc data and what the scraper
-#' does
+#' @description DC data pulled from an api call. Minimal cleaning needed.
 #' \describe{
-#'   \item{Facility_Name}{The facility name.}
+#'   \item{DATE_REPORTED}{Date}
+#'   \item{TOTAL_POSITIVE_PSDP}{Staff positive.}
+#'   \item{TOTAL_POSITIVE_OUT_PSDP}{Staff positive needs examining.}
+#'   \item{RECOVRD_RETURND_TO_WORK_PSDP}{Staff recovered}
+#'   \item{PERSON_QUARANTINE_PSDP}{Staff quarantined.}
+#'   \item{OUT_POSITIVE_QUARANTINE_PSDP}{Staff quarantined needs examining.}
+#'   \item{RETURND_TO_WORK_PSDP}{Staff at work after leaving.}
+#'   \item{LIVE_LOST_PERSONNEL_PSDP}{Staff deaths.}
+#'   \item{TOTAL_POSITIVE_PSDR}{Cumulative residents confirmed.}
+#'   \item{TOTAL_POSITIVE_ISO_PSDR}{Residents isolated}
+#'   \item{RECOVRD_RES_PSDR}{Residents recovered, cumulative.}
+#'   \item{RES_QUARANTINE_PSDR}{Residents quarantined}
+#'   \item{OUT_POSITIVE_QUARANTINE_PSDR}{Residents quarantined needs examining.}
+#'   \item{RETURND_TO_GP_PSDR}{Residents released.}
+#'   \item{LIVE_LOST_RES_PSDR}{Resident deaths.}
 #' }
 
 dc_scraper <- R6Class(

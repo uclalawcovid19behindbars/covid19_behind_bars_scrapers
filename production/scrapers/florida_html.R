@@ -53,8 +53,10 @@ florida_url_extract <- function(x){
 #' Scraper class for general Florida COVID data
 #' 
 #' @name florida_scraper
-#' @description This will be a description of Florida data and what the scraper
-#' does
+#' @description Florida has an html table for reporting results at the facilty
+#' level which has been consistent but they have recently stopped reporting
+#' facility level deaths. The death data is now reported weekly in a table
+#' further down on the web page.
 #' \describe{
 #'   \item{Facility}{The faciilty name.}
 #'   \item{Resident Security Quarantine}{}

@@ -58,6 +58,29 @@ ohio_extract <- function(x){
     Ohio
 }
 
+#' Scraper class for general Ohio COVID data
+#' 
+#' @name ohio_scraper
+#' @description Data come from a pdf which is updated periodically. The link
+#' to the pdf itself does not change only the data within the pdf. We should be
+#' periodically checking to see if alternative sources are available as the data
+#' collected are sometimes fickle.
+#' \describe{
+#'   \item{Institution}{}
+#'   \item{Housing Type (cell, open bay, combo)}{}
+#'   \item{# of Staff who have Reported Positive Tests}{}
+#'   \item{# of COVID- 19 Related Staff Deaths}{}
+#'   \item{# of Staff who have Recovered}{}
+#'   \item{Units in Quarantine}{}
+#'   \item{# of Inmates in Quarantine}{}
+#'   \item{# of Inmates in Isolation}{}
+#'   \item{# of inmates currently Positive for COVID-19}{}
+#'   \item{# of Probable COVID-19 Related Inmate Deaths}{}
+#'   \item{# of Confirmed COVID-19 Related Inmate Deaths}{}
+#'   \item{# of Inmates who have Pending Results}{}
+#'   \item{# of current Inmates who have Recovered}{}
+#' }
+
 ohio_scraper <- R6Class(
     "ohio_scraper",
     inherit = generic_scraper,

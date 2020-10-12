@@ -91,13 +91,25 @@ minnesota_extract <- function(x){
         select(!contains("Drop"))
 }
 
-#' Scraper class for general minnesota COVID data
+#' Scraper class for general Minnesota COVID data
 #' 
 #' @name minnesota_scraper
-#' @description This will be a description of minnesota data and what the scraper
-#' does
+#' @description MN data comes from an iframe that is loaded from smart sheets.
+#' The main data sources come from two primary tables, one for staff and
+#' another for residents.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Primary}{Facility Name}
+#'   \item{Resident Total Tests Administered}{}
+#'   \item{Resident Confirmed Negative}{}
+#'   \item{Resident Confirmed Positive}{}
+#'   \item{Resident Tests Pending}{}
+#'   \item{Resident Hospitalized}{}
+#'   \item{Resident Recovered}{}
+#'   \item{Resident Deceased}{}
+#'   \item{Staff Confirmed Positive Test}{}
+#'   \item{Staff Hospitalized}{}
+#'   \item{Staff Presumed Positive}{}
+#'   \item{Staff Returned to Work}{}
 #' }
 
 minnesota_scraper <- R6Class(

@@ -23,8 +23,8 @@ maricopa_county_restruct <- function(x){
         "Pending Results &in Med Obs/Med Iso" = "Residents.Pending", 
         "Active Cases In Custody" = "Drop1",
         "Recovered CasesIn Custody" = "Residents.Recovered",
-        "Released Cases" = "Drop2", 
-        "Hospitalizations" = "Drop3", 
+        "Released Cases" = "Drop2",
+        "Hospitalizations" = "Drop3",
         "Deaths" = "Residents.Deaths"
     )
     
@@ -45,10 +45,18 @@ maricopa_county_extract <- function(x){
 #' Scraper class for general Maricopa County COVID data
 #' 
 #' @name maricopa_county_scraper
-#' @description This will be a description of Maricopa County data and what the
-#' scraper does
+#' @description County jail data scraper pulls data from special elements of
+#' class dataNumber. 
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Total Number of Tests and Re-tests}{}
+#'   \item{Negative Results}{}
+#'   \item{Positive Results}{}
+#'   \item{Pending Results & in Med Obs/Med Iso}{}
+#'   \item{Active Cases In Custody}{}
+#'   \item{Recovered CasesIn Custody}{}
+#'   \item{Released Cases}{}
+#'   \item{Hospitalizations}{}
+#'   \item{Deaths}{}
 #' }
 
 maricopa_county_scraper <- R6Class(

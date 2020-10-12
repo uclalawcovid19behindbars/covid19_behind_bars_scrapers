@@ -57,10 +57,18 @@ wisconsin_extract <- function(x){
 #' Scraper class for general wisconsin COVID data
 #' 
 #' @name wisconsin_scraper
-#' @description This will be a description of wisconsin data and what the scraper
-#' does
+#' @description WI comes from a tableau table which is downloaded as a pdf.
+#' Currently the downloading of this pdf is done on a private server run by
+#' marquezn at law.ucla.edu because of RSelenium requirements. This should be
+#' changed when a dedicated server is built. 
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility_Name}{The facility name.}
+#'   \item{Positive tests}{Cumulative positive test count for residents.}
+#'   \item{Negative tests}{Cumulative negative test count for residents.}
+#'   \item{Total tests}{Cumulative tests administered for residents.}
+#'   \item{Released Positive Cases}{Cumulative residents released while positive.}
+#'   \item{Active Positive Cases}{Residents with active cases.}
+#'   \item{Inactive Positive Cases}{Residents recovered but the wording changed 10/9 from recovered to inactive.}
 #' }
 
 wisconsin_scraper <- R6Class(
