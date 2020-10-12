@@ -63,13 +63,14 @@ basic_check <- function(true_names, expected_names){
         warning("Length of expected names does not match actual names")
     }
     
-    for(i in length(expected_names)){
-        if(!is.na(expected_names[i]) & length(true_names) <= i){
-            if(clean_fac_col_txt(expected_names[i]) != 
-               clean_fac_col_txt(true_names[i])){
+    for(i in 1:length(expected_names)){
+        if(!is.na(expected_names[i]) & length(true_names) >= i){
+            cexp <- clean_fac_col_txt(expected_names[i])
+            ctrue <- clean_fac_col_txt(true_names[i])
+            if(cexp != ctrue){
                 warning(str_c(
                     "Extracted column ", i, " does not match expected name. ",
-                    "Expected: ", expected_names[i], " Received: ", true_names[i]))
+                    "Expected: ", cexp, " Received: ", ctrue))
             }
         }
     }
