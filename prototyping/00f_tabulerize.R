@@ -36,6 +36,8 @@ get_WI_resident <- function(){
     )
     del_ <- capture.output(remDr$open())
 
+    system("rm /tmp/sel_dl/*.pdf")
+    
     "https://public.tableau.com/views/WIDOCCOVID19/COVID-19Table" %>% 
         stringr::str_c(
             "?%3Aembed=y&%3AshowVizHome=no&%3Ahost_url=https%3A%2F%2F",

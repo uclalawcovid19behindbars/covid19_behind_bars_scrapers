@@ -39,13 +39,22 @@ arizona_extract <- function(x){
         select(-Resident.Deaths1, -Resident.Deaths2)
 }
 
-#' Scraper class for general arizona COVID data
+#' Scraper class for general Arizona COVID data
 #' 
 #' @name arizona_scraper
-#' @description This will be a description of arizona data and what the scraper
-#' does
+#' @description HTML table scraping of semi structured data. The information
+#' that we care about are located in the html tables located at position 2 for 
+#' residents and 3 for staff. Should be checked regularly for changing format.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Location}{The facility name.}
+#'   \item{Inmates Tested}{Likely cummulative number of inmates tested.}
+#'   \item{Inmates Negative}{Likely cummulative number of inmates negative.}
+#'   \item{Inmates Confirmed}{Likely cummulative number of inmates confirmed.}
+#'   \item{Inmates Pending}{Current number of inmates pending.}
+#'   \item{Inmates Recovered}{Likely cummulative number of inmates recovered.}
+#'   \item{Daily Total Population}{Resdient population.}
+#'   \item{Inmates Confirmed Deaths}{Resident death occured w/confirmed status.}
+#'   \item{Inmates Potential Deaths}{Resident death but no confirmed status.}
 #' }
 
 arizona_scraper <- R6Class(
@@ -55,7 +64,9 @@ arizona_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://corrections.az.gov/adcrr-covid-19-dashboard?order=title_field&sort=asc",
+            url = str_c(
+                "https://corrections.az.gov/adcrr-covid-19-dashboard?",
+                "order=title_field&sort=asc"),
             id = "arizona",
             type = "html",
             state = "AZ",

@@ -38,13 +38,17 @@ alaska_extract <- function(x){
         select(-Residents.Remand)
 }
 
-#' Scraper class for general alaska COVID data
+#' Scraper class for general Alaska COVID data
 #' 
 #' @name alaska_scraper
-#' @description This will be a description of alaska data and what the scraper
-#' does
+#' @description Minimal html webscraping. Since scraping began website has
+#' had minimal changes. Only publishes state-wide information.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Total Tests}{Cumulatiove tests administered.}
+#'   \item{Negative Tests}{Cumulative negative results.}
+#'   \item{Pending Results}{Currently pending.}
+#'   \item{Remand Positives}{Positives cases not sure how different from below.}
+#'   \item{General Population Psoitives}{Not sure on the distinction here.}
 #' }
 
 alaska_scraper <- R6Class(

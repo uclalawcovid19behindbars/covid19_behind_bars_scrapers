@@ -80,10 +80,19 @@ cook_county_extract <- function(x){
 #' Scraper class for general Cook County COVID data
 #' 
 #' @name cook_county_scraper
-#' @description This will be a description of Cook County data and what the
-#' scraper does
+#' @description Cook County Jail data is extremely sensitive to changes in the
+#' formatting as data is extracted from raw text. Format should be checked
+#' frequently. Data only reported for Cook County jail. Note that there is no
+#' release numbers so total confirmed may be an under-count because of the way
+#' it is calculates. Active + Recovered + Deaths.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Staff Active}{Staff currently infected by virus.}
+#'   \item{Staff Recovered}{Likely cumulative staff recovered.}
+#'   \item{Staff Deaths}{Cumulative staff deaths.}
+#'   \item{Residents Active}{Residents currently infected by virus.}
+#'   \item{Residents Recovered}{Likely cumulative residents recovered.}
+#'   \item{Residents Deaths}{Cumulative resident deaths.}
+#'   \item{Residents Negative}{Likely cumulative negative cases.}
 #' }
 
 cook_county_scraper <- R6Class(

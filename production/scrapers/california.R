@@ -58,7 +58,7 @@ california_extract <- function(x){
     ext_df <- x
     names(ext_df) <- c(
         "Name", "Residents.Confirmed", "Drop.New", "Drop.Active",
-        "Drop.Released", "Drop.Resolved", "Residents.Deaths")
+        "Drop.Released", "Residents.Recovered", "Residents.Deaths")
     
     ext_df %>%
         select(-contains("Drop"))
@@ -67,10 +67,17 @@ california_extract <- function(x){
 #' Scraper class for general California COVID data
 #' 
 #' @name california_scraper
-#' @description This will be a description of california data and what the scraper
-#' does
+#' @description California data scraped from rendered power BI iframe. Testing
+#' data is also available at the facility level but will need to be scraped
+#' separately. Note that time series data for the state exists for comparison.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Institution Name}{The facility name.}
+#'   \item{Confirmed}{The number of confimed cases among residents.}
+#'   \item{New In Last 14 Days}{The number of new cases among residents.}
+#'   \item{Active in Custody}{The number of active cases.}
+#'   \item{Released While Active}{Residents released after testing positive.}
+#'   \item{Resolved}{Recovered cases.}
+#'   \item{Deaths}{Resident Deaths.}
 #' }
 
 california_scraper <- R6Class(

@@ -32,13 +32,27 @@ alabama_extract <- function(x){
         )
 }
 
-#' Scraper class for general alabama COVID data
+#' Scraper class for general Alabama COVID data
 #' 
 #' @name alabama_scraper
-#' @description This will be a description of alabama data and what the scraper
-#' does
+#' @description Alabama scraper comes directly from an api. Minimal cleaning
+#' required.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility}{The facility name.}
+#'   \item{Type}{The type of facility i.e. private, work-release, major, etc}
+#'   \item{Street}{Address}
+#'   \item{City}{City}
+#'   \item{State}{State}
+#'   \item{Zip}{Zip}
+#'   \item{ShortName}{Facility alternative name}
+#'   \item{Inmate_Tested}{Inmate_Tested}
+#'   \item{Inmate_Positive}{Cummulative Inmates Tested}
+#'   \item{Inmate_Pending}{Inmate_Pending}
+#'   \item{Inmate_Recovered}{Cummulative Inmates Recovered}
+#'   \item{Inmate_Death}{Cumulative Deaths}
+#'   \item{Employee_Positive}{Employees Positive}
+#'   \item{Employee_Recovered}{Employees Recovered}
+#'   \item{Employee_Death}{Employees Death}
 #' }
 
 alabama_scraper <- R6Class(
