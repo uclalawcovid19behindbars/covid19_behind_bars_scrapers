@@ -3,7 +3,6 @@ source("./R/utilities.R")
 
 replace_pull <- function(x){
     NULL
-    
 }
 
 replace_restruct <- function(x){
@@ -11,7 +10,7 @@ replace_restruct <- function(x){
 }
 
 replace_extract <- function(x){
-        NULL
+    NULL
 }
 
 #' Scraper class for general replace COVID data
@@ -31,7 +30,7 @@ replace_scraper <- R6Class(
         initialize = function(
             log,
             url = "http://url/goes/here",
-            id = "rplace",
+            id = "replace",
             type = "pdf",
             state = "",
             # pull the JSON data directly from the API

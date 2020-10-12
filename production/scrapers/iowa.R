@@ -22,7 +22,7 @@ iowa_extract <- function(x){
     names(Iowa) <- c(
         "Name", "Residents.Tested", "Residents.Confirmed",
         "Residents.Recovered", "Staff.Confirmed", "Staff.Recovered",
-        "Resident.Deaths")
+        "Residents.Deaths")
 
     Iowa <- subset(Iowa, Name!= "Prison")
     Iowa <- subset(Iowa,Name!="Total")
@@ -81,5 +81,6 @@ if(sys.nframe() == 0){
     iowa$restruct_raw()
     iowa$restruct_data
     iowa$extract_from_raw()
+    iowa$validate_extract()
     iowa$extract_data
 }
