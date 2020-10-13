@@ -76,5 +76,7 @@ if(sys.nframe() == 0){
     georgia$restruct_data
     georgia$extract_from_raw()
     georgia$extract_data
+    georgia$validate_extract()
+    georgia$save_extract()
 }
 

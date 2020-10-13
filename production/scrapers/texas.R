@@ -15,7 +15,6 @@ texas_pull <- function(x){
         "orderByFields=Unit%20asc&outSR=102100&resultOffset=0&",
         "resultRecordCount=110") %>%
         jsonlite::read_json(simplifyVector = TRUE)
-        
 }
 
 texas_restruct <- function(x){
@@ -34,19 +33,17 @@ texas_extract <- function(x){
             Residents.Confirmed = Offender_Total_Positive_Cases,
             Residents.Quarantine,
             Residents.Recovered = Offender_Recovered,
-            Residents.Deaths,
-            Staff.Tested = Employee_Total_Tests,
             Staff.Confirmed = Employee_Total_Positive_Cases,
-            Staff.Recovered = Employee_Recovered,
-            Staff.Deaths = Employee_Deceased__COVID
+            Staff.Recovered = Employee_Recovered
         )
 }
 
 #' Scraper class for general Texas COVID data
 #' 
 #' @name texas_scraper
-#' @description This will be a description of Texas data and what the scraper
-#' does
+#' @description Data pulled from Texas API with minimal cleaning required.
+#' Description of variables can be found here
+#' https://www.tdcj.texas.gov/covid-19/definitions.html
 #' \describe{
 #'   \item{Unit}{}
 #'   \item{Unique_ID}{}
