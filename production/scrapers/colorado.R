@@ -126,7 +126,7 @@ colorado_scraper <- R6Class(
             url = "https://www.colorado.gov/pacific/cdoc/covid-19-faq-and-updates",
             id = "colorado",
             type = "pdf",
-            state = "",
+            state = "CO",
             # pull the JSON data directly from the API
             pull_func = colorado_pull,
             # restructuring the data means pulling out the data portion of the json
