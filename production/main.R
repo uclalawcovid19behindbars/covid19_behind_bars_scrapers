@@ -1,4 +1,4 @@
-# singularity run --app Rscript init/singularity-r.simg ./main.R
+# singularity run --app Rscript init/singularity-r.simg production/main.R
 rm(list=ls())
 library(tidyverse)
 library(R6)
