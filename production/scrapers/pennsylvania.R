@@ -35,7 +35,6 @@ pennsylvania_extract <- function(x){
     # they report zeros as blanks in their table
     pa[is.na(pa)] <- 0
     
-    
     ## Adding Releases Together | Two release columns release and release (plus)
     # <- possibly released while positive/possible double counting
     pa$Residents.Released <- pa$Residents.Released1 + pa$Residents.Released2
