@@ -236,8 +236,8 @@ Caps <- function(x) {
 
 numeric_from_css <- function(web, css_selector) {
     out <- web %>%
-        html_nodes(., css_selector) %>%
-        html_text() %>%
+        rvest::html_nodes(., css_selector) %>%
+        rvest::html_text() %>%
         string_to_clean_numeric()
     return(out)
 }
@@ -246,25 +246,26 @@ clean_string <- function(string) {
     
     clean_string <- string %>% 
         gsub("[^[:alnum:][:blank:]?&/\\-]", "", .) %>%
-        str_trim(., side=c("both"))
+        stringr::str_trim(., side=c("both"))
     Encoding(clean_string) <- "latin1" 
     clean_string <- iconv(clean_string, from = "latin1", "ASCII", sub=" ")
     
     # remove any double spaces
-    clean_string <- str_replace_all(clean_string, pattern = " +", replacement = " ")
+    clean_string <- stringr::str_replace_all(
+        clean_string, pattern = " +", replacement = " ")
     
     # often, scraping misses "l"s, add them back
     clean_string <- clean_string %>%
-        str_replace(pattern = "Correctiona[^l]", replacement = "Correctional ") %>% 
-        str_replace(pattern = "Centra[^l]", replacement = "Central ") %>% 
+        stringr::str_replace(pattern = "Correctiona[^l]", replacement = "Correctional ") %>% 
+        stringr::str_replace(pattern = "Centra[^l]", replacement = "Central ") %>% 
         trimws()
     
     return(clean_string)
 }
 
 string_from_css <- function(web, css) {
-    text <- html_nodes(web, css) %>% 
-        html_text() %>% 
+    text <- rvest::html_nodes(web, css) %>% 
+        rvest::html_text() %>% 
         clean_string()
     
     return(text)
