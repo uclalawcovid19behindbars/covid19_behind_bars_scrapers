@@ -2,25 +2,81 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 pennsylvania_pull <- function(x){
-    NULL
-    
+    tf_ <- tempfile()
+    download.file(x, destfile=tf_)
+    readxl::read_excel(tf_)
 }
 
 pennsylvania_restruct <- function(x){
-    NULL
+    pa <- x
+    pa <- pa[-c(1,nrow(pa)),c(1:11,14,15)]
+    pa %>%
+        rename(
+            Name = LOCATION,
+            Staff.Confirmed = "Staff Testing",
+            Staff.Negative = ...3, 
+            Staff.Pending = ...4,
+            Staff.Deaths = ...5,
+            Staff.Recovered = ...6,
+            Residents.Confirmed = "Inmate Testing",
+            Residents.Negative = ...8,
+            Residents.Pending = ...9,
+            Residents.Deaths = ...10,
+            Residents.Recovered = ...11,
+            Residents.Released1 = ...14,
+            Residents.Released2 = ...15)
 }
 
 pennsylvania_extract <- function(x){
-        NULL
+    pa <- x
+    pa <- clean_scraped_df(pa)
+    stopifnot(!any(is.na(pa$Name)))
+    
+    # they report zeros as blanks in their table
+    pa[is.na(pa)] <- 0
+    
+    
+    ## Adding Releases Together | Two release columns release and release (plus)
+    # <- possibly released while positive/possible double counting
+    pa$Residents.Released <- pa$Residents.Released1 + pa$Residents.Released2
+    ## Adding confirmed, negative and pending to get testing numbers
+    pa$Residents.Tested   <- pa$Residents.Confirmed+pa$Residents.Negative+pa$Residents.Pending
+    ## Same as residents tested
+    pa$Staff.Tested       <- pa$Staff.Confirmed+pa$Staff.Negative+pa$Staff.Pending
+    
+    pa <- subset(pa,select=-c(
+        Residents.Released1,Residents.Released2,Residents.Released))
+    
+    pa
 }
 
-#' Scraper class for general pennsylvania COVID data
+#' Scraper class for general Pennsylvania COVID data
 #' 
 #' @name pennsylvania_scraper
-#' @description This will be a description of pennsylvania data and what the scraper
-#' does
+#' @description This will be a description of Pennsylvania data and what the
+#' scraper does
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{LOCATION}{The facility name.}
+#'   \item{Staff Positive}{}
+#'   \item{Staff Negative}{}
+#'   \item{Staff Pending}{}
+#'   \item{Staff Death}{}
+#'   \item{Staff Recovered}{}
+#'   \item{Residents Positive}{}
+#'   \item{Residents Negative}{}
+#'   \item{Residents Pending}{}
+#'   \item{Residents Death}{}
+#'   \item{Residents Recovered}{}
+#'   \item{Resident Transfers}{}
+#'   \item{Resident Transfers while Positive}{}
+#'   \item{Resident Release}{}
+#'   \item{Resident Release while Positive}{}
+#'   \item{Resident Hospital}{}
+#'   \item{Resident Hospital while Positive}{}
+#'   \item{Resident Surveilance}{}
+#'   \item{Resident Surveilance while Positive}{}
+#'   \item{Resident Symptomatic}{}
+#'   \item{Resident Symptomatic while Positive}{}
 #' }
 
 pennsylvania_scraper <- R6Class(
@@ -30,9 +86,9 @@ pennsylvania_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "http://url/goes/here",
+            url = "https://www.cor.pa.gov/Documents/PA-DOC-COVID-19-Testing.xlsx",
             id = "pennsylvania",
-            type = "pdf",
+            type = "csv",
             state = "PA",
             # pull the JSON data directly from the API
             pull_func = pennsylvania_pull,

@@ -35,7 +35,7 @@ generic_scraper <- R6Class(
             url, id, pull_func, type, restruct_func, extract_func, log, state){
 
             valid_types <- c(
-                html = ".html", img = ".png", json = ".json", pdf = ".pdf"
+                html = ".html", img = ".png", json = ".json", pdf = ".pdf", csv = ".csv"
             )
 
             stopifnot(is.character(url), length(url) == 1)
@@ -96,7 +96,7 @@ generic_scraper <- R6Class(
             
             valid_types <- list(
                 html = xml2::write_html, img = magick::image_write, 
-                json = jsonlite::write_json, pdf = pdf_save
+                json = jsonlite::write_json, pdf = pdf_save, csv = write_csv
             )
             
             if(self$log){
