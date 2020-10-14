@@ -168,8 +168,15 @@ generic_scraper <- R6Class(
                     self$extract_data <- self$extract_data %>%
                         select(-!!i)
                 }
+                
                 else{
-                    if(any(self$extract_data < 0, na.rm = TRUE)){
+                    if(i != "Name" & !is.numeric(self$extract_data[[i]])){
+                        warning(str_c(i, " is not numeric must convert."))
+                        self$extract_data[[i]] <- as.numeric(
+                            self$extract_data[[i]])
+                    }
+                    
+                    if(any(self$extract_data[,i] < 0, na.rm = TRUE)){
                         warning(str_c(i, " has negative values. Being removed."))
                         self$extract_data[,i] <- ifelse(
                             self$extract_data[,i] < 0, NA, self$extract_data[,i])
