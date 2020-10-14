@@ -83,9 +83,20 @@ generic_scraper <- R6Class(
         },
 
         save_raw = function(dest=self$raw_dest){
+            
+            pdf_save <- function(x, y){
+                if(file.exists(x)){
+                    file.copy(x, y)
+                }
+                else{
+                    utils::download.file(x, y)
+                }
+            }
+            
+            
             valid_types <- list(
                 html = xml2::write_html, img = magick::image_write, 
-                json = jsonlite::write_json, pdf = utils::download.file
+                json = jsonlite::write_json, pdf = pdf_save
             )
             
             if(self$log){
