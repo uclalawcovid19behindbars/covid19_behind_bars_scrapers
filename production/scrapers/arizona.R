@@ -22,7 +22,7 @@ arizona_restruct <- function(x){
                            "Inmates Confirmed Deaths" = "Resident.Deaths1",
                            "Inmates Potential Deaths" = "Resident.Deaths2"
             )),
-        
+
         x %>%
             rvest::html_nodes('table') %>%
             .[[3]] %>%
@@ -36,7 +36,7 @@ arizona_restruct <- function(x){
 arizona_extract <- function(x){
     x %>%
         mutate(Residents.Deaths = Resident.Deaths1 + Resident.Deaths2) %>%
-        select(-Resident.Deaths1, -Resident.Deaths2)
+        select(-Resident.Deaths1, -Resident.Deaths2, -Resident.Population)
 }
 
 #' Scraper class for general Arizona COVID data
@@ -85,7 +85,7 @@ arizona_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    arizona <- arizona_scraper$new(log=FALSE)
+    arizona <- arizona_scraper$new(log=TRUE)
     arizona$raw_data
     arizona$pull_raw()
     arizona$raw_data

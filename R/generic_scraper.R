@@ -197,6 +197,7 @@ generic_scraper <- R6Class(
                     gr_vec <- self$extract_data[[gr]]
                     ls_vec <- self$extract_data[[ls]]
                     comp_vec <- gr_vec < ls_vec
+                    comp_vec[is.na(comp_vec)] <- FALSE
                     if(any(comp_vec)){
                         bad_names <- self$extract_data$Name[comp_vec]
                         warning(str_c(

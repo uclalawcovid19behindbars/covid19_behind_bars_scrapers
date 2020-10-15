@@ -112,7 +112,11 @@ oklahoma_extract <- function(x){
         ok, -Resident.Deaths.Presumed, -Resident.Deaths.Confirmed,
         -Residents.Isolation)
 
-    as_tibble(ok)
+    as_tibble(ok) %>%
+        mutate(Residents.Confirmed = Residents.Confirmed +
+                   Residents.Recovered + Residents.Deaths) %>%
+        mutate(Staff.Confirmed = Staff.Confirmed + Staff.Recovered +
+                   Staff.Deaths)
 }
 
 #' Scraper class for general Oklahoma COVID data
@@ -122,7 +126,7 @@ oklahoma_extract <- function(x){
 #' weird to scrape from and the code should be more fail safe.
 #' \describe{
 #'   \item{Institution}{}
-#'   \item{Number of Positive Inmates}{}
+#'   \item{Number of Positive Inmates}{NOT Cumulative!}
 #'   \item{Number of Hospitalized Inmates}{}
 #'   \item{Number of Recovered Inmates 3}{}
 #'   \item{Number of Inmate Deaths Possibly Related to COVID-19 4}{}
@@ -130,7 +134,7 @@ oklahoma_extract <- function(x){
 #'   \item{Number of Inmates in Quarantine}{}
 #'   \item{Housing Type (cell, open bay, combo)}{}
 #'   \item{Number of Inmates in Isolation}{}
-#'   \item{Number of Staff Currently Reporting Positive Tests 5}{}
+#'   \item{Number of Staff Currently Reporting Positive Tests 5}{NOT Cumulative!}
 #'   \item{Number of Recovered Staff 5}{}
 #'   \item{Number of Staff Deaths Possibly Related to COVID-19}{}
 #' }
@@ -163,7 +167,7 @@ oklahoma_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    oklahoma <- oklahoma_scraper$new(log=FALSE)
+    oklahoma <- oklahoma_scraper$new(log=TRUE)
     oklahoma$raw_data
     oklahoma$pull_raw()
     oklahoma$raw_data

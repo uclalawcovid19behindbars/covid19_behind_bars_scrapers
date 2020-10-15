@@ -25,7 +25,6 @@ north_dakota_restruct <- function(x){
         rvest::html_text()
 
     dat_list <- lapply(1:length(svg_charts), function(i){
-        print(i)
     
         sub_svg <- svg_charts[[i]]
     
@@ -110,7 +109,7 @@ north_dakota_scraper <- R6Class(
             log,
             url = "https://www.docr.nd.gov/covid-19-information",
             id = "north_dakota",
-            type = "pdf",
+            type = "html",
             state = "ND",
             # pull the JSON data directly from the API
             pull_func = north_dakota_pull,

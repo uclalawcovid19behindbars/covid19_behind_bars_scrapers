@@ -29,7 +29,7 @@ ohio_extract <- function(x){
         "# of Inmates in Isolation", "7", "Residents.Isolation",
         "# of inmates currently Positive for COVID-19", "8", "Residents.Confirmed",
         "# of Probable COVID-19 Related Inmate Deaths", "9", "Resident.Probable.Deaths",
-        "# of Confirmed COVID-19 Related Inmate Deaths", "10", "Resident.Deaths",
+        "# of Confirmed COVID-19 Related Inmate Deaths", "10", "Residents.Deaths",
         "# of Inmates who have Pending Results",  "11", "Residents.Pending",
         "# of current Inmates who have Recovered", "12", "Residents.Recovered"
     ), ncol = 3, nrow = 13, byrow = TRUE)
