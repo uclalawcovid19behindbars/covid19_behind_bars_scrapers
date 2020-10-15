@@ -151,7 +151,7 @@ generic_scraper <- R6Class(
         },
         
         
-        validate_extract = function(){
+        validate_process = function(){
             valid_columns <- c(
                 "Name", "Staff.Confirmed", "Residents.Confirmed",
                 "Staff.Deaths", "Residents.Deaths",
@@ -186,95 +186,49 @@ generic_scraper <- R6Class(
             
             ext_names <- names(self$extract_data)
             
-            ### sanity checks no changes made only warnings thrown
-            if(all(c("Staff.Confirmed", "Staff.Recovered") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Staff.Confirmed` <
-                    self$extract_data$`Staff.Recovered`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Staff confirmed less than recovered ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Residents.Confirmed", "Residents.Recovered") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Residents.Confirmed` <
-                    self$extract_data$`Residents.Recovered`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Residents confirmed less than recovered ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Staff.Confirmed", "Staff.Deaths") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Staff.Confirmed` <
-                    self$extract_data$`Staff.Deaths`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Staff confirmed less than deaths ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Residents.Confirmed", "Residents.Deaths") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Residents.Confirmed` <
-                    self$extract_data$`Residents.Deaths`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Residents confirmed less than deaths ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Staff.Confirmed", "Staff.Tested") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Staff.Confirmed` >
-                    self$extract_data$`Staff.Tested`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Staff confirmed more than tested ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Residents.Confirmed", "Residents.Tested") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Residents.Confirmed` >
-                    self$extract_data$`Residents.Tested`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Residents confirmed more than tested ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Staff.Negative", "Staff.Tested") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Staff.Negative` >
-                    self$extract_data$`Staff.Tested`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Staff negative more than tested ",
-                        "for some facilities"))
-                }
-            }
-            
-            if(all(c("Residents.Negative", "Residents.Tested") %in% ext_names)){
-                if(any(
-                    self$extract_data$`Residents.Negative` >
-                    self$extract_data$`Residents.Tested`, na.rm = TRUE)){
-                    warning(str_c(
-                        "Residents negative more than tested ",
-                        "for some facilities"))
-                }
-            }
-            
             if(!("Name" %in% ext_names)){
-                warning(str_c(
+                stop(str_c(
                     "No 'Name' column present. Did you forget to add ",
                     "the indicator 'State-Wide'?"))
             }
             
-            
+            less_check <- function(gr, ls){
+                if(all(c(gr, ls) %in% ext_names)){
+                    gr_vec <- self$extract_data[[gr]]
+                    ls_vec <- self$extract_data[[ls]]
+                    comp_vec <- gr_vec < ls_vec
+                    if(any(comp_vec)){
+                        bad_names <- self$extract_data$Name[comp_vec]
+                        warning(str_c(
+                            "The following facilities had ", gr,
+                            " values that were less than ", ls, " values: ",
+                            str_c(bad_names, collapse = ", ")
+                        ))
+                    }
+                }
+            }
+
+            ### sanity checks no changes made only warnings thrown
+            less_check("Staff.Confirmed", "Staff.Recovered")
+            less_check("Residents.Confirmed", "Residents.Recovered")
+            less_check("Staff.Confirmed", "Staff.Deaths")
+            less_check("Residents.Confirmed", "Residents.Deaths")
+            less_check("Staff.Tested", "Staff.Confirmed")
+            less_check("Residents.Tested", "Residents.Confirmed")
+            less_check("Staff.Tested", "Staff.Negative")
+            less_check("Residents.Tested", "Residents.Negative")
         },
+        
+        validate_extract = function(){
+            if(self$log){
+                tryLog(self$validate_process())
+            }
+            else{
+                self$validate_process()
+            }
+            invisible(self)
+        }
+        ,
         
         run_all = function(){
             self$pull_raw()

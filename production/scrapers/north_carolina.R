@@ -23,7 +23,8 @@ north_carolina_extract <- function(x){
             Residents.Recovered = PresumedRecovered,
             Residents.Quarantine = ActiveCases
             ) %>%
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        filter(Name != "Statewide Totals")
 }
 
 #' Scraper class for general North Carolina COVID data
@@ -36,7 +37,7 @@ north_carolina_extract <- function(x){
 #'   \item{Facility}{The facility name}
 #'   \item{CumulativeOffenderTests}{All tests}
 #'   \item{OffendersTested}{Number of individuals tested}
-#'   \item{Positive}{Individuals positive, probably not cumulative}
+#'   \item{Positive}{Individuals positive, probably not cumulative as confirmed is sometimes less than recovered}
 #'   \item{Negative}{Individuals Negative}
 #'   \item{PresumedRecovered}{presumed recovered following NCDHHS guidance}
 #'   \item{ActiveCases}{Active residents with infection who are also quarantined}

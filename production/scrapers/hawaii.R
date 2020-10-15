@@ -14,7 +14,7 @@ hawaii_extract <- function(x){
         "Number of Persons in Quarantine", "7", "Residents.Quarantine",
         "Hospitalization", "8", "Residents.Hospitalized",
         "Recovered", "9", "Residents.Recovered",
-        "Deaths", "10", "Resident.Deaths"
+        "Deaths", "10", "Residents.Deaths"
     ), ncol = 3, nrow = 11, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
