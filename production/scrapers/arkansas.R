@@ -108,8 +108,9 @@ arkansas_extract <- function(x){
 #' Scraper class for general Arkansas COVID data
 #' 
 #' @name arkansas_scraper
-#' @description This will be a description of Arkansas data and what the scraper
-#' does
+#' @description AR data is downloaded from a new weekly image which undergoes
+#' OCR. Can be temperamental. Check logs frequently as AR has changed the
+#' data reported twice in the past.
 #' \describe{
 #'   \item{Residents Tested}{Residents Tested.}
 #'   \item{Residents Recovered}{Residents Recovered.}

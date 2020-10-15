@@ -107,13 +107,21 @@ colorado_extract <- function(x){
         clean_scraped_df()
 }
 
-#' Scraper class for general colorado COVID data
+#' Scraper class for general Colorado COVID data
 #' 
 #' @name colorado_scraper
-#' @description This will be a description of colorado data and what the scraper
-#' does
+#' @description Colorado data is pulled from a tableau app which is known
+#' to be temperamental. Sometimes code will need to be run several times in
+#' order to work as the page has variable load times and selenium can not
+#' tell when the DOM is ready. Data is downloaded through selenium in a pdf form
+#' from which OCR is run.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility_Name}{The facility name.}
+#'   \item{Tests}{Total tests administered.}
+#'   \item{Positives}{Residents with psoitive tests, not neccesarily by DOC.}
+#'   \item{Recovered}{Inidviduals who have recovered after positive test.}
+#'   \item{Deaths}{Symptoms or positive test, not coroners office.}
+#'   \item{Offenders Tested}{Number of residents tested.}
 #' }
 
 colorado_scraper <- R6Class(

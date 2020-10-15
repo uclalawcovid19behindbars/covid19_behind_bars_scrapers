@@ -52,8 +52,9 @@ pennsylvania_extract <- function(x){
 #' Scraper class for general Pennsylvania COVID data
 #' 
 #' @name pennsylvania_scraper
-#' @description This will be a description of Pennsylvania data and what the
-#' scraper does
+#' @description PN data come from an xlsx sheet which is frequently updated.
+#' Note that this data is also available on the PN DOC website through a
+#' Microsoft BI app.
 #' \describe{
 #'   \item{LOCATION}{The facility name.}
 #'   \item{Staff Positive}{}

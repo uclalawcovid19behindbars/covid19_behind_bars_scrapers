@@ -83,8 +83,10 @@ north_dakota_extract <- function(x){
 #' Scraper class for general north_dakota COVID data
 #' 
 #' @name north_dakota_scraper
-#' @description This will be a description of north_dakota data and what the scraper
-#' does
+#' @description Data come from hicharts js loaded data. Scraper could be
+#' improved by pulling data directly from tables, however, loading these
+#' tables requires mouse clicks which are difficult to locate the location of.
+#' Data is updated frequently.
 #' \describe{
 #'   \item{Facility}{The facility name.}
 #'   \item{Residents.Positive}{Active positive cases not cumulative}

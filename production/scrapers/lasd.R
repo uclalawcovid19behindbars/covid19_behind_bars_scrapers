@@ -14,7 +14,7 @@ lasd_staff_pull <- function(x, wait = 5){
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
-    Sys.sleep(3)
+    Sys.sleep(6)
     
     remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
@@ -64,11 +64,12 @@ lasd_staff_extract <- function(x){
         mutate(Name = "LA Jail")
 }
 
-#' Scraper class for general lasd_staff COVID data
+#' Scraper class for general LASD staff COVID data
 #' 
 #' @name lasd_staff_scraper
-#' @description This will be a description of lasd_staff data and what the scraper
-#' does
+#' @description Info comes from a Microsoft power bi app that can be
+#' temperamental as load times vary and Selenium can not tell when the DOM is
+#' ready. May need to run a couple of times to get data.
 #' \describe{
 #'   \item{Personnel Currently Quarantined}{}
 #'   \item{Personnel Currently High Risk}{}
