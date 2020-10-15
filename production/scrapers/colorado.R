@@ -32,7 +32,7 @@ colorado_pull <- function(x){
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_src)
-    Sys.sleep(1)
+    Sys.sleep(6)
     
     out_file <- "/tmp/sel_dl/Story 1.pdf"
     

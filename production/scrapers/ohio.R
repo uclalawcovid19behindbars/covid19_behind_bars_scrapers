@@ -45,10 +45,10 @@ ohio_extract <- function(x){
             filter(Name != "Institution" & Name != "Totals")})) %>%
         clean_scraped_df()
     
-    Ohio$Residents.Deaths <- (Ohio$Resident.Deaths)+
+    Ohio$Residents.Deaths <- (Ohio$Residents.Deaths)+
         (Ohio$Resident.Probable.Deaths)
     Ohio$Residents.Confirmed  <- (Ohio$Residents.Confirmed)+
-        (Ohio$Resident.Deaths)+(Ohio$Residents.Recovered)
+        (Ohio$Residents.Deaths)+(Ohio$Residents.Recovered)
     Ohio$Residents.Quarantine <- (Ohio$Residents.Quarantine)+
         (Ohio$Residents.Isolation)
 
@@ -105,7 +105,7 @@ ohio_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    ohio <- ohio_scraper$new(log=FALSE)
+    ohio <- ohio_scraper$new(log=TRUE)
     ohio$raw_data
     ohio$pull_raw()
     ohio$save_raw()
