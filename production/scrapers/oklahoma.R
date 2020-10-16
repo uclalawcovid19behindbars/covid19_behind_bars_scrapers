@@ -146,9 +146,8 @@ oklahoma_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "http://doc.publishpath.com/Default.aspx?shortcut=",
-                "covid-19-stats-report"),
+            url = 
+                "http://doc.publishpath.com/Default.aspx?shortcut=covid-19-stats-report",
             id = "oklahoma",
             state = "OK",
             type = "html",

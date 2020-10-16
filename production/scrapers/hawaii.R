@@ -66,9 +66,8 @@ hawaii_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "https://dps.hawaii.gov/blog/2020/03/17/",
-                "coronavirus-covid-19-information-and-resources/"),
+            url = 
+                "https://dps.hawaii.gov/blog/2020/03/17/coronavirus-covid-19-information-and-resources/",
             id = "hawaii",
             state = "HI",
             type = "img",

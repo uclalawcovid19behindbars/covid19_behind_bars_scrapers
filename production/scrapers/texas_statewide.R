@@ -77,9 +77,7 @@ texas_statewide_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "https://txdps.maps.arcgis.com/apps/opsdashboard/index.html#",
-                "/dce4d7da662945178ad5fbf3981fa35c"),
+            url = "https://txdps.maps.arcgis.com/apps/opsdashboard/index.html#/dce4d7da662945178ad5fbf3981fa35c",
             id = "texas_statewide",
             type = "json",
             state = "TX",

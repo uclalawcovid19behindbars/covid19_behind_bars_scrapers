@@ -373,7 +373,133 @@ get_scraper_vec <- function(){
     scraper_name_vec
 }
 
-document_scrapers <- function(){
-    scraper_name_vec <- get_scraper_vec()
-    bind_rows(lapply(scraper_name_vec, function(x) NULL))
+get_last_run <- function(file_name){
+    scraper_name <- str_remove(str_split_fixed(file_name, "/", n = 3)[,3], ".R")
+    
+    out_files <- list.files(
+        "results/extracted_data", full.names = TRUE,
+        pattern = str_c("\\d+-\\d+-\\d+_", scraper_name, ".csv"))
+    
+    run_dates <- lubridate::ymd(str_extract(out_files, "\\d+-\\d+-\\d+"))
+    
+    last_file <- out_files[which.max(run_dates)]
+    
+    df_ <- read_csv(last_file, col_types = cols())
+    
+    list(cols = names(df_), date = max(run_dates))
 }
+
+build_notes_vec <- function(file_name){
+    deets <- get_last_run(file_name)
+    
+    c("#'", str_c(
+        "#' @details The last run of the scraper was on ", deets$date,
+        " and contained the extracted columns: ",
+        str_c(deets$cols, collapse = ", ")))
+}
+
+inject_notes <- function(roxygen_code, file_name){
+    injection <- build_notes_vec(file_name)
+    
+    # find the last line of the documentation that has documentation notes
+    last_comment_line <- max(which(str_starts(roxygen_code, "#'")))
+    
+    c(
+        roxygen_code[1:last_comment_line],
+        injection,
+        roxygen_code[(last_comment_line + 1):length(roxygen_code)]
+    )
+    
+}
+
+fake_package <- function(
+    file_name, working_directory = NULL, dependencies = NULL, ...){
+    checkmate::assertCharacter(dependencies, null.ok = TRUE)
+    if (is.null(working_directory)){ 
+        working_directory <- file.path(
+            tempdir(), basename(tempfile(pattern = "")))
+    }
+    package_name <- gsub("_", ".", sub(".[rRS]$|.Rnw$", "", basename(file_name), 
+                                       perl = TRUE))
+    package_directory <- file.path(working_directory, package_name)
+    man_directory <- file.path(package_directory, "man")
+    dir.create(working_directory, showWarnings = FALSE, recursive = TRUE)
+    roxygen_code <- document::get_lines_between_tags(file_name, ...)
+    if (is.null(roxygen_code) || !any(grepl("^#+'", roxygen_code))) {
+        warning("Couldn't find roxygen comments in file ", file_name, 
+                ".")
+    }
+    # remove lines that start with source
+    roxygen_code <- roxygen_code[!str_starts(roxygen_code, "source\\(")]
+    roxygen_code <- inject_notes(roxygen_code, file_name)
+    code_file <- file.path(working_directory, "code.R")
+    writeLines(roxygen_code, con = code_file)
+    suppressMessages(utils::package.skeleton(code_files = code_file, 
+                                             name = package_name, path = working_directory, force = TRUE))
+    file.remove(code_file)
+    file.remove(list.files(man_directory, full.names = TRUE))
+    file.remove(file.path(package_directory, "NAMESPACE"))
+    dev_null <- utils::capture.output(roxygen2::roxygenize(
+        package.dir = package_directory))
+    if (!is.null(dependencies)) {
+        dependency_data <- data.frame(type = "Depends", package = dependencies, 
+                                      version = "*")
+        d <- desc::description$new(package_directory)
+        d$set_deps(dependency_data)
+        d$write()
+    }
+    return(package_directory)
+}
+
+document_scraper <- function(
+    file_name, working_directory = NULL, dependencies = NULL,
+    output_directory = "./documentation/scraper_documentation/", 
+    sanitize_Rd = TRUE, runit = FALSE, check_package = FALSE, 
+    check_as_cran = check_package, stop_on_check_not_passing = check_package, 
+    clean = FALSE, debug = TRUE, ...){
+    if (is.null(working_directory)){
+        working_directory <- file.path(
+            tempdir(), paste0("document_", basename(tempfile(pattern = ""))))
+    }
+    checkmate::assertFile(file_name, access = "r")
+    checkmate::assertDirectory(output_directory, access = "r")
+    checkmate::qassert(check_package, "B1")
+    checkmate::qassert(working_directory, "S1")
+    dir.create(working_directory, showWarnings = FALSE, recursive = TRUE)
+    if (isTRUE(clean)) 
+        on.exit({
+            unlink(working_directory, recursive = TRUE)
+            options(document_package_directory = NULL)
+        })
+    package_directory <- fake_package(
+        file_name, working_directory = working_directory, 
+        dependencies = dependencies, ...)
+    
+    file_name2 <- str_c(
+        package_directory, "/R/",
+        str_split_fixed(file_name, "/", n = 3)[,3]
+    )
+    
+    status <- document:::write_the_docs(
+        package_directory = package_directory, 
+        file_name = file_name2, output_directory = output_directory, 
+        dependencies = dependencies, sanitize_Rd = sanitize_Rd, 
+        runit = runit)
+    if (check_package) {
+        check <- document:::check_package(
+            package_directory = package_directory, 
+            working_directory = working_directory,
+            check_as_cran = check_as_cran, debug = debug,
+            stop_on_check_not_passing = stop_on_check_not_passing)
+        status[["check_result"]] <- check
+    }
+    return(status)
+}
+
+document_all_scrapers <- function(){
+    sc_files <- list.files("production/scrapers", full.names = TRUE)
+    sapply(sc_files, function(x){
+        tryCatch(document_scraper(x), error=function(e) NULL)
+    })
+}
+

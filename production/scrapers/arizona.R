@@ -64,9 +64,8 @@ arizona_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "https://corrections.az.gov/adcrr-covid-19-dashboard?",
-                "order=title_field&sort=asc"),
+            url = 
+                "https://corrections.az.gov/adcrr-covid-19-dashboard?order=title_field&sort=asc",
             id = "arizona",
             type = "html",
             state = "AZ",

@@ -106,7 +106,7 @@ arkansas_extract <- function(x){
 }
 
 #' Scraper class for general Arkansas COVID data
-#' 
+#'
 #' @name arkansas_scraper
 #' @description AR data is downloaded from a new weekly image which undergoes
 #' OCR. Can be temperamental. Check logs frequently as AR has changed the

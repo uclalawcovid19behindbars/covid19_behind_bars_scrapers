@@ -71,10 +71,8 @@ dc_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "https://opendata.dc.gov/datasets/",
-                "dc-covid-19-department-of-corrections/",
-                "data?orderBy=DATE_REPORTED&orderByAsc=false"),
+            url = 
+                "https://opendata.dc.gov/datasets/dc-covid-19-department-of-corrections/data?orderBy=DATE_REPORTED&orderByAsc=false",
             id = "dc",
             type = "json",
             state = "DC",

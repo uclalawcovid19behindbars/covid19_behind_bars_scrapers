@@ -78,9 +78,8 @@ wisconsin_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "https://doc.wi.gov/Pages/COVID19%28Coronavirus%29/",
-                "COVID19TestingDashboard.aspx"),
+            url = 
+                "https://doc.wi.gov/Pages/COVID19%28Coronavirus%29/COVID19TestingDashboard.aspx",
             id = "wisconsin",
             type = "pdf",
             state = "WI",
