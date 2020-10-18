@@ -36,7 +36,8 @@ alabama_extract <- function(x){
 #' 
 #' @name alabama_scraper
 #' @description Alabama scraper comes directly from an api. Minimal cleaning
-#' required.
+#' required. Note that Alabama does not report the number of tests administered
+#' but rather the number of residents tested.
 #' \describe{
 #'   \item{Facility}{The facility name.}
 #'   \item{Type}{The type of facility i.e. private, work-release, major, etc}
@@ -45,7 +46,7 @@ alabama_extract <- function(x){
 #'   \item{State}{State}
 #'   \item{Zip}{Zip}
 #'   \item{ShortName}{Facility alternative name}
-#'   \item{Inmate_Tested}{Inmate_Tested}
+#'   \item{Inmate_Tested}{The number of inmates tested rather than total tests administered.}
 #'   \item{Inmate_Positive}{Cummulative Inmates Tested}
 #'   \item{Inmate_Pending}{Inmate_Pending}
 #'   \item{Inmate_Recovered}{Cummulative Inmates Recovered}

@@ -45,6 +45,9 @@ arizona_extract <- function(x){
 #' @description HTML table scraping of semi structured data. The information
 #' that we care about are located in the html tables located at position 2 for 
 #' residents and 3 for staff. Should be checked regularly for changing format.
+#' Note that historically data for number of residents confirmed has been
+#' less than number recovered. Since the number of individuals being released
+#' is not reproted this may contribute to the difference.
 #' \describe{
 #'   \item{Location}{The facility name.}
 #'   \item{Inmates Tested}{Likely cummulative number of inmates tested.}

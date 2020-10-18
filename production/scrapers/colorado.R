@@ -114,7 +114,12 @@ colorado_extract <- function(x){
 #' to be temperamental. Sometimes code will need to be run several times in
 #' order to work as the page has variable load times and selenium can not
 #' tell when the DOM is ready. Data is downloaded through selenium in a pdf form
-#' from which OCR is run.
+#' from which OCR is run. Colorado staff numbers in the early stages puzzling
+#' but pretty clear now that positive means the total, while active is the
+#' active total, so you can take the positive active to get recoveries. 
+#' It is less clear what is happening in the early days, where recoveries are 
+#' dropping, but mathematically this makes the most sense since otherwise the
+#' cumulative staff positives would be highest in early May.
 #' \describe{
 #'   \item{Facility_Name}{The facility name.}
 #'   \item{Tests}{Total tests administered.}

@@ -392,10 +392,14 @@ get_last_run <- function(file_name){
 build_notes_vec <- function(file_name){
     deets <- get_last_run(file_name)
     
+    missing_vars <- setdiff(UCLABB_MAIN_VARIABLES, deets$cols)
+    
     c("#'", str_c(
         "#' @details The last run of the scraper was on ", deets$date,
         " and contained the extracted columns: ",
-        str_c(deets$cols, collapse = ", ")))
+        str_c(deets$cols, collapse = ", "), 
+      ". We are missing the following core variables for the analysis: ",
+      str_c(missing_vars, collapse = ", ")))
 }
 
 inject_notes <- function(roxygen_code, file_name){

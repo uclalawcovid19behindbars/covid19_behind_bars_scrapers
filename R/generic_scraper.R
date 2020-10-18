@@ -3,6 +3,17 @@ library(R6)
 library(tryCatchLog)
 library(futile.logger)
 
+UCLABB_MAIN_VARIABLES <- c(
+    "Name", "Staff.Confirmed", "Residents.Confirmed",
+    "Staff.Deaths", "Residents.Deaths",
+    "Staff.Recovered", "Residents.Recovered",
+    "Staff.Tested", "Residents.Tested", 
+    "Staff.Negative", "Residents.Negative",
+    "Staff.Pending", "Residents.Pending",
+    "Staff.Quarantine", "Residents.Quarantine",
+    "Residents.Population"
+)
+
 generic_scraper <- R6Class(
     "generic_scraper",
     list(
@@ -152,15 +163,7 @@ generic_scraper <- R6Class(
         
         
         validate_process = function(){
-            valid_columns <- c(
-                "Name", "Staff.Confirmed", "Residents.Confirmed",
-                "Staff.Deaths", "Residents.Deaths",
-                "Staff.Recovered", "Residents.Recovered",
-                "Staff.Tested", "Residents.Tested", 
-                "Staff.Negative", "Residents.Negative",
-                "Staff.Pending", "Residents.Pending",
-                "Staff.Quarantine", "Residents.Quarantine"
-            )
+            valid_columns <- UCLABB_MAIN_VARIABLES
             
             for(i in names(self$extract_data)){
                 if(!(i %in% valid_columns)){

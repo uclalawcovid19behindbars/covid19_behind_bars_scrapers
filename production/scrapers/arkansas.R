@@ -110,7 +110,8 @@ arkansas_extract <- function(x){
 #' @name arkansas_scraper
 #' @description AR data is downloaded from a new weekly image which undergoes
 #' OCR. Can be temperamental. Check logs frequently as AR has changed the
-#' data reported twice in the past.
+#' data reported twice in the past. Need to combine Residents Recovered with
+#' Residents Positive Not Recovered to get total confirmed.
 #' \describe{
 #'   \item{Residents Tested}{Residents Tested.}
 #'   \item{Residents Recovered}{Residents Recovered.}

@@ -42,7 +42,8 @@ alaska_extract <- function(x){
 #' 
 #' @name alaska_scraper
 #' @description Minimal html webscraping. Since scraping began website has
-#' had minimal changes. Only publishes state-wide information.
+#' had minimal changes. Only publishes state-wide information and only for
+#' residents. Data is updated weekly.
 #' \describe{
 #'   \item{Total Tests}{Cumulatiove tests administered.}
 #'   \item{Negative Tests}{Cumulative negative results.}
