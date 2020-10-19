@@ -18,7 +18,7 @@ arizona_restruct <- function(x){
                            "Inmates Confirmed" = "Residents.Confirmed",
                            "Inmates Pending" = "Residents.Pending",
                            "Inmates Recovered" = "Residents.Recovered",
-                           "Daily Total Population" = "Resident.Population",
+                           "Daily Total Population" = "Residents.Population",
                            "Inmates Confirmed Deaths" = "Resident.Deaths1",
                            "Inmates Potential Deaths" = "Resident.Deaths2"
             )),
@@ -36,7 +36,7 @@ arizona_restruct <- function(x){
 arizona_extract <- function(x){
     x %>%
         mutate(Residents.Deaths = Resident.Deaths1 + Resident.Deaths2) %>%
-        select(-Resident.Deaths1, -Resident.Deaths2, -Resident.Population)
+        select(-Resident.Deaths1, -Resident.Deaths2)
 }
 
 #' Scraper class for general Arizona COVID data
