@@ -66,8 +66,8 @@ connecticut_extract <- function(x){
 #' Scraper class for general Connecticut COVID data
 #' 
 #' @name connecticut_scraper
-#' @description This will be a description of Connecticut data and what the scraper
-#' does
+#' @description CT stores information within tables in images. The image
+#' information appears to be consistent making OCR possible.
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Total Positives}{Residents positives}

@@ -60,9 +60,9 @@ new_hampshire_extract <- function(x){
 #' and tested rather than tests administered and tests that were positive.
 #' \describe{
 #'   \item{Name}{The facility name.}
-#'   \item{# Staff Positive}{The staff number testing positive}
-#'   \item{# Residents tested}{Not the number of tests administered}
-#'   \item{# Residents Positive}{Number of residents confirmed}
+#'   \item{Num Staff Positive}{The staff number testing positive}
+#'   \item{Num Residents tested}{Not the number of tests administered}
+#'   \item{Num Residents Positive}{Number of residents confirmed}
 #'   \item{NHDOC Staff}{State wide staff population}
 #' }
 
