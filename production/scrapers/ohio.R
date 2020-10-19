@@ -88,9 +88,7 @@ ohio_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = str_c(
-                "https://coronavirus.ohio.gov/static/reports/",
-                "DRCCOVID-19Information.pdf"),
+            url = "https://coronavirus.ohio.gov/static/reports/DRCCOVID-19Information.pdf",
             id = "ohio",
             type = "pdf",
             state = "OH",
