@@ -37,10 +37,24 @@ massachusetts_extract <- function(x){
 #' Scraper class for general Massachusetts COVID data
 #' 
 #' @name massachusetts_scraper
-#' @description This will be a description of massachusetts data and what the scraper
-#' does
+#' @description Massachusetts data comes from an xlsx file that is updated
+#' weekly. Currently a full time series is available but it is not exactly clear
+#' which numbers are cumulative. We consistently get tested values that are
+#' less than confirmed.
 #' \describe{
-#'   \item{Facility_Name}{The facility name.}
+#'   \item{DOC Facility}{The facility name}
+#'   \item{Date}{}
+#'   \item{Total Population}{}
+#'   \item{N Tested - Detainees/Inmates}{}
+#'   \item{N Positive - Detainees/Inmates}{}
+#'   \item{N Tested - Staff}{}
+#'   \item{N Positive - Staff}{}
+#'   \item{Total Tested}{}
+#'   \item{Total Positive}{}
+#'   \item{Active Prisoner Cases}{}
+#'   \item{N Deaths}{}
+#'   \item{N Released}{}
+#'   \item{Notes}{} 
 #' }
 
 massachusetts_scraper <- R6Class(
@@ -50,10 +64,10 @@ massachusetts_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "http://url/goes/here",
+            url = "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291",
             id = "massachusetts",
-            type = "pdf",
-            state = "",
+            type = "csv",
+            state = "MA",
             # pull the JSON data directly from the API
             pull_func = massachusetts_pull,
             # restructuring the data means pulling out the data portion of the json
