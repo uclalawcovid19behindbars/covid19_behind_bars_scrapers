@@ -71,7 +71,11 @@ montana_extract <- function(x){
 #' @description MN records a cumulative account since June 1, 2020 for 
 #' confirmed cases in contract facilities.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility_Name}{The facility name.}
+#'   \item{Residents Confirmed}{Residents cumulative confirmed}
+#'   \item{Staff Confirmed}{Staff cumulative confirmed}
+#'   \item{Residents Deaths}{State-wide only}
+#'   \item{Staff Deaths}{State-wide only}
 #' }
 
 montana_scraper <- R6Class(
