@@ -68,13 +68,22 @@ maryland_extract <- function(x){
         ))
 }
 
-#' Scraper class for general maryland COVID data
+#' Scraper class for general Maryland COVID data
 #' 
 #' @name maryland_scraper
-#' @description This will be a description of maryland data and what the scraper
-#' does
+#' @description Data from MD is pulled from a image hosted in the DOC website
+#' which is run the OCR. The data posted has been fairly consistent.
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility}{The facility name}
+#'   \item{Region}{Greater region of facility}
+#'   \item{Staff Tests}{Tests administered to staff not sure if test administered or individuals tested}
+#'   \item{Staff Positive}{Number of confirmed staff}
+#'   \item{Staff Recovered}{Number of recovered staff}
+#'   \item{Staff Deaths}{Number of staff deaths}
+#'   \item{Inmates Tested}{Residents tested not sure if test administered or individuals tested}
+#'   \item{Inmates Positive}{Number of confirmed residents}
+#'   \item{Inmates Recovered}{Number of recovered residents}
+#'   \item{Inmates Deaths}{Number of resident deaths}
 #' }
 
 maryland_scraper <- R6Class(

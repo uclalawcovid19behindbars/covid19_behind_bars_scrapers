@@ -60,7 +60,7 @@ indiana_extract <- function(x){
 #' 
 #' @name indiana_scraper
 #' @description Data from IN is pulled from a image hosted in the DOC website
-#' which is ru8n the OCR. The data posted has been consistent however it should
+#' which is run the OCR. The data posted has been consistent however it should
 #' be noted that it seems that residents confirmed goes down when they leave
 #' the facility so recovered can be higher than confirmed.
 #' \describe{
