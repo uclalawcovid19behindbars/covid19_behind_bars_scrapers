@@ -4,15 +4,13 @@ source("./R/utilities.R")
 massachusetts_pull <- function(x){
     tf <- tempfile(fileext = ".xlsx")
     
-    "https://docs.google.com/spreadsheets/d/" %>%
-        str_c("1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291") %>%
+    x %>%
         httr::GET(httr::write_disk(tf))
     
     readxl::read_excel(tf, sheet="DOC Facilities")
 }
 
 massachusetts_restruct <- function(x){
-    # get latest date for each facility
     x 
 }
 

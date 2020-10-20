@@ -44,7 +44,7 @@ new_york_statewide_extract <- function(x){
 #' html of the site. Data is scrapped from tables.
 #' \describe{
 #'   \item{Staff Deaths}{Staff Deaths}
-#'   \tem{Staff Confirmed}{Staff Confirmed}
+#'   \item{Staff Confirmed}{Staff Confirmed}
 #' }
 
 new_york_statewide_scraper <- R6Class(
