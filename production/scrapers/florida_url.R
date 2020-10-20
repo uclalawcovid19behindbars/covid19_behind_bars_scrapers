@@ -52,7 +52,7 @@ florida_url_extract <- function(x){
 
 #' Scraper class for general Florida COVID data
 #' 
-#' @name florida_scraper
+#' @name florida_url_scraper
 #' @description Florida has an html table for reporting results at the facilty
 #' level which has been consistent but they have recently stopped reporting
 #' facility level deaths. The death data is now reported weekly in a table
@@ -76,7 +76,7 @@ florida_url_scraper <- R6Class(
         initialize = function(
             log,
             url = "http://www.dc.state.fl.us/comm/covid-19.html",
-            id = "florida",
+            id = "florida_url",
             type = "html",
             state = "FL",
             # pull the JSON data directly from the API
@@ -102,5 +102,6 @@ if(sys.nframe() == 0){
     florida_url$extract_from_raw()
     florida_url$extract_data
     florida_url$validate_extract()
+    florida_url$save_extract()
 }
 
