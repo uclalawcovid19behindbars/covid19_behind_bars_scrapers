@@ -18,7 +18,7 @@ indiana_restruct <- function(x){
     } else {
         d <- results[[1]]
     }
-    
+
     d
 }
 
