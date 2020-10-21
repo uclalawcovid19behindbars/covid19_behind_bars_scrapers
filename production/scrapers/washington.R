@@ -11,7 +11,7 @@ washington_restruct <- function(x){
 }
 
 washington_extract <- function(x){
-    x <- wa_tables
+    wa_tables <- x
     
     res.tab <- rvest::html_table(wa_tables[1], fill = TRUE) %>%
         as.data.frame() %>%
