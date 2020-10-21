@@ -123,22 +123,8 @@ oklahoma_extract <- function(x){
 #' Scraper class for general Oklahoma COVID data
 #' 
 #' @name oklahoma_scraper
-#' @description HTML scraping from a pseudo-table like object. This is really
-#' weird to scrape from and the code should be more fail safe.
-#' \describe{
-#'   \item{Institution}{}
-#'   \item{Number of Positive Inmates}{NOT Cumulative!}
-#'   \item{Number of Hospitalized Inmates}{}
-#'   \item{Number of Recovered Inmates 3}{}
-#'   \item{Number of Inmate Deaths Possibly Related to COVID-19 4}{}
-#'   \item{Number of Confirmed COVID-19 Related Inmate Deaths}{}
-#'   \item{Number of Inmates in Quarantine}{}
-#'   \item{Housing Type (cell, open bay, combo)}{}
-#'   \item{Number of Inmates in Isolation}{}
-#'   \item{Number of Staff Currently Reporting Positive Tests 5}{NOT Cumulative!}
-#'   \item{Number of Recovered Staff 5}{}
-#'   \item{Number of Staff Deaths Possibly Related to COVID-19}{}
-#' }
+#' @description Scraper needs to be rewritten to accomadet new structure of the
+#' data.
 
 oklahoma_scraper <- R6Class(
     "oklahoma_scraper",
