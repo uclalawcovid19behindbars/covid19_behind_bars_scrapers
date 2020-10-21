@@ -509,3 +509,43 @@ document_all_scrapers <- function(){
     })
 }
 
+save_perma_cc <- function(arc_url, api = NULL, folder_id = NULL){
+    base <- "https://api.perma.cc/v1/user/?api_key="
+    pb <- "https://api.perma.cc/v1/archives/?api_key="
+
+    if(is.null(api)){
+        api <- Sys.getenv("PERMACC_API_KEY")
+    }
+    
+    if(is.null(folder_id)){
+        envelop <- paste0(base, api)
+        out <- jsonlite::read_json(envelop, simplifyVector = TRUE)
+        # just use root folder
+        folder_id <- as.character(out$top_level_folders$id[1])
+    }
+
+    api_url <- paste0(pb, api)
+    setting <- curl::new_handle()
+    curl::handle_setopt(setting, customrequest = "POST")
+    curl::handle_setform(setting, url = arc_url, folder = folder_id)
+    result <- list(arc_url, "noguid", "unknown", "no url", "no screenshot", 
+                   "no short url")
+    r <- curl::curl_fetch_memory(api_url, setting)
+    reply <- jsonlite::parse_json(rawToChar(r$content), simplifyVector = TRUE)
+    
+    if ((!(is.null(reply$error)))) {
+      stop("Received an error reply, likely because your limit has exceeded.")
+    }
+    else {
+      if (!is.null(reply$url) && !(reply$url == "Not a valid URL.")) {
+        result <- c(
+          raw_url = reply$url,
+          perma_url = paste0("https://perma.cc/", reply$guid), 
+          timestamp = reply$archive_timestamp)
+      }
+      else {
+        stop("Error with url saving")
+      }
+    }
+    return(result)
+}
