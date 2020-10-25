@@ -61,7 +61,7 @@ milwaukee_county_scraper <- R6Class(
             url = "https://county.milwaukee.gov/EN/COVID-19/Individuals-in-County-Care",
             id = "milwaukee_county",
             type = "img",
-            state = "MN",
+            state = "WI",
             # pull the JSON data directly from the API
             pull_func = milwaukee_county_pull,
             # restructuring the data means pulling out the data portion of the json

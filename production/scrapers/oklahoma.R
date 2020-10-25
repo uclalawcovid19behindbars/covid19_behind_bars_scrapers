@@ -139,7 +139,7 @@ oklahoma_scraper <- R6Class(
             state = "OK",
             type = "html",
             # pull the JSON data directly from the API
-            pull_func = function(x) NULL,#xml2::read_html,
+            pull_func = xml2::read_html,
             # 
             restruct_func = oklahoma_restruct,
             # Rename the columns to appropriate database names and do some minor
