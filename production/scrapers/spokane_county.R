@@ -19,7 +19,7 @@ spokane_county_extract <- function(x){
 #' @description This will be a description of spokane_county data and what the scraper
 #' does
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Facility_Name}{The facility name.}
 #' }
 
 spokane_county_scraper <- R6Class(

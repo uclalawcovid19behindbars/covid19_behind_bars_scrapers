@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 polk_county_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "HOCdashboard.png") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "covid") %>%
         magick::image_read()
 }
 
