@@ -1,6 +1,10 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+ohio_pull <- function(x){
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covid")
+}
+
 ohio_restruct <- function(x){
     oh_pgs <- magick::image_read_pdf(x)
     
@@ -88,11 +92,11 @@ ohio_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://coronavirus.ohio.gov/static/reports/DRCCOVID-19Information.pdf",
+            url = "https://drc.ohio.gov/Organization/Research/Reports/COVID-19-Information",
             id = "ohio",
             type = "pdf",
             state = "OH",
-            pull_func = function(x) x,
+            pull_func = ohio_pull,
             restruct_func = ohio_restruct,
             extract_func = ohio_extract){
             super$initialize(

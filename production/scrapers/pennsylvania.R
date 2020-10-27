@@ -3,7 +3,9 @@ source("./R/utilities.R")
 
 pennsylvania_pull <- function(x){
     tf_ <- tempfile()
-    download.file(x, destfile=tf_)
+    # grab xlsx directly
+    "https://www.cor.pa.gov/Documents/PA-DOC-COVID-19-Testing.xlsx" %>%
+        download.file(destfile=tf_)
     readxl::read_excel(tf_)
 }
 
@@ -86,7 +88,7 @@ pennsylvania_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.cor.pa.gov/Documents/PA-DOC-COVID-19-Testing.xlsx",
+            url = "https://www.cor.pa.gov/Pages/COVID-19.aspx",
             id = "pennsylvania",
             type = "csv",
             state = "PA",

@@ -4,7 +4,9 @@ source("./R/utilities.R")
 massachusetts_pull <- function(x){
     tf <- tempfile(fileext = ".xlsx")
     
-    x %>%
+    # get data from sheet directly
+    "https://docs.google.com/spreadsheets/d/" %>%
+        str_c("1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291") %>%
         httr::GET(httr::write_disk(tf))
     
     readxl::read_excel(tf, sheet="DOC Facilities")
@@ -62,7 +64,7 @@ massachusetts_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291",
+            url = "https://www.mass.gov/guides/doc-coronavirus-information-guide",
             id = "massachusetts",
             type = "csv",
             state = "MA",

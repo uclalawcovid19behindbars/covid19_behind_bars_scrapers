@@ -2,7 +2,8 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 tennessee_pull <- function(x){
-    x
+    get_src_by_attr(
+        x, "a", attr = "href", attr_regex = "TDOCInmatesCOVID19.pdf$")
 }
 
 tennessee_restruct <- function(x){
@@ -82,7 +83,7 @@ tennessee_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.tn.gov/content/dam/tn/correction/documents/TDOCInmatesCOVID19.pdf",
+            url = "https://www.tn.gov/correction.html",
             id = "tennessee",
             type = "pdf",
             state = "TN",

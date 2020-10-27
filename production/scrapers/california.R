@@ -87,7 +87,7 @@ california_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.cdcr.ca.gov/covid19/population-status-tracking/",
+            url = "https://www.cdcr.ca.gov/covid19/updates/",
             id = "california",
             type = "html",
             state = "CA",

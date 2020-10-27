@@ -75,8 +75,7 @@ texas_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = 
-                "https://txdps.maps.arcgis.com/apps/opsdashboard/index.html#/dce4d7da662945178ad5fbf3981fa35c",
+            url = "https://www.tdcj.texas.gov/covid-19/presumed.html",
             id = "texas",
             type = "json",
             state = "TX",

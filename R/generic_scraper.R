@@ -42,6 +42,7 @@ generic_scraper <- R6Class(
         err_log = NULL,
         raw_dest = NULL,
         extract_dest = NULL,
+        permalink = NULL,
         initialize = function(
             url, id, pull_func, type, restruct_func, extract_func, log, state){
 
@@ -61,6 +62,7 @@ generic_scraper <- R6Class(
             self$raw_data = NULL
             self$restruct_data = NULL
             self$extract_data = NULL
+            self$permalink = NULL
             self$pull_func = pull_func
             self$restruct_func = restruct_func
             self$extract_func = extract_func
@@ -75,8 +77,6 @@ generic_scraper <- R6Class(
                 "./results/raw_files/", self$date, "_", id, valid_types[type])
             self$extract_dest = paste0(
                 "./results/extracted_data/", self$date, "_", id, ".csv")
-            
-            
             
             # initiate logger
             flog.appender(appender.file(self$err_log))
@@ -161,6 +161,33 @@ generic_scraper <- R6Class(
                 max()
         },
         
+        perma_save = function(tries = 3){
+            if(self$log){
+                # sometimes this wont work on the first try so give it a
+                # couple goes
+                attempts <- 0
+                while(attempts < tries){
+                    tryLog(pcc <- save_perma_cc(
+                        arc_url = self$url, scraper_id = self$id,
+                        state_ = self$state, date_ = self$date, api = NULL))
+                    if(is.null(pcc)){
+                        attempts <- attempts + 1
+                    }
+                    else{
+                        attempts <- Inf
+                    }
+                }
+            }
+            else{
+                pcc <- save_perma_cc(
+                    arc_url = self$url, scraper_id = self$id,
+                    state_ = self$state, date_ = self$date, api = NULL)
+            }
+            
+            self$permalink <- str_c("perma.cc/", pcc)
+            
+            invisible(self)
+        },
         
         validate_process = function(){
             valid_columns <- UCLABB_MAIN_VARIABLES
@@ -235,6 +262,7 @@ generic_scraper <- R6Class(
         ,
         
         run_all = function(){
+            self$perma_save()
             self$pull_raw()
             self$save_raw()
             self$restruct_raw()

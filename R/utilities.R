@@ -509,43 +509,84 @@ document_all_scrapers <- function(){
     })
 }
 
-save_perma_cc <- function(arc_url, api = NULL, folder_id = NULL){
-    base <- "https://api.perma.cc/v1/user/?api_key="
-    pb <- "https://api.perma.cc/v1/archives/?api_key="
+get_covid_perma_id <- function(api){
+    envelop <- str_c("https://api.perma.cc/v1/user/?api_key=", api)
+    out <- jsonlite::read_json(envelop, simplifyVector = TRUE)
+    out$top_level_folders %>%
+        filter(name == "COVID-19 Behind Bars") %>%
+        pull(id) %>%
+        as.character()
+}
 
+get_date_perma_id <- function(api, date_){
+    # get parent id
+    topid <- get_covid_perma_id(api)
+    # get subfolders
+    dirb <- str_c(
+        "https://api.perma.cc/v1/folders/", topid, "/folders?api_key=", api)
+    sub_dir <- jsonlite::read_json(dirb, simplifyVector = TRUE)
+    
+    if(!(date_ %in% sub_dir$objects$name)){
+        setting <- curl::new_handle()
+        curl::handle_setopt(setting, customrequest = "POST")
+        curl::handle_setform(setting, name = as.character(date_))
+        r <- curl::curl_fetch_memory(dirb, setting)
+        reply <- jsonlite::parse_json(
+            rawToChar(r$content), simplifyVector = TRUE)
+    }
+    
+    new_sub_dir <- jsonlite::read_json(dirb, simplifyVector = TRUE)
+    
+    new_sub_dir$objects %>%
+        filter(name == as.character(date_)) %>%
+        pull(id) %>%
+        as.character()
+}
+
+save_perma_cc <- function(arc_url, scraper_id, state_, date_, api = NULL){
     if(is.null(api)){
-        api <- Sys.getenv("PERMACC_API_KEY")
-    }
-    
-    if(is.null(folder_id)){
-        envelop <- paste0(base, api)
-        out <- jsonlite::read_json(envelop, simplifyVector = TRUE)
-        # just use root folder
-        folder_id <- as.character(out$top_level_folders$id[1])
+       api <- Sys.getenv("PERMACC_API_KEY")
     }
 
-    api_url <- paste0(pb, api)
-    setting <- curl::new_handle()
-    curl::handle_setopt(setting, customrequest = "POST")
-    curl::handle_setform(setting, url = arc_url, folder = folder_id)
-    result <- list(arc_url, "noguid", "unknown", "no url", "no screenshot", 
-                   "no short url")
-    r <- curl::curl_fetch_memory(api_url, setting)
-    reply <- jsonlite::parse_json(rawToChar(r$content), simplifyVector = TRUE)
+    # get today's date folder id
+    fold_id <- get_date_perma_id(api, date_)
+  
+    # get the contents of this folder
+    dirb <- str_c(
+        "https://api.perma.cc/v1/folders/", fold_id, "/archives?api_key=", api)
+    sub_dir <- jsonlite::read_json(dirb, simplifyVector = TRUE)
+    arc_name <- str_c(scraper_id, "_", date_, "_", state_)
     
-    if ((!(is.null(reply$error)))) {
-      stop("Received an error reply, likely because your limit has exceeded.")
+    # save the websites permalink if it doesnt already exist
+    if(!(arc_name %in% sub_dir$objects$title)){
+        api_url <- paste0("https://api.perma.cc/v1/archives/?api_key=", api)
+        setting <- curl::new_handle()
+        curl::handle_setopt(setting, customrequest = "POST")
+        curl::handle_setform(
+            setting, url = arc_url, folder = fold_id, title = arc_name)
+        r <- curl::curl_fetch_memory(api_url, setting)
+        reply <- jsonlite::parse_json(
+            rawToChar(r$content), simplifyVector = TRUE)
     }
-    else {
-      if (!is.null(reply$url) && !(reply$url == "Not a valid URL.")) {
-        result <- c(
-          raw_url = reply$url,
-          perma_url = paste0("https://perma.cc/", reply$guid), 
-          timestamp = reply$archive_timestamp)
-      }
-      else {
-        stop("Error with url saving")
-      }
-    }
-    return(result)
+    
+    new_sub_dir <- jsonlite::read_json(dirb, simplifyVector = TRUE)
+    
+    new_sub_dir$objects %>%
+        filter(title == arc_name) %>%
+        as_tibble() %>%
+        pull(guid)
+}
+
+read_historical_data <- function(){
+    ind_vars <- c("Date", "Name", "State")
+    
+    list.files("./results/extracted_data", full.names = TRUE) %>%
+        lapply(read_csv, col_types = cols()) %>%
+        bind_rows() %>%
+        # remove values if they are missing a data name or state
+        filter(!is.na(Date) & !is.na(Name) & State != "") %>%
+        # order the names alphabetically
+        select(!!sort(names(.))) %>%
+        # put the indicator variables first
+        select(!!ind_vars, !!(names(.)[!(names(.) %in% ind_vars)]))
 }

@@ -84,7 +84,8 @@ cook_county_extract <- function(x){
 #' formatting as data is extracted from raw text. Format should be checked
 #' frequently. Data only reported for Cook County jail. Note that there is no
 #' release numbers so total confirmed may be an under-count because of the way
-#' it is calculates. Active + Recovered + Deaths.
+#' it is calculates. Active + Recovered + Deaths. Historical data present in
+#' graph but no way to extract.
 #' \describe{
 #'   \item{Staff Active}{Staff currently infected by virus.}
 #'   \item{Staff Recovered}{Likely cumulative staff recovered.}
