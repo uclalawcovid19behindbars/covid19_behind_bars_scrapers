@@ -2,13 +2,22 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 minnesota_pull <- function(x, wait = 5){
-    sp <- start_splash()
     
     app_source <- xml2::read_html(x) %>%
         rvest::xml_nodes("iframe") %>%
         rvest::html_attr("src")
     
-    splashr::render_html(splash_obj = sp, wait = wait, url = app_source)
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_source)
+    Sys.sleep(wait)
+    
+    xml2::read_html(remDr$getPageSource()[[1]])
 }
 
 minnesota_restruct <- function(x){

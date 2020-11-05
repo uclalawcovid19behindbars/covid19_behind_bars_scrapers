@@ -93,7 +93,7 @@ hawaii_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    hawaii <- hawaii_scraper$new(log=FALSE)
+    hawaii <- hawaii_scraper$new(log=TRUE)
     hawaii$raw_data
     hawaii$pull_raw()
     hawaii$raw_data
@@ -101,4 +101,6 @@ if(sys.nframe() == 0){
     hawaii$restruct_data
     hawaii$extract_from_raw()
     hawaii$extract_data
+    hawaii$validate_extract()
+    hawaii$save_extract()
 }

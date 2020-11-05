@@ -14,28 +14,33 @@ michigan_pull <- function(x){
 }
 
 michigan_restruct <- function(x){
-    ExtractTable(x)
+    out_list <- ExtractTable(x)
+
+    out_list_names <- x %>%
+        magick::image_crop("1900x25+0+45") %>%
+        ExtractTable()
+
+    names(out_list[[1]]) <- unname(unlist(out_list_names))
+
+    out_list
 }
 
 michigan_extract <- function(x){
     
-    col_name_mat <- matrix(c(
-        "Location", "0", "Name",
-        "Prisoners Tested", "1", "Residents.Tested",
-        "Total Prisoners Confirmed", "2", "Residents.Confirmed",	
-        "Prisoners Negative", "3", "Residents.Negative",	
-        "Active Positive Cases", "4", "Drop.Residents.Active",
-        "Priosner Deaths", "5", "Residents.Deaths"
-    ), ncol = 3, nrow = 6, byrow = TRUE)
+    exp_names <- c(
+        Name = "Location",
+        Residents.Tested = "Prisoners Tested",
+        Residents.Confirmed = "Total Prisoners Confirmed",
+        Residents.Negative = "Prisoners Negative",
+        Residents.Active = "Active Positive Cases",
+        Residents.Deaths = "Prisoner Deaths"
+    )
+        
+    df_ <- x[[1]]
+    check_names(df_, exp_names)
+    names(df_) <- names(exp_names)
     
-    colnames(col_name_mat) <- c("check", "raw", "clean")
-    col_name_df <- as_tibble(col_name_mat)
-    
-    check_names_extractable(x[[1]], col_name_df)
-    
-    rename_extractable(x[[1]], col_name_df)
-    
-    mi1 <- rename_extractable(x[[1]], col_name_df)
+    mi1 <- df_
     # remove header row
     mi1 <- filter(
         mi1, Name != "Location" & !grepl(Name, pattern = "Tota"))

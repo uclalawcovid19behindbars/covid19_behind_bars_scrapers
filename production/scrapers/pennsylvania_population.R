@@ -65,7 +65,7 @@ pennsylvania_population_scraper <- R6Class(
             url = "https://www.cor.pa.gov/Pages/COVID-19.aspx",
             id = "pennsylvania_population",
             type = "html",
-            state = "PN",
+            state = "PA",
             # pull the JSON data directly from the API
             pull_func = pennsylvania_population_pull,
             # restructuring the data means pulling out the data portion of the json

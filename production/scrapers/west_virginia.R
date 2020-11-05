@@ -6,7 +6,7 @@ west_virginia_pull <- function(x){
         x, "a", attr = "href", attr_regex = "txt$")
     
     dev_null <- suppressWarnings(out <- read_tsv(
-        tsv_src, skip = 2, col_types = cols()))
+        tsv_src, skip = 1, col_types = cols()))
     
     out
 }
@@ -27,12 +27,12 @@ west_virginia_extract <- function(x){
         Name = "Facility", 
         Drop.County = "County", 
         Residents.Population = "Pop.",
-        Residents.Negative = "Negative",
-        Drop.Residents.Active = "Positive\n(active)",
-        Residents.Pending = "Pending",
-        Residents.Tested = "Total",
+        Residents.Active = "Active cases",
         Residents.Recovered = "Recovered",
-        Residents.Confirmed = "Cumulative Cases",
+        Residents.Confirmed = "Cumulative Positives",
+        Residents.Negative = "Negative",
+        Residents.Pending = "Results Pending",
+        Residents.Tested = "Total Tests",
         Residents.Quarantine = "Quarantine"
     )
     
@@ -42,8 +42,10 @@ west_virginia_extract <- function(x){
     fac_df <- x %>%
         filter(
             !is.na(Residents.Population) & 
-                !str_detect(Residents.Population, "(?i)total")) %>%
+                !str_detect(Residents.Population, "(?i)total") &
+                !str_detect(Name, "(?i)total")) %>%
         select(-Drop.County) %>%
+        .[1:(which(str_detect(.$Name, "(?i)employee")) - 1),] %>%
         clean_scraped_df() %>%
         mutate(
             Residents.Quarantine = Residents.Quarantine + Residents.Pending) %>%
@@ -62,33 +64,18 @@ west_virginia_extract <- function(x){
         string_to_clean_numeric() %>%
         sum()
     
-    
     # see which row starts employee data
     idb <- str_detect(
-        x$Name, "(?i)Employee") & str_detect(x$Name, "(?i)systemwide")
-    staff_df <- x[which(idb):(which(idb)+1),]
-    lean_staff_df <- staff_df[,which(!is.na(unlist(staff_df[2,])))]
-    names(lean_staff_df) <- unname(unlist(lean_staff_df[1,]))
+        x$Name, "(?i)Employee") & str_detect(x$Name, "(?i)totals")
+    staff_df <- x[first(which(idb)),]
+    names(staff_df) <- str_replace(names(staff_df), "Residents", "Staff")
     
-    staff_exp <- c(
-        Staff.Negative = "Negative", 
-        Drop.Staff.Active = "Positive\n(active)",
-        Staff.Pending = "Pending", 
-        Staff.Tested = "Total", 
-        Staff.Recovered = "Recovered",
-        Staff.Confirmed = "Cumulative"
-    )
-    
-    fstaff_df <- lean_staff_df[2,]
-    
-    check_names(fstaff_df, staff_exp)
-    names(fstaff_df) <- names(staff_exp)
-    
-    fstaff_df %>%
+    staff_df %>%
         mutate(Name = "State-Wide") %>%
-        select(-starts_with("Drop")) %>%
+        select(-starts_with("Drop"), -Staff.Population, -Staff.Active) %>%
+        select(-Staff.Quarantine) %>% 
         clean_scraped_df() %>%
-        mutate(Residents.Deaths = resident_deaths)
+        mutate(Residents.Deaths = resident_deaths) %>%
         bind_rows(fac_df)
 }
 

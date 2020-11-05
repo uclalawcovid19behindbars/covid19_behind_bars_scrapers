@@ -13,8 +13,8 @@ mississippi_restruct <- function(x){
 mississippi_extract <- function(x){
     col_name_mat <- matrix(c(
         "State Institutions", "X0", "Name",
-        "Total Positives", "X1", "Residents.Confirmed",
-        "Active", "X2", "Residents.Active"
+        "Total Yearly Positives", "X1", "Residents.Confirmed",
+        "Current Active", "X2", "Residents.Active"
         ), ncol = 3, nrow = 3, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
@@ -31,7 +31,6 @@ mississippi_extract <- function(x){
                              "TOTALS"))) %>%
         clean_scraped_df() %>%
         mutate(Residents.Recovered = Residents.Confirmed - Residents.Active) %>%
-        select(-Residents.Active) %>%
         as_tibble()
 }
 

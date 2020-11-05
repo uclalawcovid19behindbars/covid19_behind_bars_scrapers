@@ -1,9 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-new_york_statewide_pull <- function(x){
-    sp <- start_splash()
-    splashr::render_html(splash_obj = sp, url = x)
+new_york_statewide_pull <- function(x, wait = 5){
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(x)
+    Sys.sleep(wait)
+    
+    xml2::read_html(remDr$getPageSource()[[1]])
+    
 }
 
 new_york_statewide_restruct <- function(x){

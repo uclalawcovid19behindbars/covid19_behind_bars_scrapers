@@ -128,7 +128,7 @@ arkansas_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://adc.arkansas.gov/coronavirus-covid-19-updates",
+            url = "https://doc.arkansas.gov/covid-19-updates/",
             id = "arkansas",
             state = "AR",
             type = "img",
@@ -138,7 +138,7 @@ arkansas_scraper <- R6Class(
                     base = x,
                     css = "a",
                     attr = "href",
-                    attr_regex = "(?i)stats_update",
+                    attr_regex = "(?i)stats.?update",
                     date_regex = "\\d+-\\d+-\\d+"
                 ))
                 

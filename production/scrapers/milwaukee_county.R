@@ -29,7 +29,7 @@ milwaukee_county_extract <- function(x){
     check_names_extractable(df_, col_name_df)
     
     rename_extractable(df_, col_name_df) %>%
-        filter(Name != "") %>%
+        filter(Name != "" & Name != "-") %>%
         clean_scraped_df() %>%
         as_tibble() %>%
         mutate_if(is.numeric, function(x) ifelse(is.na(x), 0, x)) %>%

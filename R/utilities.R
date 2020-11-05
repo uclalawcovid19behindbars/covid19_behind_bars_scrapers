@@ -290,7 +290,7 @@ string_to_clean_numeric <- function(column) {
     expected.nonnumeric.values <- 
         c("-", "N/A", "na", "n/a", "NA", "", " +",
           NA, "T", "[", "]", "o", "O",
-          "PENDING DOH RESULTS", "S", "")
+          "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "")
     
     unexpected.nonnumeric.values <- column[
         !(grepl(column, pattern = "[0-9]+") | 
@@ -583,6 +583,7 @@ read_historical_data <- function(){
     list.files("./results/extracted_data", full.names = TRUE) %>%
         lapply(read_csv, col_types = cols()) %>%
         bind_rows() %>%
+        select(-Resident.Deaths) %>%
         # remove values if they are missing a data name or state
         filter(!is.na(Date) & !is.na(Name) & State != "") %>%
         # order the names alphabetically

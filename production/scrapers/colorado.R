@@ -58,53 +58,79 @@ colorado_pull <- function(x){
 }
 
 colorado_restruct <- function(x){
-    magick::image_read_pdf(x) %>%
-        ExtractTable()
+    z <-  magick::image_read_pdf(x, pages = 1)
+    
+    col_names <- clean_fac_col_txt(c(
+        z %>%
+            magick::image_crop("423x50+177+484") %>%
+            magick::image_ocr(),
+        z %>%
+            magick::image_crop("423x50+616+484") %>%
+            magick::image_ocr(),
+        z %>%
+            magick::image_crop("423x50+1055+484") %>%
+            magick::image_ocr(),
+        z %>%
+            magick::image_crop("423x50+1494+484") %>%
+            magick::image_ocr()
+        ))
+
+    # extract tables struggles to pull some of this data so
+    # by cropping it first we can ensure greater consistency.
+    # that is as long as CO keeps the same formatting.
+    col_vals <- cbind(
+        z %>%
+            magick::image_crop("213x1080+387+1000") %>%
+            ExtractTable() %>%
+            unlist() %>%
+            string_to_clean_numeric(),
+
+        z %>%
+            magick::image_crop("213x1080+824+1000") %>%
+            ExtractTable() %>%
+            unlist() %>%
+            string_to_clean_numeric(),
+
+        z %>%
+            magick::image_crop("213x1080+1264+1000") %>%
+            ExtractTable() %>%
+            unlist() %>%
+            string_to_clean_numeric(),
+
+        z %>%
+            magick::image_crop("213x1080+1700+1000") %>%
+            ExtractTable() %>%
+            unlist() %>%
+            string_to_clean_numeric())
+    
+    colnames(col_vals) <- col_names
+    
+    col_vals %>%
+        as_tibble() %>%
+        mutate(Name = z %>%
+                   magick::image_crop("213x1080+177+1000") %>%
+                   ExtractTable() %>%
+                   unlist())
 }
 
 colorado_extract <- function(x){
     
-    col_name_mat <- matrix(c(
-        "TESTS", "0", "OName.Residents.Tested",
-        "", "1", "Residents.Tested",
-        "POSITIVES", "2", "OName.Residents.Confirmed",
-        "", "3", "Residents.Confirmed",
-        "RECOVERED", "4", "OName.Residents.Recovered",
-        "", "5", "Residents.Recovered",
-        "DEATHS", "6", "OName.Residents.Deaths",
-        "", "7", "Residents.Deaths",
-        "TOTAL TESTED", "8", "Drop"
-    ), ncol = 3, nrow = 9, byrow = TRUE)
+    df_ <- x
     
-    colnames(col_name_mat) <- c("check", "raw", "clean")
-    col_name_df <- as_tibble(col_name_mat)
+    exp_names <- c(
+        Residents.Tested = "TESTS",
+        Residents.Confirmed = "TOTAL POSITIVE",
+        Residents.Active = "ACTIVE CASES",
+        Residents.Deaths = "DEATHS",
+        Name = "Name")
     
-    check_names_extractable(x[[1]], col_name_df)
+    check_names(df_, exp_names)
     
-    lean_df <- rename_extractable(x[[1]], col_name_df) %>%
-        as_tibble() %>%
-        select(-Drop) %>%
-        .[3:nrow(.),] %>%
-        mutate_at(names(.)[str_starts("OName", names(.))], clean_fac_col_txt)
+    names(df_) <- names(exp_names)
     
-    CO_names <- lean_df %>%
-        select(starts_with("OName")) %>%
-        as.matrix()
-    
-    co_test <- apply(CO_names, 1, function(x) length(unique(x)) != 1)
-    
-    for(i in 1:length(co_test)){
-        if(co_test[i]){
-            bnames <- unname(CO_names[i,])
-            warning(str_c(
-                "Inconsistent names found: ", str_c(bnames, collapse = ", ")))
-        }
-    }
-    
-    lean_df %>%
-        mutate(Name = OName.Residents.Tested) %>%
-        select(-starts_with("OName")) %>%
-        clean_scraped_df()
+    df_ %>%
+        mutate(Residents.Recovered = 
+                   Residents.Confirmed - Residents.Active - Residents.Deaths)
 }
 
 #' Scraper class for general Colorado COVID data
@@ -124,7 +150,7 @@ colorado_extract <- function(x){
 #'   \item{Facility_Name}{The facility name.}
 #'   \item{Tests}{Total tests administered.}
 #'   \item{Positives}{Residents with psoitive tests, not neccesarily by DOC.}
-#'   \item{Recovered}{Inidviduals who have recovered after positive test.}
+#'   \item{Active}{Inidviduals with active cases.}
 #'   \item{Deaths}{Symptoms or positive test, not coroners office.}
 #'   \item{Offenders Tested}{Number of residents tested.}
 #' }

@@ -11,7 +11,7 @@ UCLABB_MAIN_VARIABLES <- c(
     "Staff.Negative", "Residents.Negative",
     "Staff.Pending", "Residents.Pending",
     "Staff.Quarantine", "Residents.Quarantine",
-    "Residents.Population"
+    "Residents.Population", "Residents.Active"
 )
 
 generic_scraper <- R6Class(

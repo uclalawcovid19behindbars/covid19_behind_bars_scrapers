@@ -1,0 +1,43 @@
+---
+title: "Covid Rates and How to Make Measures Comparable in Prison Populations"
+author: "UCLA COVID-19 Behind Bars Team"
+date: "10/27/2020"
+output: pdf_document
+---
+
+## Intro
+
+A primary goal of the UCLA COVID-19 Behind Bars project is to assess how well facilities have kept spread of the virus under control. One way to do this is to compare rates of COVID-19 dynamics, however, because facilities have vastly different population sizes/dynamics and data quality for resident populations is poor, the choice we make for a rate can have strong impacts on how well we think a facility is performing. As the COVID pandemic persists cases will likely continue to increase, and depending on how facilities report data and we select our denominators and numerators we may see insensibly high values such as infections rates greater than 1 per person. In this document we will outline potential denominators we may use for our analyses and presentations, their feasibility and the benefits and pitfalls of using such an approach.
+
+## Numerators
+
+Rates are composed of numerators and denominators and information about COVID-19 numerators tends to be better than denominators so we will start here. Our project currently collects information on several numerators including COVID-19 related deaths at a facility, COVID-19 active cases, and COVID-19 cumulative cases. The sections below describe each of these numerators and inconsistencies that we may find across facilities in how this data is reported.
+
+### Active COVID-19 cases
+
+This measure is by far our most consistent measure and corresponds to our data column `Residents.Active`. Most if not all facilities report this number as "the number of individuals currently at the facility who have an active infection of COVID-19 and have not been medically cleared to return to the general resident population". Some facilities break this information down further by symptomatic and asymptomatic individuals as well. The only problem with this metric is that it is sometimes unclear if a facility is reporting this value or some form of cumulative cases from the resident population, though clarifying this distinction in our historical data is actively being worked on.
+
+### COVID-19 related deaths
+
+Our `Residents.Deaths` column, COVID-19 related deaths are often not reported at the facility level but rather at the state-level and as such may not always be available to assess the performance of a facility, see FL and TX. Which residents qualify for inclusion in this categorization is not standardized by any governing body such as the CDC and as such comparisons across facilities should be made carefully. For example, some states facilities report all those who were suspected to have died from COVID-19 in this category, while others require a positive test result. Others still appear to not report deaths as being COVID-19 related even if the individual had an infection at the time of death, depending on the results from the coroner.
+
+### Cumulative COVID-19 cases
+
+Cumulative COVID-19 cases, our `Residents.Confirmed` column, are reported by almost all facilities, however, this number may reflect a different underlying construct which is difficult to distinguish between facilities. Some locations report this value as the number of individuals who currently reside in the facility who have ever had COVID-19. This value can never exceed the current population size of the facility and more importantly it can go down over time such as is the case in Ohio prison reported data. Alternatively, some facilities report the cumulative cases as the number of individuals who were ever at the facility, who have ever had COVID-19. This number can never go down and is likely the value that we want, however, we should note that if we use this number that individuals may be counted twice as they move across facilities. Massachusetts appears to report data this way. Currently it is difficult to say for sure which construct facilities are reporting. While this may not currently be a large issue, the discrepancy between these two values will become larger the long the pandemic goes on for and we suspect that more facilities will default to reporting the latter construct.
+
+## Denominators
+
+How we define an appropriate denominator is greatly constrained by the data that is available to us. Ideally we would have daily rosters of individuals housed at each facility with the dates of their COVID-19 tests, what instrument was used, and their result. This information, however, is unavailable to us and at best we can hope for either time series data of the total population, roster data of the population at some time in the past, the number of individuals who have been tested, or the number of tests administered. Each of these alternatives has a drawback and we should be clear of what they are when we report them.
+
+### Tests administered
+Tests administered tell us the number of opportunities that we have to detect someone who is potentially infected with COVID-19 and can also be used as a numerator to assess testing coverage. This measure gives us some insight into how much of and how often the population is being tested. Using this as a denominator we can calculate the probability that a tested individual returns a positive result. This measure is likely to be auto-correlated both within individuals and across time and without microdata may lead to misleading results, especially because there is no agreed upon strategy for testing and retesting among facilities. Nevertheless, this denominator is likely the most available and comparable, especially if the time of the test is considered.
+
+### Individuals Tested
+Individuals tested gives us the probability of ever possibly detecting whether an individual had COVID-19. While seemingly a good metric, this may be a poor metric within facilities depending on when the tests are conducted. For example, if all individuals were tested once at the beginning of the pandemic the likelihood of detection of COVID-19 infections would be relatively low, perhaps the case in Nevada. On the other hand, if all individuals at a facility were tested once but were tested strategically, such as by CDC guidelines, likelihood of detection would be higher. Two facilities could thus have similar success in containing the pandemic with similar numbers of individuals tested, however, may have very different metrics depending on when individuals were tested.
+
+### Daily population
+Daily population time series allow us to estimate the exposure time of individuals to use as denominators and is available for a significant portion of facilities. While daily population totals tell us nothing of churn and individuals can not be infected while currently sustaining an infection, it is nonetheless a good measure for comparison as long as testing policies are similar and of sufficient quality. If testing is poor, however, then we may not be able to accurately assess the infection rate of the facility and different testing strategies across facilities may lead to incomparable metrics.
+
+### Point in Time Roster population
+Point in time roster data allows us to get detailed information about individuals to account for differences in the demographics of the populations of jails and the general population, however, they are difficult to obtain over many days. If we are limited to using only a single point in time, particularly the most recent available point in time data, our metrics may penalize those locations that have drastically declined in size.
+

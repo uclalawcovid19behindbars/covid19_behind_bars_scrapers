@@ -2,17 +2,24 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 california_pull <- function(x, wait = 10){
-    sp <- start_splash()
-    
     # scrape from the power bi iframe directly
-    y <- "https://app.powerbigov.us/view?r=" %>% 
+    y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(
             "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI",
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
             "pageName=ReportSection90204f76f18a02b19c96")
     
-    splashr::render_html(splash_obj = sp, wait = wait, url = y)
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
     
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(y)
+    Sys.sleep(wait)
+    
+    xml2::read_html(remDr$getPageSource()[[1]])
 }
 
 california_restruct <- function(x){

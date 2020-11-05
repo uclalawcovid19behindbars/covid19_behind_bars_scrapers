@@ -14,22 +14,24 @@ south_dakota_extract <- function(x){
     
     col_name_st <- matrix(c(
         "Facility", "X0", "Name",
-        "Total Positive", "X1", "Staff.Confirmed",
+        "Cumulative Positive", "X1", "Staff.Confirmed",
         "Negative", "X2", "Staff.Negative",
         "Recovered", "X3", "Staff.Recovered",
-        "Death", "X4", "Staff.Deaths"
-    ), ncol = 3, nrow = 5, byrow = TRUE)
+        "Active Positive", "X4", "Drop.Staff.Active",
+        "Death", "X5", "Staff.Deaths"
+    ), ncol = 3, nrow = 6, byrow = TRUE)
     
     colnames(col_name_st) <- c("check", "raw", "clean")
     col_name_st_df <- as_tibble(col_name_st)
     
     col_name_res <- matrix(c(
         "Facility", "X0", "Name",
-        "Total Positive", "X1", "Residents.Confirmed",
+        "Cumulative Positive", "X1", "Residents.Confirmed",
         "Negative", "X2", "Residents.Negative",
         "Recovered", "X3", "Residents.Recovered",
-        "Death", "X4", "Residents.Deaths"
-    ), ncol = 3, nrow = 5, byrow = TRUE)
+        "Active Positive", "X4", "Residents.Active",
+        "Death", "X5", "Residents.Deaths"
+    ), ncol = 3, nrow = 6, byrow = TRUE)
     
     colnames(col_name_res) <- c("check", "raw", "clean")
     col_name_res_df <- as_tibble(col_name_res)
@@ -52,6 +54,7 @@ south_dakota_extract <- function(x){
                 as_tibble() %>%
                 filter(!str_detect(Name, "(?i)facility|total")),
             by = "Name") %>%
+        select(-starts_with("Drop")) %>%
         clean_scraped_df()
     
     # legacy code
