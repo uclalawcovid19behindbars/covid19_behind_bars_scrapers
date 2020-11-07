@@ -51,7 +51,8 @@ wisconsin_extract <- function(x){
     )
     
     ext_df %>%
-        select(-contains("Drop"))
+        select(-contains("Drop")) %>%
+        filter(!str_detect(Name, "(?i)total"))
 }
 
 #' Scraper class for general wisconsin COVID data

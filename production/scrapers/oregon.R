@@ -35,8 +35,17 @@ oregon_extract <- function(x){
                Residents.Confirmed = "AIC Positives to Date",
                Residents.Recovered = "Total AICs Recovered",
                Residents.Negative = "AIC Negatives to Date",
+               Residents.Active = "Current AIC Active Cases",
                Residents.Deaths = "AIC Deaths") %>%
         clean_scraped_df() %>%
+        mutate(Staff.Confirmed =
+                   ifelse(Name == "State-Wide", NA, Staff.Confirmed)) %>%
+        mutate(Residents.Confirmed =
+                   ifelse(Name == "State-Wide", NA, Residents.Confirmed)) %>%
+        mutate(Residents.Negative =
+                   ifelse(Name == "State-Wide", NA, Residents.Negative)) %>%
+        mutate(Residents.Active =
+                   ifelse(Name == "State-Wide", NA, Residents.Active)) %>%
         as_tibble()
         
 }

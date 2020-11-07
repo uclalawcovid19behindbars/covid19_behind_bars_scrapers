@@ -15,7 +15,7 @@ tennessee_extract <- function(x){
     col_name_mat <- matrix(c(
         "Name", "V1", "By Location",
         "Residents.Tested", "V2", "#Tested",
-        "Residents.Confirmed", "V3", "#Positive",
+        "Residents.Active", "V3", "#Positive",
         "Residents.Negative", "V4", "#Negative",
         "Residents.Pending", "V5", "Pending",
         "Residents.Recovered", "V6", "Recovered",
@@ -54,7 +54,9 @@ tennessee_extract <- function(x){
         clean_scraped_df() %>%
         as_tibble() %>%
         full_join(fac_df, by = "Name") %>%
-        mutate(Residents.Confirmed = Residents.Confirmed + Residents.Deaths +
+        mutate(Residents.Deaths = ifelse(
+            is.na(Residents.Deaths), 0, Residents.Deaths)) %>%
+        mutate(Residents.Confirmed = Residents.Active + Residents.Deaths +
                    Residents.Recovered)
 }
 

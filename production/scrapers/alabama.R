@@ -9,7 +9,9 @@ alabama_pull <- function(x){
             "where=State%20%3D%20%27AL%27&returnGeometry=false&",
             "spatialRel=esriSpatialRelIntersects&outFields=*&",
             "orderByFields=ShortName%20asc&outSR=102100&resultOffset=0&",
-            "resultRecordCount=100&resultType=standard&cacheHint=true") %>%
+            "resultRecordCount=100&resultType=standard&cacheHint=true")
+        
+    "https://services7.arcgis.com/jF2q3LPxL7PETdYk/arcgis/rest/services/esriMapData/FeatureServer/0/query?f=json&where=State%20%3D%20%27AL%27&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=ShortName%20asc&outSR=102100&resultOffset=0&resultRecordCount=100&resultType=standard&cacheHint=true" %>% 
         jsonlite::read_json(simplifyVector = TRUE)
 }
 

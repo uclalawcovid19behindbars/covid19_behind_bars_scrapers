@@ -29,13 +29,8 @@ texas_statewide_extract <- function(x){
                    Offender_Deceased_Confirmed_COVID) %>%
         select(
             Name = Unit,
-            Residents.Tested = Offender_Total_Tests,
-            Residents.Confirmed = Offender_Total_Positive_Cases,
-            Residents.Recovered = Offender_Recovered,
             Residents.Deaths,
             Staff.Tested = Employee_Total_Tests,
-            Staff.Confirmed = Employee_Total_Positive_Cases,
-            Staff.Recovered = Employee_Recovered,
             Staff.Deaths = Employee_Deceased__COVID
         )
 }

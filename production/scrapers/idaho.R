@@ -29,6 +29,11 @@ idaho_extract <- function(x){
     
     sw %>%
         mutate(Name = "State-Wide") %>%
+        mutate(Residents.Confirmed = 
+                   Residents.Confirmed + Residents.Deaths + 
+                   Drop.Residents.Asymp + Drop.Residents.Active) %>%
+        mutate(Residents.Active = 
+                   Drop.Residents.Asymp + Drop.Residents.Active) %>%
         bind_rows(
             x[[6]] %>%
                 rename(Name = Location) %>%

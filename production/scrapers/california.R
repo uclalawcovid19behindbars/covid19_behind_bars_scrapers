@@ -50,7 +50,7 @@ california_restruct <- function(x){
     dat_df %>%
         select(-Institution) %>%
         rename(Name = "Institution Name") %>%
-        clean_scraped_df() %>%
+        mutate_at(vars(-Name), string_to_clean_numeric) %>%
         as_tibble()
 }
 
@@ -64,7 +64,7 @@ california_extract <- function(x){
     
     ext_df <- x
     names(ext_df) <- c(
-        "Name", "Residents.Confirmed", "Drop.New", "Drop.Active",
+        "Name", "Residents.Confirmed", "Drop.New", "Residents.Active",
         "Drop.Released", "Residents.Recovered", "Residents.Deaths")
     
     ext_df %>%

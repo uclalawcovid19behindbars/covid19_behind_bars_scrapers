@@ -1,0 +1,362 @@
+# Scraper diffs
+
+```{r prison_data_sources, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+
+translate_state <- function(x, reverse = FALSE){
+    state_vec <- c(state.name, "DC")
+    names(state_vec) <- c(state.abb, "DC")
+    
+    if(reverse){
+        state_vec <- c(state.abb, "DC")
+        names(state_vec) <- c(state.name, "DC")
+    }
+    
+    state_vec[x]
+}
+
+facname_df <- "~/Documents/facility_data/data_sheets/fac_spellings.csv" %>%
+    read_csv() %>%
+    select(State, Name = facility_name_clean, Facility = facility_name_raw) %>%
+    mutate(Name = str_to_upper(Name)) %>%
+    unique()
+
+ind_vars <- c("Date", "Name", "State")
+
+new_df <-  list.files("../results/extracted_data", full.names = TRUE) %>%
+    lapply(read_csv, col_types = cols()) %>%
+    bind_rows() %>%
+    select(-Resident.Deaths) %>%
+    # remove values if they are missing a data name or state
+    filter(!is.na(Date) & !is.na(Name) & State != "") %>%
+    # order the names alphabetically
+    select(!!sort(names(.))) %>%
+    # put the indicator variables first
+    select(!!ind_vars, !!(names(.)[!(names(.) %in% ind_vars)])) %>%
+    mutate(Name = str_to_upper(Name)) %>%
+    rename(Facility = Name) %>%
+    mutate(State = translate_state(State)) %>%
+    left_join(facname_df, by = c("Facility", "State")) %>%
+    mutate(Name = ifelse(
+        str_detect(Facility, "(?i)state-wide"), "STATEWIDE", Name))
+
+old_df <-  "~/Downloads/UCLA Law Covid-19 Behind Bars Data Project " %>%
+    str_c(
+        "Professor Sharon Dolovich, Director - COVID-19 Jail_Prison ",
+        "Confirmed Cases and Deaths.csv") %>%
+    read_csv(skip = 1, col_types = cols()) %>%
+    .[2:nrow(.),] %>%
+    rename(Name = "County / Name of Facility") %>%
+    select(
+        Facility, Name, State,
+        Rez.Con.Old = "Confirmed Cases \n(Residents)",
+        Rez.Death.old = "Confirmed Deaths\n(Residents)")
+
+compare_df <- old_df %>%
+    full_join(
+        new_df %>%
+            filter(Date == lubridate::ymd("2020-10-30")) %>%
+            select(Name, State, Residents.Confirmed, Residents.Deaths)) %>%
+    arrange(State, Name)
+
+
+
+```
+
+## State level differences explained
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+cont_df <- left_join(
+    old_df %>%
+        filter(Facility != "Federal Prison") %>%
+        group_by(State) %>%
+        summarise_if(is.numeric, sum, na.rm=T),
+    
+    new_df %>%
+        filter(Date == lubridate::ymd("2020-10-30") & !is.na(State)) %>%
+        select(State, Residents.Confirmed, Residents.Deaths) %>%
+        group_by(State) %>%
+        summarise(
+            Residents.Confirmed = sum(Residents.Confirmed, na.rm = TRUE),
+            Residents.Deaths = sum(Residents.Deaths, na.rm = TRUE)
+        ), by = "State") %>%
+    mutate(Residents.Confirmed = ifelse(
+        is.na(Residents.Confirmed), 0, Residents.Confirmed)) %>%
+    mutate(diff = abs(Residents.Confirmed - Rez.Con.Old)/Rez.Con.Old)
+
+cont_df %>%
+    mutate(group_diff = cut(diff, breaks = c(seq(0, 1, .05), 2), right = F)) %>%
+    ggplot(aes(x=group_diff)) +
+    geom_bar() +
+    labs(
+        x = "Percent Difference Between State Scrapers Confirmed Count",
+        y="State Count") +
+    theme_classic()
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+cont_df %>%
+    filter(diff > .05)
+```
+
+- Arkansas scraper broke new data is fixed and is the same level
+- California missing LA jails infections and deaths
+- Delaware, Maine, New Mexico, Rhode Island, Vermont, Wyoming need to add in manual data
+- Idaho need to add in asymptomatic/current cases
+- Louisiana, missing Orleans Parish Jails
+- Missouri date mismatch
+- New York missing jails for NYC
+- OK stopped reporting data need to auto populate with past date (10-17-20)
+- OR was double counting state-wide
+- PA was missing Philly jail data
+- SD time mismatch
+- TN NA issue that has now been resolved
+- TX was double county for state-wide now fixed
+- UT day mismatch
+- WI double counting state wide now fixed
+
+# Detailed Examination not so important
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+n_df <- left_join(
+    old_df %>%
+        filter(Facility != "Federal Prison") %>%
+        group_by(State) %>%
+        summarize(Nold = n()),
+    
+    new_df %>%
+        filter(Date == lubridate::ymd("2020-10-30") & !is.na(State)) %>%
+        group_by(State) %>%
+        summarize(Nnew = n()), by = "State") %>%
+    mutate(Nnew = ifelse(is.na(Nnew), 0, Nnew)) %>%
+    mutate(diff = abs(Nnew - Nold)/Nold)
+
+n_df %>%
+    filter(diff != 0) %>%
+    arrange(-diff)
+```
+
+- NE really only has state wide
+- PA pop data needs to merge with other data
+- AK is state wide only now
+- MI resident and staff need to be harmonized
+- TN resident and staff need to be harmonized
+- CA staff data is missing
+
+## alabama
+
+Names are not currently being matched correctly but data looks on point
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Alabama") %>%
+    filter(!is.na(Rez.Co.Old))
+
+new_df %>%
+    filter(State == "Alabama" & Date == lubridate::ymd("2020-10-30")) %>%
+    select(Facility, Residents.Confirmed, Residents.Deaths)
+```
+
+## alaska
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Alaska")
+```
+
+## allegheny county
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(Name == "ALLEGHENY COUNTY JAIL")
+```
+
+## arizona & maricopa
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Arizona" & Facility != "Federal Prison")
+```
+
+## arkansas
+Broke on 10/30 but looks good otherwise
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Arkansas" & Facility != "Federal Prison")
+
+new_df %>%
+    filter(State == "Arkansas" & Date == lubridate::ymd("2020-10-27"))
+```
+## California
+need to add in LA jails resident numbers and names not matching
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "California" & Facility != "Federal Prison") %>%
+    filter(!is.na(Rez.Co.Old))
+
+compare_df %>%
+    filter(State == "California") %>%
+    #pull(Residents.Confirmed) %>%
+    filter(!is.na(Residents.Confirmed))
+```
+
+
+## colorado
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Colorado" & Facility != "Federal Prison")
+```
+
+## conneticut
+name not matching for a few
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Connecticut")
+```
+
+# Florida
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Florida")
+```
+
+# Georgia
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Georgia")
+```
+
+# Hawaii
+not all names matching
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Hawaii")
+```
+
+# Idaho
+rez confirmed number was way off now adding in correct values
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Idaho")
+```
+
+# Illinois
+rez confirmed number was way off now adding in correct values
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Illinois")
+```
+
+# Indiana
+Numbers are mismatched because of slight day alignment mismatch
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Indiana")
+
+new_df %>%
+    filter(State == "Indiana" & Date == lubridate::ymd("2020-11-05")) %>%
+    select(Facility, Residents.Confirmed, Residents.Deaths)
+```
+
+# Iowa
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Iowa")
+```
+
+# Kansas
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Kansas")
+```
+
+
+# Kentucky
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Kentucky")
+```
+
+# Kentucky
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Kentucky")
+```
+
+# Lousiana
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Louisiana")
+```
+
+# Missouri
+name mismatches
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Missouri")
+
+new_df %>%
+        filter(Date == lubridate::ymd("2020-11-05") & State == "Missouri") %>%
+        select(State, Residents.Confirmed, Residents.Deaths)
+```
+
+# New York
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "New York")
+```
+
+# Nebraska
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Nebraska")
+```
+
+# Oklahoma
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+new_df %>%
+    filter(Date == lubridate::ymd("2020-10-19") & State == "Oklahoma") %>%
+    select(Residents.Confirmed, Residents.Deaths) %>%
+    summarise_all(sum, na.rm=T)
+```
+
+# Pennsylvania
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+new_df %>%
+    filter(Date == lubridate::ymd("2020-10-30") & State == "Pennsylvania")
+    
+```
+
+# South Dakota
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "South Dakota")
+```
+
+# Tennessee
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Tennessee")
+```
+
+# Utah
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Utah")
+
+new_df %>%
+    filter(State == "Utah" & Date == lubridate::ymd("2020-10-30"))
+```
+
+# West Virginia
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "West Virginia")
+```
+
+# Wisconsin
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+compare_df %>%
+    filter(State == "Wisconsin")
+```
