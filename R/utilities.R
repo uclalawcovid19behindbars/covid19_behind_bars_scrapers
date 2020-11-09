@@ -591,3 +591,33 @@ read_historical_data <- function(){
         # put the indicator variables first
         select(!!ind_vars, !!(names(.)[!(names(.) %in% ind_vars)]))
 }
+
+translate_state <- function(x, reverse = FALSE){
+    state_vec <- c(state.name, "DC")
+    names(state_vec) <- c(state.abb, "DC")
+    
+    if(reverse){
+        state_vec <- c(state.abb, "DC")
+        names(state_vec) <- c(state.name, "DC")
+    }
+
+    state_vec[x]
+}
+
+load_latest_data <- function(x){
+  
+    scrapers <- str_remove(list.files("./production/scrapers"), ".R")
+  
+    bind_rows(lapply(scrapers, function(i){
+        sub_files <- list.files(
+            "results/extracted_data", full.names = TRUE,
+            pattern = str_c("\\d+-\\d+-\\d+_", i, ".csv"))
+        if(length(sub_files) == 0){
+            return(tibble())
+        }
+        
+        date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
+        f_ <- sub_files[which(date_vec == max(date_vec))]
+        return(read_csv(f_, col_types = cols()))
+    }))
+}
