@@ -1,0 +1,3 @@
+[submodule "facility_data"]
+	path = facility_data
+	url = git@github.com:uclalawcovid19behindbars/facility_data.git
