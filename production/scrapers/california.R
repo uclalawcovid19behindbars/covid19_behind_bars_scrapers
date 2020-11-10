@@ -17,6 +17,7 @@ california_pull <- function(x, wait = 10){
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(y)
+    
     Sys.sleep(wait)
     
     xml2::read_html(remDr$getPageSource()[[1]])

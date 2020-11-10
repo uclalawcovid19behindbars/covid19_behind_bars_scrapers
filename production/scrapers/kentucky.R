@@ -15,11 +15,13 @@ kentucky_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Institution", "0", "Name", 
-        "Staff", "1", "Staff.Confirmed",
-        "Staff Deaths", "2", "Staff.Deaths", 
-        "Inmates", "3", "Residents.Confirmed",
-        "Inmate Deaths", "4", "Residents.Deaths"
-        ), ncol = 3, nrow = 5, byrow = TRUE)
+        "Active Staff", "1", "Drop.Staff.Active",
+        "Total Staff", "2", "Staff.Confirmed",
+        "Total Staff Deaths", "3", "Staff.Deaths", 
+        "Active Inmates", "4", "Residents.Active",
+        "Total Inmates", "5", "Residents.Confirmed",
+        "Total Inmate Deaths", "6", "Residents.Deaths"
+        ), ncol = 3, nrow = 7, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
@@ -29,6 +31,7 @@ kentucky_extract <- function(x){
     rename_extractable(df_, col_name_df) %>%
         filter(Name != "Institution" & Name != "Total") %>%
         clean_scraped_df() %>%
+        select(-starts_with("Drop")) %>%
         as_tibble()
 }
 

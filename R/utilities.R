@@ -604,7 +604,7 @@ translate_state <- function(x, reverse = FALSE){
     state_vec[x]
 }
 
-load_latest_data <- function(x){
+load_latest_data <- function(){
   
     scrapers <- str_remove(list.files("./production/scrapers"), ".R")
   
@@ -620,4 +620,14 @@ load_latest_data <- function(x){
         f_ <- sub_files[which(date_vec == max(date_vec))]
         return(read_csv(f_, col_types = cols()))
     }))
+}
+
+get_latest_manual <- function(state){
+    manual_files <- list.files(
+        "./results/manual_data", full.names = TRUE,
+        pattern = str_c(state, "_\\d\\d\\d\\d\\d\\d", ".xlsx"))
+    
+    dates <- lubridate::mdy(str_extract(manual_files, "\\d\\d\\d\\d\\d\\d"))
+    
+    readxl::read_excel(manual_files[which.max(dates)])
 }

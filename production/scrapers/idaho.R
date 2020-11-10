@@ -28,6 +28,7 @@ idaho_extract <- function(x){
     names(sw) <- names(exp_names)
     
     sw %>%
+        mutate_all(as.numeric) %>%
         mutate(Name = "State-Wide") %>%
         mutate(Residents.Confirmed = 
                    Residents.Confirmed + Residents.Deaths + 

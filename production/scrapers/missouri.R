@@ -8,8 +8,7 @@ missouri_pull <- function(x){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
-        browserName = "firefox",
-        extraCapabilities=fprof
+        browserName = "firefox"
     )
     
     del_ <- capture.output(remDr$open())

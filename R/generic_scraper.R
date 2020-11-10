@@ -143,11 +143,13 @@ generic_scraper <- R6Class(
             if(self$log){
                 tryLog(self$extract_data %>%
                            mutate(State = self$state, Date = self$date) %>%
+                           mutate(id = self$id, source = self$url) %>%
                            write_csv(self$extract_dest))
             }
             else{
                 self$extract_data %>%
                     mutate(State = self$state, Date = self$date) %>%
+                    mutate(id = self$id, source = self$url) %>%
                     write_csv(self$extract_dest)
             }
             invisible(self)

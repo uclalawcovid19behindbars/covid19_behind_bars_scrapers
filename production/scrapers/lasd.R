@@ -29,15 +29,15 @@ lasd_pull <- function(x, wait = 5){
 
 lasd_restruct <- function(x){
     tibble(
-        Residents.Confirmed = lasd_crop(x, "570x30+620+436", "(?i)total pos"),
-        Residents.Recovered = lasd_crop(x, "570x30+620+716", "(?i)recover"),
-        Residents.Deaths = lasd_crop(x, "570x30+620+793", "(?i)deaths"),
-        Residents.Quarantine = lasd_crop(x, "570x30+620+1145", "(?i)total"),
-        drop.neg.asymp = lasd_crop(x, "570x25+620+612", "(?i)negative"),
-        drop.neg.symp = lasd_crop(x, "562x25+20+612", "(?i)negative"),
-        drop.pos.asymp = lasd_crop(x, "570x25+620+556", "(?i)current"),
-        drop.pos.symp = lasd_crop(x, "562x25+20+556", "(?i)current"),
-        Residents.Population = lasd_crop(x, "562x25+20+230", "(?i)jail pop"))
+        Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
+        Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
+        Residents.Deaths = lasd_crop(x, "570x30+620+745", "(?i)deaths"),
+        Residents.Quarantine = lasd_crop(x, "570x30+620+1015", "(?i)total"),
+        drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
+        drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
+        drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),
+        drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
+        Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
 }
 
 lasd_extract <- function(x){

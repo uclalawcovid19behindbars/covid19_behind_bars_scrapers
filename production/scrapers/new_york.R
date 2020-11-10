@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 new_york_pull <- function(x){
     get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "(?i)confirmed-facility")
+        x, "a", attr = "href", attr_regex = "(?i)facility-")
 }
 
 new_york_restruct <- function(x){
