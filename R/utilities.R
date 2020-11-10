@@ -593,12 +593,12 @@ read_historical_data <- function(){
 }
 
 translate_state <- function(x, reverse = FALSE){
-    state_vec <- c(state.name, "DC")
-    names(state_vec) <- c(state.abb, "DC")
+    state_vec <- c(state.name, "DC", "Federal")
+    names(state_vec) <- c(state.abb, "DC", "federal")
     
     if(reverse){
-        state_vec <- c(state.abb, "DC")
-        names(state_vec) <- c(state.name, "DC")
+        state_vec <- c(state.abb, "DC", "Federal")
+        names(state_vec) <- c(state.name, "DC", "federal")
     }
 
     state_vec[x]
@@ -607,8 +607,26 @@ translate_state <- function(x, reverse = FALSE){
 load_latest_data <- function(){
   
     scrapers <- str_remove(list.files("./production/scrapers"), ".R")
-  
-    bind_rows(lapply(scrapers, function(i){
+    
+    facd_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
+        str_c("/facility_data/master/data_sheets/fac_data.csv") %>%
+        read_csv(col_types = cols()) %>%
+        select(
+            State, Name, Jurisdiction, Address, Zipcode, City, County, 
+            Latitude, Longitude, County.FIPS, hifld_id) %>%
+        mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
+        unique()
+    
+    facn_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
+        str_c("/facility_data/master/data_sheets/fac_spellings.csv") %>%
+        read_csv(col_types = cols()) %>%
+        select(
+            State, Name = facility_name_clean, Facility = facility_name_raw) %>%
+        mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
+        mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
+        unique()
+        
+    raw_df <- bind_rows(lapply(scrapers, function(i){
         sub_files <- list.files(
             "results/extracted_data", full.names = TRUE,
             pattern = str_c("\\d+-\\d+-\\d+_", i, ".csv"))
@@ -619,7 +637,53 @@ load_latest_data <- function(){
         date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
         f_ <- sub_files[which(date_vec == max(date_vec))]
         return(read_csv(f_, col_types = cols()))
-    }))
+        })) %>%
+        select(-starts_with("Resident.Deaths")) %>%
+        rename(Facility = Name) %>%
+        mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
+        mutate(State = translate_state(State))
+    
+    nonfederal <- raw_df %>%
+        filter(State != "Federal") %>%
+        left_join(facn_df, by = c("Facility", "State")) %>%
+        mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
+        select(-Facility) %>%
+        left_join(facd_df,  by = c("Name", "State"))
+    
+    federal <- facd_df %>%
+        select(State, Name, Jurisdiction) %>%
+        right_join(facn_df, by = c("State", "Name")) %>%
+        unique() %>%
+        filter(str_detect(Jurisdiction, "(?i)federal")) %>%
+        right_join(
+            raw_df %>%
+                filter(State == "Federal") %>%
+                select(-State),
+            by = "Facility") %>%
+        mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
+        select(-Facility, -Jurisdiction) %>%
+        left_join(facd_df,  by = c("Name", "State")) %>%
+        mutate(Jurisdiction = "federal")
+      
+    full_df <- bind_rows(federal, nonfederal)
+    
+    full_df %>%
+        mutate(Residents.Released = NA, Notes = NA) %>%
+        select(
+            id, Jurisdiction, State, Name, Date, source,
+            Residents.Confirmed, Staff.Confirmed,
+            Residents.Deaths, Staff.Deaths, Residents.Recovered,
+            Staff.Recovered, Residents.Tested, Staff.Tested, Residents.Negative,
+            Staff.Negative, Residents.Pending, Staff.Pending,
+            Residents.Quarantine, Staff.Quarantine, Residents.Released, 
+            Residents.Population, Address, Zipcode, City, County, Latitude,
+            Longitude, County.FIPS, hifld_id, Notes) %>%
+        arrange(State, Name)
+
+}
+
+write_latest_data <- function(){
+    write_csv(load_latest_data(), "./results/public_daily.csv")
 }
 
 get_latest_manual <- function(state){
