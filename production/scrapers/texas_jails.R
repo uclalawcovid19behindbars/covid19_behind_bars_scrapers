@@ -10,7 +10,7 @@ texas_jails_restruct <- function(x){
     npages <- tabulizer::get_n_pages(x)
     
     res_exp <- c(
-        Drop.Res.Active = 
+        Residents.Active = 
             "Number of inmates with active positive test confirmation",
         Residents.Pending = "Number of inmates pending test results",
         Residents.Quarantine = 

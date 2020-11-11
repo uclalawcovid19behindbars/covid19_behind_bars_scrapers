@@ -604,6 +604,16 @@ translate_state <- function(x, reverse = FALSE){
     state_vec[x]
 }
 
+vector_na_sum <- function(...){
+    d <- rbind(...)
+    apply(rbind(...), 2, function(x){
+        if(all(is.na(x))){
+            NA
+        }
+        sum(x, na.rm = TRUE)
+    })
+}
+
 load_latest_data <- function(){
   
     scrapers <- str_remove(list.files("./production/scrapers"), ".R")
@@ -633,7 +643,6 @@ load_latest_data <- function(){
         if(length(sub_files) == 0){
             return(tibble())
         }
-        
         date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
         f_ <- sub_files[which(date_vec == max(date_vec))]
         return(read_csv(f_, col_types = cols()))
@@ -641,7 +650,13 @@ load_latest_data <- function(){
         select(-starts_with("Resident.Deaths")) %>%
         rename(Facility = Name) %>%
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
-        mutate(State = translate_state(State))
+        mutate(State = translate_state(State)) %>%
+        mutate(Residents.Confirmed = ifelse(
+            is.na(Residents.Confirmed),
+            vector_na_sum(
+                Residents.Active, Residents.Deaths, Residents.Recovered),
+            Residents.Confirmed
+        ))
     
     nonfederal <- raw_df %>%
         filter(State != "Federal") %>%
@@ -664,11 +679,12 @@ load_latest_data <- function(){
         select(-Facility, -Jurisdiction) %>%
         left_join(facd_df,  by = c("Name", "State")) %>%
         mutate(Jurisdiction = "federal")
-      
+    
     full_df <- bind_rows(federal, nonfederal)
     
     full_df %>%
         mutate(Residents.Released = NA, Notes = NA) %>%
+        # Select the order for names corresponding to Public facing google sheet
         select(
             id, Jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
@@ -678,12 +694,15 @@ load_latest_data <- function(){
             Residents.Quarantine, Staff.Quarantine, Residents.Released, 
             Residents.Population, Address, Zipcode, City, County, Latitude,
             Longitude, County.FIPS, hifld_id, Notes) %>%
-        arrange(State, Name)
+        arrange(State, Name) %>%
+      mutate(Date = str_c(
+        month.name[lubridate::month(Date)]), " ", lubridate::day(Date),
+        ", ", lubridate::year(Date))
 
 }
 
 write_latest_data <- function(){
-    write_csv(load_latest_data(), "./results/public_daily.csv")
+    write_csv(load_latest_data(), "./facility_data/public_daily.csv", na="")
 }
 
 get_latest_manual <- function(state){
@@ -694,4 +713,8 @@ get_latest_manual <- function(state){
     dates <- lubridate::mdy(str_extract(manual_files, "\\d\\d\\d\\d\\d\\d"))
     
     readxl::read_excel(manual_files[which.max(dates)])
+}
+
+coalesce_by_column <- function(df) {
+    return(coalesce(df[1], df[2]))
 }
