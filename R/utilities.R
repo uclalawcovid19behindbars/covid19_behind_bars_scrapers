@@ -696,13 +696,18 @@ load_latest_data <- function(){
             Longitude, County.FIPS, hifld_id, Notes) %>%
         arrange(State, Name) %>%
       mutate(Date = str_c(
-        month.name[lubridate::month(Date)]), " ", lubridate::day(Date),
-        ", ", lubridate::year(Date))
+        month.name[lubridate::month(Date)], " ", lubridate::day(Date),
+        ", ", lubridate::year(Date)))
 
 }
 
 write_latest_data <- function(){
-    write_csv(load_latest_data(), "./facility_data/public_daily.csv", na="")
+    write_csv(
+        load_latest_data(),
+        str_c(
+            "./data/Adult Facility Counts/",
+            "adult_facility_covid_counts_today_latest.csv"), 
+      na="")
 }
 
 get_latest_manual <- function(state){

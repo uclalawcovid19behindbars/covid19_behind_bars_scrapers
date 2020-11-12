@@ -42,8 +42,19 @@ texas_jails_restruct <- function(x){
         basic_check(res_names, res_exp)
         basic_check(staff_names, staff_exp)
         
+        # sometime data gets spread over two columns so we want to only
+        # grab the first column and remove the empty columns
         TXjaildata_[[i]] <- tabulizer::extract_tables(
-            x, page = i, area = list(c(188, 404, 372, 452)), guess = FALSE)
+            x, page = i, area = list(c(188, 404, 372, 452)), guess = F)[[1]] %>%
+            # data we care about is in the first column
+            .[,1] %>%
+            # we only want valid numeric data
+            as.numeric() %>%
+            # remove NAs
+            na.omit() %>%
+            # convert back to character
+            as.character()
+
         TXjailnames_[[i]] <- tabulizer::extract_tables(
             x, page = i, area = list(c(130, 160, 148, 256)), guess = FALSE)
         
@@ -67,11 +78,10 @@ texas_jails_restruct <- function(x){
             ))
         }
     }
-    
-    
+
     df_ <- as.data.frame(
         t(sapply(1:npages, function(i){
-            c(TXjailnames_[[i]][[1]], TXjaildata_[[i]][[1]])})))
+            c(TXjailnames_[[i]][[1]], TXjaildata_[[i]])})))
     names(df_) <- c("Name", names(res_exp), names(staff_exp))
     
     as_tibble(df_)

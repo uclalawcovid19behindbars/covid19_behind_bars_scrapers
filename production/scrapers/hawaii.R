@@ -9,13 +9,14 @@ hawaii_extract <- function(x){
         "Results Pending", "2", "Residents.Pending",
         "Negative", "3", "Residents.Negative",
         "Inconclusive", "4", "Residents.Inconclusive",
-        "Positive", "5", "Residents.Confirmed",
-        "Number of Persons in Medical Isolation", "6", "Residents.Isolation",
-        "Number of Persons in Quarantine", "7", "Residents.Quarantine",
-        "Hospitalization", "8", "Residents.Hospitalized",
-        "Recovered", "9", "Residents.Recovered",
-        "Deaths", "10", "Residents.Deaths"
-    ), ncol = 3, nrow = 11, byrow = TRUE)
+        "Total Tested Positive", "5", "Residents.Confirmed",
+        "Active Positive", "6", "Residents.Active",
+        "Number of Persons in Medical Isolation", "7", "Residents.Isolation",
+        "Number of Persons in Quarantine", "8", "Residents.Quarantine",
+        "Hospitalization", "9", "Residents.Hospitalized",
+        "Recovered", "10", "Residents.Recovered",
+        "Deaths", "11", "Residents.Deaths"
+    ), ncol = 3, nrow = 12, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
