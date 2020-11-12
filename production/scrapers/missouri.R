@@ -28,7 +28,7 @@ missouri_pull <- function(x){
     remDr$switchToWindow(new_window)
     Sys.sleep(10)
     
-    x = xml2::read_html(remDr$getPageSource()[[1]])
+    xml2::read_html(remDr$getPageSource()[[1]])
 }
 
 missouri_restruct <- function(x){
@@ -49,6 +49,8 @@ missouri_extract <- function(x){
         pivot_wider(
             names_from = col_name, values_from = `AGG(CountWithZero)`) %>%
         rename(Name = Location) %>%
+        # should this be this way cause we are missing deaths
+        mutate(Staff.Confirmed = Staff.Active + Staff.Recovered) %>%
         select(-Staff.Active)
 }
 
