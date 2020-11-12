@@ -34,17 +34,14 @@ california_staff_extract <- function(x){
 #' Scraper class for general california_staff COVID data
 #' 
 #' @name california_staff_scraper
-#' @description california_staff data scraped from rendered power BI iframe. Testing
-#' data is also available at the facility level but will need to be scraped
-#' separately. Note that time series data for the state exists for comparison.
+#' @description california_staff data scraped from html table. Names do not
+#' correspond to the names listed in the resident table and must be harmonized.
 #' \describe{
-#'   \item{Institution Name}{The facility name.}
-#'   \item{Confirmed}{The number of confimed cases among residents.}
-#'   \item{New In Last 14 Days}{The number of new cases among residents.}
-#'   \item{Active in Custody}{The number of active cases.}
-#'   \item{Released While Active}{Residents released after testing positive.}
-#'   \item{Resolved}{Recovered cases.}
-#'   \item{Deaths}{Resident Deaths.}
+#'   \item{Locations}{The facility name.}
+#'   \item{Cumulative Confirmed}{The number of confimed cases among staff.}
+#'   \item{New In Last 14 Days}{The number of new cases among Staff.}
+#'   \item{Active Cases}{The number of active cases among staff.}
+#'   \item{Staff Returned to Work}{Staff Recovered.}
 #' }
 
 california_staff_scraper <- R6Class(
