@@ -89,6 +89,7 @@ indiana_scraper <- R6Class(
             id = "indiana",
             type = "img",
             state = "IN",
+            jurisdiction = "state",
             pull_func = indiana_pull,
             restruct_func = indiana_restruct,
             # Rename the columns to appropriate database names
@@ -96,7 +97,7 @@ indiana_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

@@ -40,8 +40,9 @@ new_mexico_scraper <- R6Class(
             log,
             url = "https://cd.nm.gov/covid-19-updates/",
             id = "new_mexico",
-            type = "csv",
+            type = "manual",
             state = "NM",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = new_mexico_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -51,7 +52,7 @@ new_mexico_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

@@ -38,8 +38,9 @@ delaware_scraper <- R6Class(
             log,
             url = "https://doc.delaware.gov/assets/documents/Confirmed_COVID_Cases.pdf",
             id = "delaware",
-            type = "csv",
+            type = "manual",
             state = "DE",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = delaware_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -49,7 +50,7 @@ delaware_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

@@ -63,13 +63,14 @@ iowa_scraper <- R6Class(
             id = "iowa",
             state = "IA",
             type = "html",
+            jurisdiction = "state",
             pull_func = xml2::read_html,
             restruct_func = iowa_restruct,
             extract_func = iowa_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
             })
 )
 

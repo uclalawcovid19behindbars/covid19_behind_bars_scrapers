@@ -96,13 +96,14 @@ ohio_scraper <- R6Class(
             id = "ohio",
             type = "pdf",
             state = "OH",
+            jurisdiction = "state",
             pull_func = ohio_pull,
             restruct_func = ohio_restruct,
             extract_func = ohio_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         })
 )
 

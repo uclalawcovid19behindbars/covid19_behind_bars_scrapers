@@ -34,8 +34,9 @@ kansas_statewide_scraper <- R6Class(
             log,
             url = "https://www.kansas_statewide.gov/corrections/sites/kansas_statewide.gov.corrections/files/inline-files/MDOC%20COVID19WebDashboard11-9-2020.pdf",
             id = "kansas_statewide",
-            type = "csv",
+            type = "manual",
             state = "KS",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = kansas_statewide_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -45,7 +46,7 @@ kansas_statewide_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

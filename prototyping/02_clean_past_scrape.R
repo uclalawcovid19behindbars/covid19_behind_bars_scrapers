@@ -26,7 +26,8 @@ for(i in names(scraper_name_vec)){
         print(j)
         df_ <- read_csv(j, col_types = cols()) %>%
             mutate(id = scraper$id) %>%
-            mutate(source = scraper$url)
+            mutate(source = scraper$url) %>%
+            mutate(jurisdiction = scraper$jurisdiction)
         
         write_csv(df_, j)
     }

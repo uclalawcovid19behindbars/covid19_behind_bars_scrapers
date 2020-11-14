@@ -103,6 +103,7 @@ missouri_statewide_scraper <- R6Class(
             id = "missouri_statewide",
             type = "html",
             state = "MO",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = missouri_statewide_pull,
             restruct_func = missouri_statewide_restruct,
@@ -111,7 +112,7 @@ missouri_statewide_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

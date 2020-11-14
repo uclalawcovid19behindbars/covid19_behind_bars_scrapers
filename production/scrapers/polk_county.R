@@ -57,6 +57,7 @@ polk_county_scraper <- R6Class(
             id = "polk_county",
             type = "img",
             state = "IA",
+            jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = polk_county_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -66,7 +67,7 @@ polk_county_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

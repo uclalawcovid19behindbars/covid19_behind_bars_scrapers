@@ -79,6 +79,7 @@ florida_url_scraper <- R6Class(
             id = "florida_url",
             type = "html",
             state = "FL",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = xml2::read_html,
             restruct_func = florida_url_restruct,
@@ -87,7 +88,7 @@ florida_url_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

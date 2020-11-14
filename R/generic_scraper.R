@@ -43,16 +43,19 @@ generic_scraper <- R6Class(
         raw_dest = NULL,
         extract_dest = NULL,
         permalink = NULL,
+        jurisdiction = NULL,
         initialize = function(
-            url, id, pull_func, type, restruct_func, extract_func, log, state){
+            url, id, pull_func, type, restruct_func, extract_func, log, state, jurisdiction){
 
             valid_types <- c(
-                html = ".html", img = ".png", json = ".json", pdf = ".pdf", csv = ".csv"
+                html = ".html", img = ".png", json = ".json", pdf = ".pdf", csv = ".csv",
+                manual = ".csv"
             )
 
             stopifnot(is.character(url), length(url) == 1)
             stopifnot(is.character(id), length(id) == 1)
             stopifnot((type %in% names(valid_types)))
+            stopifnot(jurisdiction %in% c("state", "county", "federal"))
             
             self$log = log
             self$type = type
@@ -66,6 +69,7 @@ generic_scraper <- R6Class(
             self$pull_func = pull_func
             self$restruct_func = restruct_func
             self$extract_func = extract_func
+            self$jurisdiction = jurisdiction
             self$err_log = paste0(
                 "./results/log_files/", self$date, "_", id, ".log")
 
@@ -144,12 +148,14 @@ generic_scraper <- R6Class(
                 tryLog(self$extract_data %>%
                            mutate(State = self$state, Date = self$date) %>%
                            mutate(id = self$id, source = self$url) %>%
+                           mutate(jurisdiction = self$jurisdiction) %>%
                            write_csv(self$extract_dest))
             }
             else{
                 self$extract_data %>%
                     mutate(State = self$state, Date = self$date) %>%
                     mutate(id = self$id, source = self$url) %>%
+                    mutate(jurisdiction = self$jurisdiction) %>%
                     write_csv(self$extract_dest)
             }
             invisible(self)

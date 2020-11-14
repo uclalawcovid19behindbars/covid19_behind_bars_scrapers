@@ -79,6 +79,7 @@ south_carolina_scraper <- R6Class(
             id = "south_carolina",
             type = "html",
             state = "SC",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = south_carolina_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -88,7 +89,7 @@ south_carolina_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

@@ -58,6 +58,7 @@ st_luce_county_scraper <- R6Class(
             id = "st_luce_county",
             type = "html",
             state = "FL",
+            jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = st_luce_county_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -67,7 +68,7 @@ st_luce_county_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

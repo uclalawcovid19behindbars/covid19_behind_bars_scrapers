@@ -40,8 +40,9 @@ nyc_jails_scraper <- R6Class(
             log,
             url = "https://www1.nyc.gov/site/boc/covid-19.page",
             id = "nyc_jails",
-            type = "csv",
+            type = "manual",
             state = "NY",
+            jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = nyc_jails_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -51,7 +52,7 @@ nyc_jails_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

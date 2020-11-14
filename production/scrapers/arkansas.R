@@ -132,6 +132,7 @@ arkansas_scraper <- R6Class(
             id = "arkansas",
             state = "AR",
             type = "img",
+            jurisdiction = "state",
             # restructuring the data means pulling out the data portion of the json
             pull_func = function(x) {
                 magick::image_read(get_src_by_attr(
@@ -150,7 +151,7 @@ arkansas_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )

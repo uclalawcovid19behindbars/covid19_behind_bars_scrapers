@@ -63,6 +63,7 @@ hennepin_county_scraper <- R6Class(
             id = "hennepin_county",
             type = "html",
             state = "MN",
+            jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = hennepin_county_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -72,7 +73,7 @@ hennepin_county_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )
