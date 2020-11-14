@@ -111,7 +111,8 @@ generic_scraper <- R6Class(
             
             valid_types <- list(
                 html = xml2::write_html, img = magick::image_write, 
-                json = jsonlite::write_json, pdf = pdf_save, csv = write_csv
+                json = jsonlite::write_json, pdf = pdf_save, csv = write_csv,
+                manual = write_csv
             )
             
             if(self$log){

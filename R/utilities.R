@@ -56,6 +56,7 @@ clean_fac_col_txt <- function(x){
         # replace COVID - 19 with  some form of spaces with COVID-19
         str_replace_all("COVID[ ]*-[ ]*19", "COVID-19") %>%
         str_replace_all("\\n", " ") %>%
+        str_replace_all("\\r", " ") %>%
         str_squish()
 }
 

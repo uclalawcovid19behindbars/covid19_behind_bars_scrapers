@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 maryland_pull <- function(x){
     md_img <- get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)public-draft") %>%
+        x, "img", attr = "src", attr_regex = "(?i)public") %>%
         str_remove_all("-\\d{3,4}x\\d*")
 
     magick::image_read(md_img)
@@ -15,7 +15,12 @@ maryland_restruct <- function(x){
 
 maryland_extract <- function(x){
     # remove the title
-    df_ <- x[[1]][2:nrow(x[[1]]),]
+    df_ <- x[[1]]
+    
+    if(!str_detect(df_[1,1], "(?i)region")){
+        # sometimes need to remove title
+        df_ <- df_[2:nrow(df_),]
+    }
     
     col_name_mat <- matrix(c(
         "Region", "0", "Region",
@@ -27,7 +32,7 @@ maryland_extract <- function(x){
         "Inmates Tested", "6", "Residents.Tested",
         "Inmates Positive", "7", "Residents.Confirmed",
         "Inmates Recovered", "8", "Residents.Recovered",
-        "Inmate Deaths", "9", "Residents.Deaths"
+        "Inmate Deaths", "9",  "Residents.Deaths"
         ), ncol = 3, nrow = 10, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
