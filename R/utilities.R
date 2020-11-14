@@ -654,16 +654,27 @@ load_latest_data <- function(){
         str_c("/facility_data/master/data_sheets/fac_data.csv") %>%
         read_csv(col_types = cols()) %>%
         select(
-            State, Name, Jurisdiction, Address, Zipcode, City, County, 
+            ID = Count.ID, State, Name, Address, Zipcode, City, County, 
             Latitude, Longitude, County.FIPS, hifld_id) %>%
         mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
         unique()
+    
+    facdf_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
+      str_c("/facility_data/master/data_sheets/fac_data.csv") %>%
+      read_csv(col_types = cols()) %>%
+      filter(str_detect(Jurisdiction, "(?i)federal")) %>%
+      select(
+        ID = Count.ID, State, Name, Address, Zipcode, City, County, 
+        Latitude, Longitude, County.FIPS, hifld_id) %>%
+      mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
+      unique()
     
     facn_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
         str_c("/facility_data/master/data_sheets/fac_spellings.csv") %>%
         read_csv(col_types = cols()) %>%
         select(
-            State, Name = facility_name_clean, Facility = facility_name_raw) %>%
+          ID = Count.ID, State, Name = facility_name_clean,
+          Facility = facility_name_raw) %>%
         mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
         unique()
@@ -695,22 +706,19 @@ load_latest_data <- function(){
         left_join(facn_df, by = c("Facility", "State")) %>%
         mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
         select(-Facility) %>%
-        left_join(facd_df,  by = c("Name", "State"))
+        left_join(facd_df,  by = c("Name", "State", "ID"))
     
-    federal <- facd_df %>%
-        select(State, Name, Jurisdiction) %>%
-        right_join(facn_df, by = c("State", "Name")) %>%
-        unique() %>%
-        filter(str_detect(Jurisdiction, "(?i)federal")) %>%
+    federal <- facdf_df %>%
+        select(ID, State, Name) %>%
+        left_join(facn_df, by = c("Name", "State", "ID")) %>%
         right_join(
             raw_df %>%
-                filter(State == "Federal") %>%
+                filter(jurisdiction == "federal") %>%
                 select(-State),
             by = "Facility") %>%
         mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
-        select(-Facility, -Jurisdiction) %>%
-        left_join(facd_df,  by = c("Name", "State")) %>%
-        mutate(Jurisdiction = "federal")
+        select(-Facility) %>%
+        left_join(facdf_df,  by = c("Name", "State", "ID"))
     
     full_df <- bind_rows(federal, nonfederal)
     
@@ -718,7 +726,7 @@ load_latest_data <- function(){
         mutate(Residents.Released = NA, Notes = NA) %>%
         # Select the order for names corresponding to Public facing google sheet
         select(
-            id, Jurisdiction, State, Name, Date, source,
+            ID, jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
             Residents.Deaths, Staff.Deaths, Residents.Recovered,
             Staff.Recovered, Residents.Tested, Staff.Tested, Residents.Negative,
