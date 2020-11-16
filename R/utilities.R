@@ -615,6 +615,13 @@ vector_na_sum <- function(...){
     })
 }
 
+sum_na_rm <- function(x){
+    if(all(is.na(x))){
+        return(NA)
+    }
+    sum(x, na.rm = TRUE)
+}
+
 #' A re-coding of the coalesce function to include warnings when multiple
 #' values are given which are not NA and are different
 #' 
@@ -708,17 +715,17 @@ load_latest_data <- function(){
         select(-Facility) %>%
         left_join(facd_df,  by = c("Name", "State", "ID"))
     
-    federal <- facdf_df %>%
-        select(ID, State, Name) %>%
-        left_join(facn_df, by = c("Name", "State", "ID")) %>%
+    federal <- facn_df %>%
+        filter(State == "Federal") %>%
         right_join(
             raw_df %>%
                 filter(jurisdiction == "federal") %>%
                 select(-State),
             by = "Facility") %>%
         mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
-        select(-Facility) %>%
-        left_join(facdf_df,  by = c("Name", "State", "ID"))
+        select(-Facility, -State) %>%
+        left_join(facdf_df,  by = c("Name", "ID")) %>%
+        mutate(State = ifelse(is.na(State), "Not Available", State))
     
     full_df <- bind_rows(federal, nonfederal)
     

@@ -18,18 +18,37 @@ federal_restruct <- function(x){
     bind_rows(
         full_join(
             as_tibble(x$test$rrcTesting) %>%
+                mutate(Name = str_remove_all(facilityName, "\\(([^)]+)\\)")) %>%
                 mutate(id = str_extract(facilityName, "\\(([^)]+)\\)")) %>%
-                mutate(id = str_remove_all(id, "\\(|\\)")),
+                mutate(id = str_remove_all(id, "\\(|\\)")) %>%
+                group_by(id) %>%
+                # TODO: Need to fix the merging to work with locations that
+                # have two facilities
+                summarize(
+                    Name = first(Name),
+                    id = first(id),
+                    completedTest = sum(completedTest),
+                    pendTest = sum(pendTest),
+                    posTest = sum(posTest),
+                    .groups = "drop"
+                ),
         
             as_tibble(x$final$rrcData) %>%
                 select(-contractNum) %>%
-                mutate(id = str_to_upper(id)),
+                mutate(id = str_to_upper(id)) %>%
+                group_by(id) %>%
+                summarize_all(function(z) sum(z, na.rm = TRUE))
+                ,
             by = "id") %>%
-            mutate(Name = str_c("RRC - ", id)) %>%
+            group_by(Name) %>%
+            mutate(more_than_one = n() > 1) %>%
+            ungroup() %>%
+            mutate(Name = ifelse(more_than_one, str_c(Name, " ", id), Name)) %>%
             select(
                 Name, completedTest, pendTest, posTest, inmateDeathAmt,
                 inmateDeathHcon, inmateRecoveries, inmatePositiveAmt,
-                staffPositiveAmt, staffRecoveries, staffDeathAmt),
+                staffPositiveAmt, staffRecoveries, staffDeathAmt) %>%
+            filter(!is.na(Name)),
     
         as_tibble(x$test$bopTesting) %>%
             rename(id = facilityCode) %>%
@@ -37,9 +56,8 @@ federal_restruct <- function(x){
             bind_rows(as_tibble(x$final$privateData)) %>%
             left_join(
                 as_tibble(x$loc$Locations) %>%
-                    select(id = code, Name = nameTitle),
-                by = "id"
-            ) %>%
+                    select(id = code, Name = nameDisplay),
+                by = "id") %>%
             select(-id) %>%
             mutate(inmateDeathHcon = 0)
     )
@@ -55,7 +73,8 @@ federal_extract <- function(x){
             Staff.Recovered = staffRecoveries,
             Residents.Recovered = inmateRecoveries,
             Residents.Tested = completedTest,
-            Residents.Pending = pendTest)
+            Residents.Pending = pendTest) %>%
+        mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
 }
 
 #' Scraper class for general federal COVID data

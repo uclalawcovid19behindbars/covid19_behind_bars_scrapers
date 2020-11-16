@@ -50,3 +50,5 @@ results/*
 *.xlsx
 init/build.log
 documentation/scraper_documentation/*
+*.rds
+*.Rds

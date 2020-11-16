@@ -1,0 +1,196 @@
+---
+title: "Introduction to Behind Bars Scraper"
+author: "UCLA COVID-19 Behind Bars Team"
+output: html_document
+---
+
+## The UCLA COVID-19 Behind Bars Scraper
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(DT)
+library(albersusa)
+library(plotly)
+source("../R/utilities.R")
+
+slist <- read_rds("./scrape_details.rds")
+```
+
+This document was last updated `r slist$date`.
+
+Since the beginning of the COVID-19 pandemic in the US there have been extreme data gaps across the country that have limited are ability to assess the extent of the spread of the virus. This situation is even more extreme for the ~2 million individuals housed in the US incarcerated population. Facilities housing incarcerated individuals have not been given mandates for COVID-19 testing or precautions, not to mention data reporting for epidemiological monitoring. For a population who is highly vulnerable and subjected to close quarter living this is extremely problematic.
+
+In an effort to capture the limited data that is available the UCLA COVID-19 Behind Bars Team has been collecting COVID-19 policy, testing, and mortality data for incarcerated populations. Our goal is to collect information from state Department of Correction managed facility (prisons), jail information from county sheriff's offices, and federal carceral facilities. We collect data as posted by these institutions on the web using a suite of scraping tools to document, extract, and analyze the data. In the remainder of this document we describe the scraper details, what data we collect, what data is missing, and what kinds of analysis are possible with this data. 
+
+## Scraper Details
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+prison_n <- slist$scraper_df %>%
+    filter(jurisdiction == "state") %>%
+    pull(state) %>%
+    unique() %>%
+    length()
+
+jail_n <- slist$scraper_df %>%
+    filter(jurisdiction == "county") %>%
+    nrow()
+
+fac_rep_deaths <- slist$current_data %>%
+    filter(
+        jurisdiction == "state",
+        !(str_detect(Name, "(?i)state") & str_detect(Name, "(?i)wide"))) %>%
+    filter(!is.na(Residents.Deaths)) %>%
+    group_by(State) %>%
+    summarize(fac_rez = TRUE) %>%
+    nrow()
+
+state_rep_deaths <- slist$current_data %>%
+    filter(jurisdiction == "state") %>%
+    filter(!is.na(Residents.Deaths)) %>%
+    group_by(State) %>%
+    summarize(fac_rez = TRUE) %>%
+    nrow()
+
+rep_count <- slist$report_df %>%
+    select(
+        State, `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`,
+        `Staff.Confirmed`, `Residents.Tested`, `Staff.Tested`) %>%
+    pivot_longer(-State) %>%
+    group_by(State) %>%
+    summarize(N=sum(value), .groups = "drop") %>%
+    sample_frac() %>%
+    arrange(-N)
+
+good_state <- first(rep_count$State)
+good_count <- first(rep_count$N)
+bad_state <- last(rep_count$State)
+bad_count <- last(rep_count$N)
+```
+
+Data is collected 3-4 times a week. Our current scraper pipeline has `r nrow(slist$scraper_df)` individual scrapers and collects information for `r prison_n` DOCs which include the 50 states and DC. In addition we collect data from the Federal Bureau of Prisons, and `r jail_n`. Though we collect data for these entities, not all of them report the data that we aim to collect. For example, 6 of our core variables of interest are `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`, `Staff.Confirmed`, `Residents.Tested`, `Staff.Tested`. Among prisons there is a large range of what DOCs choose to report publicly. `r good_state`, for example, reports data for `r good_count` of these core variables while `r bad_state` only reports data for only `r bad_count`. We should note that even when states do report data for these variables they will sometimes aggregate the data from facilities to the state level making it difficult to tract outbreaks. For example, although `r state_rep_deaths` states report data on resident deaths, only `r fac_rep_deaths` report this information at the facility level. Below we an see for all prisons we collect data from which of the variables they report data. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+slist$report_df %>%
+    select(
+        State, `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`,
+        `Staff.Confirmed`, `Residents.Tested`, `Staff.Tested`) %>%
+    datatable()
+    
+```
+
+How states report data varies. Ideally we would get the available information from an API which provides us with `json` data to extract. APIs are reliable and hardly ever change so the scrapers we design for them require little maintenance. When data is in an image or embedded in the html, our scrapers can have a difficult time extracting the information. In order to ensure that we are collecting data accurately we have modularized our scraping process into the following steps.
+
+1) Take a snapshot of the website and save it to perma.cc
+2) Download/save the source or the facility reported COVID-19 data
+3) Extract the data from the saved source
+4) Run a number of sanity checks to ensure data quality
+5) Save data for later use by the UCLA Behind bars team
+
+Steps 1 and 2 run smoothly nearly 100% of the time. Steps 3 is prone to errors and is successful for 90% of our scrapers for a number of reasons. In order to not make the extraction process contingent on a human fixing any one of the issues that may occur during extraction we have created a a pipeline that is able to pick up at any point in the pipeline. Thus, as long as the source data has been saved in step 2, we can always re-extract the data at a later date without holding up the process of scraping for other facilities.
+
+## Scraper Results
+
+Below we present a table of the counts of our reported variables for state prisons including DC. Not that these counts are often underestimates as only `Residents.Confirmed` is reported by all states. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+slist$report_df %>%
+    select(-State, -Residents.Released, -Staff.Quarantine) %>%
+    summarize_all(sum) %>%
+    pivot_longer(
+        Residents.Confirmed:Staff.Pending, names_to = "Variable",
+        values_to = "States+DC Reporting of 51") %>%
+    left_join(
+        slist$current_data %>%
+            filter(jurisdiction == "state") %>%
+            select(
+                Residents.Confirmed, Residents.Deaths, Residents.Recovered,
+                Residents.Tested, Residents.Negative, Residents.Pending,
+                Residents.Quarantine, Residents.Population, Staff.Confirmed,
+                Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
+                Staff.Pending) %>%
+            summarize_all(sum_na_rm) %>%
+            pivot_longer(
+                Residents.Confirmed:Staff.Pending, names_to = "Variable",
+                values_to = "Count"),
+        by = "Variable") %>%
+    knitr::kable()
+```
+
+## Scraper Data Use Cases
+
+Data can be used in several different ways to help illustrate important facts about the current state of COVID-19 data for incarcerated populations in the US. For example, we can use a map, such as below, to not only show the number of residents tested across the US states, but also highlight the large data gap we have for states who do not report number of individuals who are tested for their prison populations. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+
+state_tested <- slist$current_data %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State) %>%
+    summarize(Tested = sum_na_rm(Residents.Tested), .groups = "drop")
+
+map_df <- usa_sf("laea") %>%
+    select(State = name, geometry) %>%
+    left_join(state_tested, by = "State")
+    
+map_plot <- map_df %>%
+    ggplot(aes(fill = Tested, text = State)) +
+    geom_sf() +
+    theme_void() +
+    scale_fill_distiller(palette = "Spectral", direction = 1)
+
+map_plot +
+    ggtitle(
+        "Incarcerated Population in State Prisons Tested",
+        "Grey indicates no reported data")
+
+```
+
+We can also analyze how the incarcerated population is doing with respect to the general population for any given state. Below we plot the infection fatality rate for both the incarcerated population and the general population for each state and DC where confirmed and death data is available. We see that the fatality rate is generally lower although this is largely due to the younger general age of the prison population compared to the general population. Note, however, that there are several significant outliers.
+
+```{R warning=FALSE, message=FALSE, echo=FALSE}
+state_deaths <- slist$current_data %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State) %>%
+    summarize(
+        IFR = sum_na_rm(Residents.Deaths) / sum_na_rm(Residents.Confirmed),
+        .groups = "drop")
+
+sc_plot <- slist$current_state %>%
+    mutate(pop_ifr = death/positive) %>%
+    mutate(State = translate_state(state)) %>%
+    select(pop_ifr, State) %>%
+    right_join(state_deaths, by = "State") %>%
+    rename(`State IFR` = pop_ifr, `Prison IFR` = IFR) %>%
+    ggplot(aes(x = `State IFR`, y = `Prison IFR`, text = State)) +
+    geom_point() +
+    geom_abline() +
+    theme_classic() +
+    labs(x = "State IFR", y = "Incarcerated Population IFR") +
+    ggtitle("Infection Fatality Rate Comparison") +
+    ylim(c(0, .07)) +
+    xlim(c(0, .07))
+
+ggplotly(sc_plot)
+
+```
+
+## Historical Data
+
+A strength of our dataset compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within a facility in Georgia in just a short period of time.
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+fac_delta_df <- slist$hist_data %>%
+    filter(State == "GA" & jurisdiction == "state") %>%
+    group_by(Name) %>%
+    mutate(delta = last(Residents.Confirmed) - first(Residents.Confirmed)) %>%
+    ungroup() %>%
+    filter(delta == max(delta))
+
+fac_delta_df %>%
+    ggplot(aes(x = Date, y = Residents.Confirmed)) +
+    geom_line() +
+    theme_bw() +
+    ggtitle(str_c(
+        "Cumulative Residents Confirmed for ",
+        str_to_title(first(fac_delta_df$Name))))
+```
+
