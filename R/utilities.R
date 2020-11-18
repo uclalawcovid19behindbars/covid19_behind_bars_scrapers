@@ -222,13 +222,6 @@ ExtractTable <- function(img, file_type = ".png", api_key = NULL) {
             t() %>% as.data.frame()
     }
     return(all_tables)
-} 
-
-start_splash <- function(
-    host = "splash.hrbrmstr.de", port = 8050,
-    user = Sys.getenv("SPLASH_NAME"), pass = Sys.getenv("SPLASH_PASS")){
-    splashr::splash(host = host, port = port, user = user, pass = pass)
-    
 }
 
 Caps <- function(x) {
@@ -605,7 +598,7 @@ translate_state <- function(x, reverse = FALSE){
     state_vec[x]
 }
 
-vector_na_sum <- function(...){
+vector_sum_na_rm <- function(...){
     d <- rbind(...)
     apply(rbind(...), 2, function(x){
         if(all(is.na(x))){
@@ -653,7 +646,7 @@ coalesce_with_warnings <- function(...){
     })
 }
 
-load_latest_data <- function(){
+load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
   
     scrapers <- str_remove(list.files("./production/scrapers"), ".R")
     
@@ -685,25 +678,34 @@ load_latest_data <- function(){
         mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
         unique()
-        
-    raw_df <- bind_rows(lapply(scrapers, function(i){
-        sub_files <- list.files(
-            "results/extracted_data", full.names = TRUE,
-            pattern = str_c("\\d+-\\d+-\\d+_", i, ".csv"))
-        if(length(sub_files) == 0){
-            return(tibble())
-        }
-        date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
-        f_ <- sub_files[which(date_vec == max(date_vec))]
-        return(read_csv(f_, col_types = cols()))
-        })) %>%
+    
+    if(!all_dates){
+        dat_df <- bind_rows(lapply(scrapers, function(i){
+            sub_files <- list.files(
+                "results/extracted_data", full.names = TRUE,
+                pattern = str_c("\\d+-\\d+-\\d+_", i, ".csv"))
+            if(length(sub_files) == 0){
+                return(tibble())
+            }
+            date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
+            f_ <- sub_files[which(date_vec == max(date_vec))]
+            return(read_csv(f_, col_types = cols()))
+        }))
+    }
+    
+    else{
+        dat_df <- read_historical_data() %>%
+            filter(!is.na(jurisdiction), !is.na(id))
+    }
+    
+    raw_df <- dat_df %>%
         select(-starts_with("Resident.Deaths")) %>%
         rename(Facility = Name) %>%
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
         mutate(State = translate_state(State)) %>%
         mutate(Residents.Confirmed = ifelse(
             is.na(Residents.Confirmed),
-            vector_na_sum(
+            vector_sum_na_rm(
                 Residents.Active, Residents.Deaths, Residents.Recovered),
             Residents.Confirmed
         ))
@@ -729,8 +731,16 @@ load_latest_data <- function(){
     
     full_df <- bind_rows(federal, nonfederal)
     
-    full_df %>%
-        mutate(Residents.Released = NA, Notes = NA) %>%
+    out_df <- full_df %>%
+        mutate(Residents.Released = NA, Notes = NA)
+    
+    if(coalesce){
+        out_df <- out_df %>%
+            select(-id) %>%
+            group_by_coalesce( Date, Name, State, jurisdiction)
+    }
+    
+    out_df  %>%
         # Select the order for names corresponding to Public facing google sheet
         select(
             ID, jurisdiction, State, Name, Date, source,
@@ -742,15 +752,30 @@ load_latest_data <- function(){
             Residents.Population, Address, Zipcode, City, County, Latitude,
             Longitude, County.FIPS, hifld_id, Notes) %>%
         arrange(State, Name) %>%
-      mutate(Date = str_c(
-        month.name[lubridate::month(Date)], " ", lubridate::day(Date),
-        ", ", lubridate::year(Date)))
-
+        mutate(Date = str_c(
+            month.name[lubridate::month(Date)], " ", lubridate::day(Date),
+            ", ", lubridate::year(Date)))
 }
 
 write_latest_data <- function(){
+    
+    out_df <- load_latest_data()
+    
+    out_df %>%
+        select(
+            Residents.Confirmed, Residents.Deaths, Residents.Recovered,
+            Residents.Tested, Residents.Negative, Residents.Pending,
+            Residents.Quarantine, Residents.Population, Staff.Confirmed,
+            Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
+            Staff.Pending) %>%
+          summarize_all(sum_na_rm) %>%
+          pivot_longer(
+              Residents.Confirmed:Staff.Pending, names_to = "Variable",
+              values_to = "Count") %>%
+      print()
+  
     write_csv(
-        load_latest_data(),
+        out_df,
         str_c(
             "./data/Adult Facility Counts/",
             "adult_facility_covid_counts_today_latest.csv"), 

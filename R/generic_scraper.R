@@ -7,7 +7,7 @@ UCLABB_MAIN_VARIABLES <- c(
     "Name", "Staff.Confirmed", "Residents.Confirmed",
     "Staff.Deaths", "Residents.Deaths",
     "Staff.Recovered", "Residents.Recovered",
-    "Staff.Tested", "Residents.Tested", 
+    "Staff.Tested", "Residents.Tested", "Residents.Tadmin",
     "Staff.Negative", "Residents.Negative",
     "Staff.Pending", "Residents.Pending",
     "Staff.Quarantine", "Residents.Quarantine",

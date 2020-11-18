@@ -29,15 +29,15 @@ lasd_pull <- function(x, wait = 5){
 
 lasd_restruct <- function(x){
     tibble(
-        Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
-        Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
-        Residents.Deaths = lasd_crop(x, "570x30+620+745", "(?i)deaths"),
-        Residents.Quarantine = lasd_crop(x, "570x30+620+1015", "(?i)total"),
-        drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
-        drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
-        drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),
-        drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
-        Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
+        Residents.Confirmed = lasd_crop(x, "570x30+620+435", "(?i)total pos"),
+        Residents.Recovered = lasd_crop(x, "570x30+620+713", "(?i)recover"),
+        Residents.Deaths = lasd_crop(x, "570x30+620+787", "(?i)deaths"),
+        Residents.Quarantine = lasd_crop(x, "570x30+620+1110", "(?i)total"),
+        drop.neg.asymp = lasd_crop(x, "570x25+620+610", "(?i)negative"),
+        drop.neg.symp = lasd_crop(x, "570x25+20+610", "(?i)negative"),
+        drop.pos.asymp = lasd_crop(x, "540x25+620+550", "(?i)current"),
+        drop.pos.symp = lasd_crop(x, "540x25+20+550", "(?i)current"),
+        Residents.Population = lasd_crop(x, "562x25+20+231", "(?i)jail pop"))
 }
 
 lasd_extract <- function(x){
@@ -51,17 +51,19 @@ lasd_extract <- function(x){
 #' Scraper class for general LASD staff COVID data
 #' 
 #' @name lasd_scraper
-#' @description Info comes from a Microsoft power bi app that can be
-#' temperamental as load times vary and Selenium can not tell when the DOM is
-#' ready. May need to run a couple of times to get data.
+#' @description Info comes from an image file hosted on the website however
+#' scraping the image is extremely difficult and has required multiple
+#' alterations in the past. Need to frequently monitor this scraper for errors.
 #' \describe{
-#'   \item{Personnel Currently Quarantined}{}
-#'   \item{Personnel Currently High Risk}{}
-#'   \item{Returned to Work}{Not neccesarily positive}
-#'   \item{Personnel Affected Since Inception}{}
-#'   \item{Prof. Confirmed}{Staff type distinction of confirmed cases}
-#'   \item{Sworn Confirmed}{Staff type distinction of confirmed cases}
-#'   \item{Total Confirmed}{Total staff confirmed cases}
+#'   \item{Residents.Confirmed}{}
+#'   \item{Residents.Recovered }{}
+#'   \item{Residents.Deaths}{}
+#'   \item{Residents.Quarantine}{}
+#'   \item{neg.asymp}{Negative Asymptomatic}
+#'   \item{neg.symp}{Negative Symptomatic}
+#'   \item{pos.asymp}{Positive Asymptomatic}
+#'   \item{pos.symp}{Positive Symptomatic}
+#'   \item{Residents.Population}{}
 #' }
 
 lasd_scraper <- R6Class(

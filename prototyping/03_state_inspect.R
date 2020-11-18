@@ -1,15 +1,15 @@
 rm(list = ls())
 source("./R/utilities.R")
 
-sum_na <- function(x){
-    if(all(is.na(x))){
-        return(NA)
-    }
-    sum(x, na.rm = TRUE)
-}
+new_df <- load_latest_data()
 
-fl_death_df <- read_historical_data() %>%
-    filter(State == "FL") %>%
+new_df %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State) %>%
+    summarise(Residents.Confirmed = sum_na_rm(Residents.Confirmed))
+
+la_death_df <- read_historical_data() %>%
+    filter(State == "CA" & jurisdiction == "county" & !str_starts(id, 'la')) %>%
     group_by(Date) %>%
     summarise(Residents.Deaths = sum_na(Residents.Deaths))
 
