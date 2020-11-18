@@ -3,6 +3,8 @@ library(tigris)
 library(sf)
 library(leaflet)
 
+plot_tx <- TRUE
+
 state_names <- states(class = "sf") %>%
     as_tibble() %>%
     select(STATEFP, STATENAME = NAME)
@@ -10,8 +12,6 @@ state_names <- states(class = "sf") %>%
 county_shape <- counties(class = "sf") %>%
     select(STATEFP, GEOID, NAME, geometry) %>%
     left_join(state_names, by = "STATEFP")
-    
-View(select(as_tibble(county_shape), NAME, STATENAME))
 
 # http://www.apsanlaw.com/law-263.a-complete-list-of-ice-field-offices.html
 state_offices <- bind_rows(
@@ -27,6 +27,9 @@ state_offices <- bind_rows(
     tibble(
         office = "Baltimore",
         STATENAME = "Maryland"),
+    tibble(
+        office = "Denver",
+        STATENAME = c("Colorado", "Wyoming")),
     tibble(
         office = "New Orleans",
         STATENAME = c(
@@ -58,7 +61,7 @@ state_offices <- bind_rows(
         STATENAME = c("New Mexico")),
     tibble(
         office = "San Francisco",
-        STATENAME = c("Hawaii")),
+        STATENAME = c("Hawaii", "Guam")),
     tibble(
         office = "Seattle",
         STATENAME = c("Alaska", "Oregon", "Washington")),
@@ -68,7 +71,8 @@ state_offices <- bind_rows(
             "Iowa", "Minnesota", "Nebraska", "North Dakota", "South Dakota")),
     tibble(
         office = "Miami",
-        STATENAME = c("Florida")),
+        STATENAME = c(
+            "Florida", "United States Virgin Islands", "Puerto Rico")),
     tibble(
         office = "Washington",
         STATENAME = c("District of Columbia", "Virginia")),
@@ -89,6 +93,14 @@ county_offices <- bind_rows(
         NAME = c("San Diego", "Imperial")
     ),
     tibble(
+        office = "New York",
+        STATENAME = "New York",
+        NAME = c(
+            "Duchess", "Nassau", "Putnam", "Suffolk", "Sullivan", "Orange",
+            "Rockland", "Ulster", "Westchester", "Richmond", "Queens",
+            "New York", "Kings", "Bronx")
+    ),
+    tibble(
         office = "San Francisco",
         STATENAME = "California",
         NAME = county_shape %>%
@@ -101,6 +113,20 @@ county_offices <- bind_rows(
                     "Los Angeles", "Ventura", "Orange", "San Luis Obispo",
                     "Riverside"
                     ))
+    ),
+    tibble(
+        office = "Buffalo",
+        STATENAME = "New York",
+        NAME = county_shape %>%
+            as_tibble() %>%
+            filter(STATENAME == "New York") %>%
+            pull(NAME) %>%
+            setdiff(
+                c(
+                    "Duchess", "Nassau", "Putnam", "Suffolk", "Sullivan",
+                    "Orange", "Rockland", "Ulster", "Westchester", "Richmond",
+                    "Queens", "New York", "Kings", "Bronx"
+                ))
     )
 )
 
@@ -156,20 +182,67 @@ county_offices_tx <- bind_rows(
             setdiff(county_offices_tx_short$NAME))
 )
 
-sub_us <- county_shape %>%
-    filter(STATENAME == "Texas") %>%
-    left_join(county_offices_tx, by = c("NAME", "STATENAME")) %>%
-    st_transform("+proj=longlat +datum=WGS84")
+if(plot_tx){
+    sub_us <- county_shape %>%
+        filter(STATENAME == "Texas") %>%
+        left_join(county_offices_tx, by = c("NAME", "STATENAME")) %>%
+        st_transform("+proj=longlat +datum=WGS84")
+    
+    pal <- colorFactor(
+        palette="Spectral",
+        domain=c("Dallas", "El Paso", "Houston", "San Antonio"))
+    
+    map1<-leaflet() %>%
+        addProviderTiles("OpenStreetMap.Mapnik") %>%
+        addPolygons(
+            data=sub_us, fillColor=~pal(office), popup = ~NAME,
+            fillOpacity=0.5, weight=.5, smoothFactor=0.2, stroke = TRUE,
+            color = "black") %>%
+        addLegend(
+            "bottomright", pal=pal, values=sub_us$office, title="", opacity=1)
+    map1
+}
 
-pal <- colorFactor(
-    palette="Spectral", domain=c("Dallas", "El Paso", "Houston", "San Antonio"))
+county_office_sf <- county_shape %>%
+    left_join(state_offices, by = "STATENAME") %>%
+    left_join(
+        bind_rows(county_offices, county_offices_tx) %>%
+            rename(office2 = office),
+        by = c("STATENAME", "NAME")) %>%
+    mutate(office = ifelse(is.na(office), office2, office)) %>%
+    select(-office2) %>%
+    filter(!is.na(office))
 
-map1<-leaflet() %>%
-    addProviderTiles("OpenStreetMap.Mapnik") %>%
-    addPolygons(
-        data=sub_us, fillColor=~pal(office), popup = ~NAME,
-        fillOpacity=0.5, weight=.5, smoothFactor=0.2, stroke = TRUE,
-        color = "black") %>%
-    addLegend(
-        "bottomright", pal=pal, values=sub_us$office, title="", opacity=1)
-map1
+no_plot <- c(
+    "Hawaii", "Alaska", "Guam", "United States Virgin Islands", "Puerto Rico")
+
+county_office_sf %>%
+    filter(!(STATENAME %in% no_plot)) %>%
+    ggplot(aes(fill = office)) +
+    geom_sf() +
+    theme_void()
+
+no_collapse <- c(
+    "Guam", "United States Virgin Islands", "Puerto Rico")
+
+office_sf <- do.call(sf:::rbind.sf, lapply(
+    unique(county_office_sf$office), function(o){
+        county_office_sf %>%
+            filter(office == o & !(STATENAME %in% no_collapse)) %>%
+            st_union() %>%
+            {st_sf(office = o, geometry = .)}
+}))
+
+office_sf %>%
+    ggplot(aes(fill = office)) +
+    geom_sf() +
+    theme_void()
+
+# st_write(
+#     county_office_sf, dsn = "county_office.shp",
+#     layer = "county_office.shp", driver = "ESRI Shapefile")
+# 
+# st_write(
+#     office_sf, dsn = "office.shp",
+#     layer = "office.shp", driver = "ESRI Shapefile")
+

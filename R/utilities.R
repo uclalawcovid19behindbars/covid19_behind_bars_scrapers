@@ -60,7 +60,6 @@ clean_fac_col_txt <- function(x){
         str_squish()
 }
 
-
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
@@ -68,12 +67,18 @@ basic_check <- function(true_names, expected_names){
     
     for(i in 1:length(expected_names)){
         if(!is.na(expected_names[i]) & length(true_names) >= i){
-            cexp <- clean_fac_col_txt(expected_names[i])
-            ctrue <- clean_fac_col_txt(true_names[i])
-            if(cexp != ctrue){
+            if(is.na(true_names[i])){
                 warning(str_c(
-                    "Extracted column ", i, " does not match expected name. ",
-                    "Expected: ", cexp, " Received: ", ctrue))
+                    "Extracted column ", i, " has name NA"))
+            }
+            else{
+                cexp <- clean_fac_col_txt(expected_names[i])
+                ctrue <- clean_fac_col_txt(true_names[i])
+                if(cexp != ctrue){
+                    warning(str_c(
+                        "Extracted column ", i, " does not match expected ",
+                        "name. Expected: ", cexp, " Received: ", ctrue))
+                }
             }
         }
     }

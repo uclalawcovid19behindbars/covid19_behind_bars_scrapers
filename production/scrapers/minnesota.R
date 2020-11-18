@@ -56,7 +56,6 @@ minnesota_restruct <- function(x){
     exp_staff <- c(
         Name = "Primary",
         Staff.Confirmed = "Confirmed Positive Test",
-        Staff.Hospital.Drop = "Hospitalized", 
         Presumed.Drop = "Presumed Positive",
         Staff.Recovered = "Returned to Work"
     )

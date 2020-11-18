@@ -86,7 +86,7 @@ colorado_restruct <- function(x){
             string_to_clean_numeric(),
 
         z %>%
-            magick::image_crop("213x1080+824+1000") %>%
+            magick::image_crop("213x1080+824+1030") %>%
             ExtractTable() %>%
             unlist() %>%
             string_to_clean_numeric(),
@@ -108,7 +108,7 @@ colorado_restruct <- function(x){
     col_vals %>%
         as_tibble() %>%
         mutate(Name = z %>%
-                   magick::image_crop("213x1080+177+1000") %>%
+                   magick::image_crop("213x1080+177+1030") %>%
                    ExtractTable() %>%
                    unlist())
 }
