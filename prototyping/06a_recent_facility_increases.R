@@ -36,3 +36,27 @@ out_plot <- fac_delta_df %>%
 
 
 ggsave("./data/Adult Facility Counts/weekly_facility_monitor.png", out_plot)
+
+neg_death_df <- hist_data %>%
+    select(jurisdiction, State, Name, Date, Residents.Deaths, Staff.Deaths) %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    arrange(jurisdiction, State, Name, Date) %>%
+    group_by(jurisdiction, State, Name) %>% 
+    mutate(lag_death = Residents.Deaths - lag(Residents.Deaths)) %>%
+    mutate(lag_staff_death = Staff.Deaths - lag(Staff.Deaths)) %>%
+    mutate(any_neg = any(lag_death < 0 | lag_staff_death < 0, na.rm = TRUE)) %>%
+    filter(any_neg) %>%
+    ungroup()
+
+# every once in a while we get negative deaths record all instances here
+
+neg_death_plot <- neg_death_df %>%
+    select(-Residents.Deaths, -Staff.Deaths, -any_neg) %>%
+    mutate(title = str_c(State, ": ", Name)) %>%
+    select(-State, -Name, -jurisdiction) %>%
+    pivot_longer(lag_death:lag_staff_death) %>%
+    ggplot(aes(x = Date, y = value, color = name, linetype = name)) +
+    geom_line() +
+    facet_wrap(~title)
+
+ggsave("./data/Adult Facility Counts/neg_death_monitor.png", neg_death_plot)

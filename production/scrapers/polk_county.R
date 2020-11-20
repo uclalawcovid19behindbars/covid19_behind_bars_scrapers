@@ -27,7 +27,7 @@ polk_county_extract <- function(x){
     check_names_extractable(df_, col_name_df)
     
     rename_extractable(df_, col_name_df) %>%
-        filter(!str_detect(Residents.Tested, "(?i)inmate")) %>%
+        filter(!str_detect(Residents.Tadmin, "(?i)inmate")) %>%
         mutate(Name = "Polk County Jail") %>%
         clean_scraped_df() %>%
         as_tibble()

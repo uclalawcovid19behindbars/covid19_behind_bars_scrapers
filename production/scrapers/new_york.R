@@ -38,7 +38,8 @@ new_york_extract <- function(x){
         as_tibble() %>%
         mutate(Name = ifelse(
             grepl(Name, pattern = "MOHAWK"), "MOHAWK WALSH RMU", Name)) %>%
-        mutate(Residents.Tadmin)
+        mutate(Residents.Tadmin = Residents.Negative +
+                 Residents.Pending + Residents.Confirmed)
 }
 
 #' Scraper class for general new_york COVID data

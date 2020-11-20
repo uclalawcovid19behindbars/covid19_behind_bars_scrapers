@@ -24,8 +24,8 @@ massachusetts_extract <- function(x){
             Residents.Population = "Total Population",
             Residents.Tested = "N Tested - Detainees/Inmates",
             Residents.Confirmed = "N Positive - Detainees/Inmates",
-            Staff.Tested = "N Tested - Staff",
-            Staff.Confirmed = "N Positive - Staff") %>%
+            Staff.Tested = "N Tested - COs",
+            Staff.Confirmed = "N Positive - COs") %>%
         clean_scraped_df() %>%
         group_by(Name) %>%
         mutate(Residents.Population = last(Residents.Population)) %>%

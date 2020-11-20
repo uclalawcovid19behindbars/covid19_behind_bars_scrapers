@@ -76,7 +76,8 @@ west_virginia_extract <- function(x){
         select(-Staff.Quarantine) %>% 
         clean_scraped_df() %>%
         mutate(Residents.Deaths = resident_deaths) %>%
-        bind_rows(fac_df)
+        bind_rows(fac_df) %>%
+        rename(Staff.Tested = Staff.Tadmin)
 }
 
 #' Scraper class for general West Virginia COVID data

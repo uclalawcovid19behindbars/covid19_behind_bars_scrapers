@@ -709,10 +709,15 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
         mutate(State = translate_state(State)) %>%
         mutate(Residents.Confirmed = ifelse(
-            is.na(Residents.Confirmed),
-            vector_sum_na_rm(
-                Residents.Active, Residents.Deaths, Residents.Recovered),
-            Residents.Confirmed
+        is.na(Residents.Confirmed),
+        vector_sum_na_rm(
+          Residents.Active, Residents.Deaths, Residents.Recovered),
+        Residents.Confirmed
+        )) %>%
+        mutate(Residents.Tadmin = ifelse(
+            is.na(Residents.Tadmin),
+            Residents.Tested,
+            Residents.Tadmin
         ))
     
     nonfederal <- raw_df %>%

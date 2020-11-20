@@ -30,7 +30,8 @@ kansas_extract <- function(x){
     df_ %>%
         select(-starts_with("Drop")) %>%
         mutate(Name = clean_fac_col_txt(Name)) %>%
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        filter(Name != "")
 }
 
 #' Scraper class for general kansas COVID data
