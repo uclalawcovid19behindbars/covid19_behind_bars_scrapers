@@ -7,13 +7,24 @@ output: html_document
 ## The UCLA COVID-19 Behind Bars Scraper
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
-library(tidyverse)
-library(DT)
-library(albersusa)
-library(plotly)
+##Define package list
+##Install 'albersusa' repo once from GitHub 
+# # remotes::install_git("https://git.rud.is/hrbrmstr/albersusa.git")
+Packages<-c("tidyverse", "DT", "albersusa", "plotly", "glue")
+.packages = Packages
+##Install CRAN packages (if not already installed)
+.inst <- .packages %in% installed.packages()
+if(length(.packages[!.inst]) > 0) install.packages(.packages[!.inst])
+##Load packages into session 
+lapply(.packages, require, character.only=TRUE)
+
 source("../R/utilities.R")
 
 slist <- read_rds("./scrape_details.rds")
+
+# Get August state-wide prison populations from the Marshall Project / AP
+prison_pop <- read_csv("https://raw.githubusercontent.com/themarshallproject/COVID_prison_data/master/data/prison_populations.csv") %>%
+    select(name, abbreviation, aug_pop)
 ```
 
 This document was last updated `r slist$date`.
@@ -54,7 +65,7 @@ state_rep_deaths <- slist$current_data %>%
 rep_count <- slist$report_df %>%
     select(
         State, `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`,
-        `Staff.Confirmed`, `Residents.Tested`, `Staff.Tested`) %>%
+        `Staff.Confirmed`, `Residents.Tadmin`, `Staff.Tested`) %>%
     pivot_longer(-State) %>%
     group_by(State) %>%
     summarize(N=sum(value), .groups = "drop") %>%
@@ -67,13 +78,13 @@ bad_state <- last(rep_count$State)
 bad_count <- last(rep_count$N)
 ```
 
-Data is collected 3-4 times a week. Our current scraper pipeline has `r nrow(slist$scraper_df)` individual scrapers and collects information for `r prison_n` DOCs which include the 50 states and DC. In addition we collect data from the Federal Bureau of Prisons, and `r jail_n`. Though we collect data for these entities, not all of them report the data that we aim to collect. For example, 6 of our core variables of interest are `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`, `Staff.Confirmed`, `Residents.Tested`, `Staff.Tested`. Among prisons there is a large range of what DOCs choose to report publicly. `r good_state`, for example, reports data for `r good_count` of these core variables while `r bad_state` only reports data for only `r bad_count`. We should note that even when states do report data for these variables they will sometimes aggregate the data from facilities to the state level making it difficult to tract outbreaks. For example, although `r state_rep_deaths` states report data on resident deaths, only `r fac_rep_deaths` report this information at the facility level. Below we an see for all prisons we collect data from which of the variables they report data. 
+Data is collected 3-4 times a week. Our current scraper pipeline has `r nrow(slist$scraper_df)` individual scrapers and collects information for `r prison_n` DOCs which include the 50 states and DC. In addition we collect data from the Federal Bureau of Prisons, and `r jail_n`. Though we collect data for these entities, not all of them report the data that we aim to collect. For example, 6 of our core variables of interest are `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`, `Staff.Confirmed`, `Residents.Tadmin` (Resident tests administered), `Staff.Tested`. Among prisons there is a large range of what DOCs choose to report publicly. `r good_state`, for example, reports data for `r good_count` of these core variables while `r bad_state` only reports data for only `r bad_count`. We should note that even when states do report data for these variables they will sometimes aggregate the data from facilities to the state level making it difficult to tract outbreaks. For example, although `r state_rep_deaths` states report data on resident deaths, only `r fac_rep_deaths` report this information at the facility level. Below we an see for all prisons we collect data from which of the variables they report data. 
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 slist$report_df %>%
     select(
         State, `Residents.Deaths`, `Staff.Deaths`, `Residents.Confirmed`,
-        `Staff.Confirmed`, `Residents.Tested`, `Staff.Tested`) %>%
+        `Staff.Confirmed`, `Residents.Tadmin`, `Staff.Tested`) %>%
     datatable()
     
 ```
@@ -104,7 +115,7 @@ slist$report_df %>%
             filter(jurisdiction == "state") %>%
             select(
                 Residents.Confirmed, Residents.Deaths, Residents.Recovered,
-                Residents.Tested, Residents.Negative, Residents.Pending,
+                Residents.Tadmin, Residents.Negative, Residents.Pending,
                 Residents.Quarantine, Residents.Population, Staff.Confirmed,
                 Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
                 Staff.Pending) %>%
@@ -120,26 +131,32 @@ slist$report_df %>%
 
 Data can be used in several different ways to help illustrate important facts about the current state of COVID-19 data for incarcerated populations in the US. For example, we can use a map, such as below, to not only show the number of residents tested across the US states, but also highlight the large data gap we have for states who do not report number of individuals who are tested for their prison populations. 
 
+Note that in order to calculate testing rates, we used state-wide prison populations gathered in August by The Marshall Project and the Associated Press. For more information on their methodology for collecting these counts, follow [this link](https://github.com/themarshallproject/COVID_prison_population_data/blob/master/README.md). 
+
+The numerator we're using to calculate rates is the total number of tests administered, by state. If individuals were tested more than once, it's possible that the rate will exceed one. 
+
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 
 state_tested <- slist$current_data %>%
     filter(jurisdiction == "state") %>%
     group_by(State) %>%
-    summarize(Tested = sum_na_rm(Residents.Tested), .groups = "drop")
+    summarize(Tested = sum_na_rm(Residents.Tadmin), .groups = "drop") %>%
+    left_join(prison_pop, by = c("State" = "name")) %>%
+    mutate(test_rate = Tested / aug_pop)
 
 map_df <- usa_sf("laea") %>%
     select(State = name, geometry) %>%
     left_join(state_tested, by = "State")
     
 map_plot <- map_df %>%
-    ggplot(aes(fill = Tested, text = State)) +
+    ggplot(aes(fill = test_rate, text = State)) +
     geom_sf() +
     theme_void() +
     scale_fill_distiller(palette = "Spectral", direction = 1)
 
 map_plot +
     ggtitle(
-        "Incarcerated Population in State Prisons Tested",
+        "Incarcerated Population in State Prisons Testing Rate",
         "Grey indicates no reported data")
 
 ```
@@ -171,6 +188,66 @@ sc_plot <- slist$current_state %>%
 
 ggplotly(sc_plot)
 
+```
+
+Below, we compare infection rates in the general population to the incarcerated population (by facility). This allows us to highlight which carceral facilities diverge most from the state-wide infection rate.
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+facilities <- slist$hist_data %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State, Name) 
+
+# get 10-day percentage change in cases
+percentage_change <- facilities %>%
+    mutate(
+        ten_days_ago = dplyr::lag(Residents.Confirmed, n = 10, order_by = Date),
+        ten_day_change = (Residents.Confirmed - ten_days_ago) / ten_days_ago
+    ) %>%
+    dplyr::arrange(desc(Date)) %>%
+    filter(!is.infinite(ten_day_change)) %>%    # what to do about dividing by zero?
+    slice_head(n = 1) %>%
+    select(Name, State, Date, Residents.Confirmed, ten_days_ago, ten_day_change) %>%
+    ungroup() %>%
+    mutate(StateFull = behindbarstools::translate_state(State))
+
+# get top 3 facilities per state
+top_three_by_state <- percentage_change %>%
+    group_by(State) %>%
+    dplyr::arrange(desc(ten_day_change)) %>%
+    slice_head(n = 3) %>%
+    filter(!is.na(ten_day_change)) %>%
+    ungroup()
+
+# get top five states (avg increase)
+top_five_states <- top_three_by_state %>%
+    group_by(State) %>%
+    mutate(avg_inc = mean(ten_day_change)) %>%
+    dplyr::arrange(desc(avg_inc)) %>%
+    slice_head(n = 1) %>%
+    ungroup() %>%
+    slice_head(n = 5) %>%
+    pull(State)
+
+# make plots
+plot_bars_by_state <- function(dat, xvar, yvar) {
+  y_label = paste("Lag change", as_label(var))
+  plots <- dat %>% 
+    group_by(State) %>% 
+    do(plot=ggplot(data=.) +
+           aes_string(x = xvar, y = yvar) + 
+           geom_bar(stat = "identity") + 
+           labs(title = glue('Prison COVID Infections in {unique(.$StateFull)}'),
+                subtitle = "Rate of change in number of incarcerated individuals infected (past 10 days)",
+                y = "") +
+           scale_y_continuous(labels = scales::percent)
+       )
+  return(plots)
+}
+
+plots <- top_three_by_state %>%
+    filter(State %in% top_five_states) %>%
+    plot_bars_by_state(., xvar = "Name", yvar = "ten_day_change")
+plots$plot
 ```
 
 ## Historical Data
