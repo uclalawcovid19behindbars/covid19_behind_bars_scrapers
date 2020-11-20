@@ -8,6 +8,8 @@ output: html_document
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 ##Define package list
+##Install 'albersusa' repo once from GitHub 
+# # remotes::install_git("https://git.rud.is/hrbrmstr/albersusa.git")
 Packages<-c("tidyverse", "DT", "albersusa", "plotly")
 .packages = Packages
 ##Install CRAN packages (if not already installed)
@@ -19,6 +21,10 @@ lapply(.packages, require, character.only=TRUE)
 source("../R/utilities.R")
 
 slist <- read_rds("./scrape_details.rds")
+
+# Get August state-wide prison populations from the Marshall Project / AP
+prison_pop <- read_csv("https://raw.githubusercontent.com/themarshallproject/COVID_prison_data/master/data/prison_populations.csv") %>%
+    select(name, abbreviation, aug_pop)
 ```
 
 This document was last updated `r slist$date`.
@@ -130,21 +136,23 @@ Data can be used in several different ways to help illustrate important facts ab
 state_tested <- slist$current_data %>%
     filter(jurisdiction == "state") %>%
     group_by(State) %>%
-    summarize(Tested = sum_na_rm(Residents.Tadmin), .groups = "drop")
+    summarize(Tested = sum_na_rm(Residents.Tadmin), .groups = "drop") %>%
+    left_join(prison_pop, by = c("State" = "name")) %>%
+    mutate(test_rate = Tested / aug_pop)
 
 map_df <- usa_sf("laea") %>%
     select(State = name, geometry) %>%
     left_join(state_tested, by = "State")
     
 map_plot <- map_df %>%
-    ggplot(aes(fill = Tested, text = State)) +
+    ggplot(aes(fill = test_rate, text = State)) +
     geom_sf() +
     theme_void() +
     scale_fill_distiller(palette = "Spectral", direction = 1)
 
 map_plot +
     ggtitle(
-        "Incarcerated Population in State Prisons Tested",
+        "Incarcerated Population in State Prisons Testing Rate",
         "Grey indicates no reported data")
 
 ```
