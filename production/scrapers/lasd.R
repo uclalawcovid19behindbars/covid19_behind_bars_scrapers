@@ -28,22 +28,44 @@ lasd_pull <- function(x, wait = 5){
 }
 
 lasd_restruct <- function(x){
-    tibble(
-        Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
-        Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
-        Residents.Deaths = lasd_crop(x, "570x30+620+745", "(?i)deaths"),
-        Residents.Quarantine = lasd_crop(x, "570x30+620+1015", "(?i)total"),
-        drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
-        drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
-        drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),
-        drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
-        Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
+    w_ <- magick::image_info(x)$width
+    h_ <- magick::image_info(x)$height
+    # this is the most common shape not sure why it changes almost daily :/
+    if(abs(1447 - h_) <= 2 & w_ == 1200){
+        out <- tibble(
+            Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+745", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1015", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+600", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
+    }
+    else{
+        out <- tibble(
+            Residents.Confirmed = lasd_crop(x, "570x30+620+435", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+712", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+795", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1140", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+612", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+612", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "560x25+620+555", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+555", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+645", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+645", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+231", "(?i)jail pop"))
+    }
 }
 
 lasd_extract <- function(x){
     x %>%
         mutate(Residents.Negative = drop.neg.asymp + drop.neg.symp) %>%
         mutate(Residents.Active = drop.pos.asymp + drop.pos.symp) %>%
+        mutate(Residents.Tadmin = drop.test.asymp + drop.test.symp) %>% 
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
 }

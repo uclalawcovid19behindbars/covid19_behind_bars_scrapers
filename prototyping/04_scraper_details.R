@@ -33,7 +33,8 @@ list(
     scraper_df = get_scraper_info(),
     report_df = state_reporting(),
     current_data = load_latest_data(),
-    hist_data = read_historical_data(),
+    hist_data = read_historical_data() %>%
+        filter(!is.na(id), !is.na(jurisdiction)),
     current_state = "https://api.covidtracking.com/v1/states/current.csv" %>%
         read_csv(),
     date = Sys.Date()) %>%
