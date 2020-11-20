@@ -31,7 +31,7 @@ indiana_extract <- function(x){
         "Staff Confirmed / Presumed COVID-19 Death", "4", "Staff.Deaths",
         "Offenders in Quarantine", "5", "Residents.Quarantine",
         "Offenders in Isolation", "6", "Residents.Isolation",
-        "COVID-19 Tests Administered to Offenders", "7", "Residents.Tested",
+        "COVID-19 Tests Administered to Offenders", "7", "Residents.Tadmin",
         "Offender Positive for COVID-19", "8", "Residents.Confirmed",
         "Offenders Recovered COVID-19", "9", "Residents.Recovered",
         "Offender Presumed COVID-19 Death", "10", "Resident.Deaths.Presumed",

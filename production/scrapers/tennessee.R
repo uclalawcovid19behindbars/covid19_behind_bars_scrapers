@@ -14,7 +14,7 @@ tennessee_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Name", "V1", "By Location",
-        "Residents.Tested", "V2", "#Tested",
+        "Residents.Tadmin", "V2", "#Tested",
         "Residents.Active", "V3", "#Positive",
         "Residents.Negative", "V4", "#Negative",
         "Residents.Pending", "V5", "Pending",

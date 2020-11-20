@@ -751,7 +751,7 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
             ID, jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
             Residents.Deaths, Staff.Deaths, Residents.Recovered,
-            Staff.Recovered, Residents.Tested, Staff.Tested, Residents.Negative,
+            Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
             Staff.Negative, Residents.Pending, Staff.Pending,
             Residents.Quarantine, Staff.Quarantine, Residents.Released, 
             Residents.Population, Address, Zipcode, City, County, Latitude,
@@ -769,7 +769,7 @@ write_latest_data <- function(){
     out_df %>%
         select(
             Residents.Confirmed, Residents.Deaths, Residents.Recovered,
-            Residents.Tested, Residents.Negative, Residents.Pending,
+            Residents.Tadmin, Residents.Negative, Residents.Pending,
             Residents.Quarantine, Residents.Population, Staff.Confirmed,
             Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
             Staff.Pending) %>%

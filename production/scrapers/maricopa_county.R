@@ -17,7 +17,7 @@ maricopa_county_restruct <- function(x){
         str_squish()
     
     expect_names <- c(
-        "Total Number of Tests and Re-tests" = "Residents.Tested",
+        "Total Number of Tests and Re-tests" = "Residents.Tadmin",
         "Negative Results" = "Residents.Negative",
         "Positive Results" = "Residents.Confirmed",
         "Pending Results &in Med Obs/Med Iso" = "Residents.Pending", 

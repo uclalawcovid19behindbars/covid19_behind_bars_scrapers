@@ -54,7 +54,8 @@ oregon_extract <- function(x){
 #' 
 #' @name oregon_scraper
 #' @description Oregon data comes from an HTML table that has been altered 3
-#' times from April 2020 to October 2020.
+#' times from April 2020 to October 2020. Data is limited to those currently in
+#' custody.
 #' \describe{
 #'   \item{Location}{}
 #'   \item{Tier Status}{}

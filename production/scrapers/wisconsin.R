@@ -47,7 +47,7 @@ wisconsin_extract <- function(x){
     ext_df <- wis_df
     names(ext_df) <- c(
         "Name", "Residents.Confirmed", "Residents.Negative",
-        "Residents.Tested", "Drop.Release", "Drop.Active", "Residents.Recovered"
+        "Residents.Tadmin", "Drop.Release", "Drop.Active", "Residents.Recovered"
     )
     
     ext_df %>%

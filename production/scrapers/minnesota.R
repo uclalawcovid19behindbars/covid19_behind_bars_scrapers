@@ -3,9 +3,10 @@ source("./R/utilities.R")
 
 minnesota_pull <- function(x, wait = 5){
     
-    app_source <- xml2::read_html(x) %>%
-        rvest::xml_nodes("iframe") %>%
-        rvest::html_attr("src")
+    app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
+        # xml2::read_html(x) %>%
+        # rvest::xml_nodes("iframe") %>%
+        # rvest::html_attr("src")
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -44,7 +45,7 @@ minnesota_restruct <- function(x){
     exp_res <- c(
         Name = "Primary",
         Residents.Active = "Currently Positive",
-        Residents.Tested = "Total Tests Administered",
+        Residents.Tadmin = "Total Tests Administered",
         Residents.Negative = "Confirmed Negative",
         Residents.Confirmed = "Confirmed Positive",
         Residents.Pending = "Tests Pending",

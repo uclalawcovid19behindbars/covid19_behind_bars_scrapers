@@ -2,22 +2,71 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 rhode_island_pull <- function(x){
-    get_latest_manual("Rhode Island")
+    
+    app_source <- xml2::read_html(x) %>%
+        rvest::xml_nodes("iframe") %>%
+        rvest::html_attr("src")
+        
+    
+    fprof <- RSelenium::makeFirefoxProfile(list(
+        browser.startup.homepage = "about:blank",
+        startup.homepage_override_url = "about:blank",
+        startup.homepage_welcome_url = "about:blank",
+        startup.homepage_welcome_url.additional = "about:blank",
+        browser.download.dir = "/home/seluser/Downloads",
+        browser.download.folderList = 2L,
+        browser.download.manager.showWhenStarting = FALSE,
+        browser.download.manager.focusWhenStarting = FALSE,
+        browser.download.manager.closeWhenDone = TRUE,
+        browser.helperApps.neverAsk.saveToDisk = 
+            "text/csv",
+        pdfjs.disabled = TRUE,
+        plugin.scan.plid.all = FALSE,
+        plugin.scan.Acrobat = 99L))
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox",
+        extraCapabilities=fprof
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_source)
+    Sys.sleep(6)
+    
+    out_file <- "/tmp/sel_dl/Grid view.csv"
+    
+    if(file.exists(out_file)){
+        file.remove(out_file)
+    }
+    
+    remDr$findElement("xpath", "//*[text()='Download CSV']")$clickElement()
+    Sys.sleep(6)
+    
+    if(!file.exists(out_file)){
+        stop("RI unable to download csv")
+    }
+
+    return(read_csv(out_file, col_types = cols()))
 }
 
 rhode_island_restruct <- function(x){
     x %>%
-        select(
-            Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, 
-            Residents.Deaths = Resident.Deaths,
-            Staff.Recovered, Residents.Recovered)
+        mutate(`Deaths` = string_to_clean_numeric(`Deaths`)) %>%
+        mutate(`Facility staff` = string_to_clean_numeric(`Facility staff`)) %>%
+        mutate(`Facility residents` = 
+                   string_to_clean_numeric(`Facility residents`)) %>%
+        filter(!is.na(`Facility residents`)) %>%
+        filter(!str_detect(Name, "(?i)total"))
 }
 
 rhode_island_extract <- function(x){
     x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
-        filter(!is.na(Name))
+        select(
+            Name, Residents.Confirmed = `Facility residents`,
+            Staff.Confirmed = `Facility staff`,
+            Residents.Deaths = Deaths)
 }
 
 #' Scraper class for general rhode_island COVID data
@@ -36,9 +85,9 @@ rhode_island_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "http://www.doc.ri.gov/index.php",
+            url = "http://www.doc.ri.gov/covid-19/",
             id = "rhode_island",
-            type = "manual",
+            type = "csv",
             state = "RI",
             jurisdiction = "state",
             # pull the JSON data directly from the API

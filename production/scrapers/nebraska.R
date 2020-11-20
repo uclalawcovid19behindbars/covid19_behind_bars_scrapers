@@ -17,7 +17,7 @@ nebraska_extract <- function(x){
         clean_scraped_df() %>%
         select(
             Name,
-            Residents.Tested = "Total Tests Administered",
+            Residents.Tadmin = "Total Tests Administered",
             Residents.Confirmed = "Total Number of Confirmed Cases",
             Residents.Recovered = "Total Recovered Cases",
             Residents.Deaths = "Total Deaths") %>%

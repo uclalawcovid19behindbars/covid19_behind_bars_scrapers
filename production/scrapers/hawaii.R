@@ -5,7 +5,7 @@ hawaii_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Facilities", "0", "Name",
-        "Tested", "1", "Residents.Tested",
+        "Tested", "1", "Residents.Tadmin",
         "Results Pending", "2", "Residents.Pending",
         "Negative", "3", "Residents.Negative",
         "Inconclusive", "4", "Residents.Inconclusive",
@@ -45,8 +45,7 @@ hawaii_extract <- function(x){
 #' servers for analysis.
 #' \describe{
 #'   \item{Facilities}{The faciilty name}
-#'   \item{Tested}{Cumulative residents tested. No indication as to who 
-#'   gets tested.}
+#'   \item{Tested}{Tests administered}
 #'   \item{Results Pending}{Current Residents who are tested but no outcome 
 #'   yet reported.}
 #'   \item{Negative}{Cumulative number of residents who are negative.}

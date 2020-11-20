@@ -44,7 +44,7 @@ iowa_extract <- function(x){
 #' @description Html table with minimal recoding and cleaning
 #' \describe{
 #'   \item{Prison}{The faciilty name}
-#'   \item{Inmates Tested}{Cumulative residents tested.}
+#'   \item{Inmates Tested}{Cumulative residents tested. Not tests administered.}
 #'   \item{Inmates Positive}{Cumulative number of residents who are positive.}
 #'   \item{Inmates Recovered}{Cumulative residents recovered.}
 #'   \item{Staff Positive}{Cumulative number of staff who are positive.}

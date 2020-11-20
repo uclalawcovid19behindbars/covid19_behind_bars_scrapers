@@ -13,7 +13,7 @@ polk_county_restruct <- function(x){
 polk_county_extract <- function(x){
     
     col_name <- matrix(c(
-        "Residents.Tested", "0", "Inmate Tests Administered",
+        "Residents.Tadmin", "0", "Inmate Tests Administered",
         "Residents.Confirmed", "1", "Inmates Positive",
         "Staff.Tested", "2", "Staff Tests Administered",
         "Staff.Confirmed", "3", "Staff Positive"

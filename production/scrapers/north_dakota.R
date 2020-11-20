@@ -75,7 +75,7 @@ north_dakota_extract <- function(x){
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
-            Residents.Tested = Residents.Total.Tests.Administered,
+            Residents.Tadmin = Residents.Total.Tests.Administered,
             Staff.Tested = Staff.Total.Tests.Administered
         )
 }

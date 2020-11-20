@@ -27,7 +27,6 @@ tf <- tempfile(fileext = ".xlsx")
     download.file(tf, quiet = TRUE)
 
 prison_2019_df <- read_excel(tf, skip = 8)
-
 ```
 
 # Data Sources

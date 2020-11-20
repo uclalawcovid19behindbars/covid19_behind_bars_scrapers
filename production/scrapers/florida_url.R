@@ -47,7 +47,9 @@ florida_url_extract <- function(x){
         clean_scraped_df() %>%
         mutate(Residents.Quarantine = Quar1 + Quar2 + Quar3) %>%
         select(-Quar1, -Quar2, -Quar3) %>%
-        as_tibble()
+        as_tibble() %>%
+        mutate(Residents.Tadmin = Residents.Pending +
+                   Residents.Negative + Residents.Confirmed)
 }
 
 #' Scraper class for general Florida COVID data

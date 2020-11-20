@@ -29,7 +29,7 @@ texas_extract <- function(x){
                    Medical_Restriction + Medical_Isolation) %>%
         select(
             Name = Unit,
-            Residents.Tested = Offender_Total_Tests,
+            Residents.Tadmin = Offender_Total_Tests,
             Residents.Confirmed = Offender_Total_Positive_Cases,
             Residents.Quarantine,
             Residents.Recovered = Offender_Recovered,

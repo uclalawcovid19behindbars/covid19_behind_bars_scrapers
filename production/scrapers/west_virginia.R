@@ -32,7 +32,7 @@ west_virginia_extract <- function(x){
         Residents.Confirmed = "Cumulative Positives",
         Residents.Negative = "Negative",
         Residents.Pending = "Results Pending",
-        Residents.Tested = "Total Tests",
+        Residents.Tadmin = "Total Tests",
         Residents.Quarantine = "Quarantine"
     )
     

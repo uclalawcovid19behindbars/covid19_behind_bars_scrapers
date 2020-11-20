@@ -19,7 +19,7 @@ orange_county_extract <- function(x){
         Residents.Confirmed = "# Inmates Positive",
         Residents.Negative = "# Inmates Negative",
         Residents.Pending = "# Results Pending",
-        Residents.Tested = "# Tests Administered"
+        Residents.Tadmin = "# Tests Administered"
     )
     
     check_names(x, exp_names)

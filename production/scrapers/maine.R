@@ -2,24 +2,62 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 maine_pull <- function(x){
-    get_latest_manual("Maine")
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)dashboard")
 }
 
 maine_restruct <- function(x){
-    x %>%
-        select(
-            Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, 
-            Staff.Recovered, Residents.Recovered, 
-            Residents.Tested, Residents.Negative, Residents.Pending, 
-            Residents.Population = Resident.Population, 
-            Residents.Deaths = Resident.Deaths)
+    ExtractTable(magick::image_read_pdf(x, pages = 1))
 }
 
 maine_extract <- function(x){
-    x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
-        filter(!is.na(Name))
+    ad_pop_idx <- which(sapply(x, function(z){
+        any(str_detect(z[,1], "(?i)Adult Facility"))}))
+    
+    res_test_idx <- which(sapply(x, function(z){
+        any(str_detect(z[,2], "(?i)test"))}))
+    
+    juv_pop_idx <- which(sapply(x, function(z){
+        any(str_detect(z[,1], "(?i)Juvenile")) &
+            any(str_detect(z[,1], "(?i)population"))}))
+    
+    ad_pop_df <- x[[ad_pop_idx]] %>% 
+        .[str_detect(.[,1], "(?i)total population"),2] %>% 
+        as.numeric() %>%
+        {tibble(Name = "State-Wide", Residents.Population = .)}
+    
+    juv_pop <- x[[juv_pop_idx]] %>% 
+        .[str_detect(.[,1], "(?i)total population"),2] %>%
+        as.numeric()
+    
+    df_ <- as.data.frame(x[[res_test_idx]])
+    
+    col_name_mat <- matrix(c(
+        "Adult Facilities - Resident", "0", "Name",
+        "Testing", "1", "Residents.Tadmin",
+        "", "2", "Residents.Confirmed"
+    ), ncol = 3, nrow = 3, byrow = TRUE)
+    
+    colnames(col_name_mat) <- c("check", "raw", "clean")
+    col_name_df <- as_tibble(col_name_mat)
+    
+    check_names_extractable(df_, col_name_df)
+    out_df <- rename_extractable(df_, col_name_df) %>%
+        as_tibble() %>%
+        mutate(Residents.Tadmin = as.numeric(Residents.Tadmin)) %>%
+        mutate(Residents.Confirmed = as.numeric(Residents.Confirmed)) %>%
+        filter(!(Name == "" | is.na(Residents.Tadmin))) %>%
+        filter(!str_detect(Name, "(?i)total")) %>%
+        mutate(Residents.Population = ifelse(
+            str_detect(Name, "(?i)youth"),
+            juv_pop,
+            NA_real_)) %>%
+        full_join(ad_pop_df, by = c("Name", "Residents.Population"))
+    
+    if(sum(str_detect(out_df$Name, "(?i)youth")) != 1){
+        warning("Not as many youth detention centers as expected.")
+    }
+    
+    out_df
 }
 
 #' Scraper class for general maine COVID data
@@ -38,9 +76,9 @@ maine_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.maine.gov/corrections/sites/maine.gov.corrections/files/inline-files/MDOC%20COVID19WebDashboard11-9-2020.pdf",
+            url = "https://www.maine.gov/corrections/covid-19-resources",
             id = "maine",
-            type = "manual",
+            type = "pdf",
             state = "ME",
             jurisdiction = "state",
             # pull the JSON data directly from the API

@@ -51,9 +51,11 @@ louisiana_extract <- function(x){
     names(la_staff) <- names(staff_exp)
     
     la_rez <- la_rez %>%
+        clean_scraped_df() %>%
+        mutate(Residents.Tadmin = Residents.Tested + Drop.Res.Retests) %>%
         select(
             Name, Residents.Confirmed, Residents.Tested, Residents.Deaths,
-            Residents.Recovered) %>%
+            Residents.Recovered, Residents.Tadmin) %>%
         filter(Name != "TOTAL")
     
     la_staff <- la_staff %>%

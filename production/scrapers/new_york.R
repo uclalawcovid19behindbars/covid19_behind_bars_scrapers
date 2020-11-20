@@ -29,15 +29,16 @@ new_york_extract <- function(x){
         
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
-        
+
     check_names_extractable(ny, col_name_df)
-        
+  
     rename_extractable(ny, col_name_df) %>%
         filter(Name != "FACILITY") %>%
         clean_scraped_df() %>%
         as_tibble() %>%
         mutate(Name = ifelse(
-            grepl(Name, pattern = "MOHAWK"), "MOHAWK WALSH RMU", Name))
+            grepl(Name, pattern = "MOHAWK"), "MOHAWK WALSH RMU", Name)) %>%
+        mutate(Residents.Tadmin)
 }
 
 #' Scraper class for general new_york COVID data

@@ -118,7 +118,7 @@ colorado_extract <- function(x){
     df_ <- x
     
     exp_names <- c(
-        Residents.Tested = "TESTS",
+        Residents.Tadmin = "TESTS",
         Residents.Confirmed = "TOTAL POSITIVE",
         Residents.Active = "ACTIVE CASES",
         Residents.Deaths = "DEATHS",

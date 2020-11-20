@@ -17,7 +17,7 @@ alaska_restruct <- function(x){
             rvest::html_node('#positive_div .tracker_count') %>%
             rvest::html_text() %>%
             parse_number(),
-        Residents.Tested = x %>%
+        Residents.Tadmin = x %>%
             rvest::html_node('#tested_div .tracker_count') %>%
             rvest::html_text() %>%
             parse_number(),
