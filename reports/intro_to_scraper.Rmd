@@ -10,7 +10,7 @@ output: html_document
 ##Define package list
 ##Install 'albersusa' repo once from GitHub 
 # # remotes::install_git("https://git.rud.is/hrbrmstr/albersusa.git")
-Packages<-c("tidyverse", "DT", "albersusa", "plotly")
+Packages<-c("tidyverse", "DT", "albersusa", "plotly", "glue")
 .packages = Packages
 ##Install CRAN packages (if not already installed)
 .inst <- .packages %in% installed.packages()
@@ -184,6 +184,65 @@ sc_plot <- slist$current_state %>%
 
 ggplotly(sc_plot)
 
+```
+
+Below, we compare infection rates in the general population to the incarcerated population (by facility). This allows us to highlight which carceral facilities diverge most from the state-wide infection rate.
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+facilities <- slist$hist_data %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State, Name) 
+
+# get 10-day percentage change in cases
+percentage_change <- facilities %>%
+    mutate(
+        ten_days_ago = dplyr::lag(Residents.Confirmed, n = 10, order_by = Date),
+        ten_day_change = (Residents.Confirmed - ten_days_ago) / ten_days_ago
+    ) %>%
+    dplyr::arrange(desc(Date)) %>%
+    filter(!is.infinite(ten_day_change)) %>%    # what to do about dividing by zero?
+    slice_head(n = 1) %>%
+    select(Name, State, Date, Residents.Confirmed, ten_days_ago, ten_day_change) %>%
+    ungroup()
+
+# get top 3 facilities per state
+top_three_by_state <- percentage_change %>%
+    group_by(State) %>%
+    dplyr::arrange(desc(ten_day_change)) %>%
+    slice_head(n = 3) %>%
+    filter(!is.na(ten_day_change)) %>%
+    ungroup()
+
+# get top five states (avg increase)
+top_five_states <- top_three_by_state %>%
+    group_by(State) %>%
+    mutate(avg_inc = mean(ten_day_change)) %>%
+    dplyr::arrange(desc(avg_inc)) %>%
+    slice_head(n = 1) %>%
+    ungroup() %>%
+    slice_head(n = 5) %>%
+    pull(State)
+
+# make plots
+plot_bars_by_state <- function(dat, xvar, yvar) {
+  y_label = paste("Lag change", as_label(var))
+  plots <- dat %>% 
+    group_by(State) %>% 
+    do(plot=ggplot(data=.) +
+           aes_string(x = xvar, y = yvar) + 
+           geom_bar(stat = "identity") + 
+           labs(title = glue('Prison COVID Infections in {unique(.$State)}'),
+                subtitle = "Rate of change in number of incarcerated individuals infected (past 10 days)",
+                y = "") +
+           scale_y_continuous(labels = scales::percent)
+       )
+  return(plots)
+}
+
+plots <- top_three_by_state %>%
+    filter(State %in% top_five_states) %>%
+    plot_bars_by_state(., xvar = "Name", yvar = "ten_day_change")
+plots$plot
 ```
 
 ## Historical Data
