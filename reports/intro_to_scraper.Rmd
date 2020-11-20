@@ -131,6 +131,10 @@ slist$report_df %>%
 
 Data can be used in several different ways to help illustrate important facts about the current state of COVID-19 data for incarcerated populations in the US. For example, we can use a map, such as below, to not only show the number of residents tested across the US states, but also highlight the large data gap we have for states who do not report number of individuals who are tested for their prison populations. 
 
+Note that in order to calculate testing rates, we used state-wide prison populations gathered in August by The Marshall Project and the Associated Press. For more information on their methodology for collecting these counts, follow [this link](https://github.com/themarshallproject/COVID_prison_population_data/blob/master/README.md). 
+
+The numerator we're using to calculate rates is the total number of tests administered, by state. If individuals were tested more than once, it's possible that the rate will exceed one. 
+
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 
 state_tested <- slist$current_data %>%
@@ -203,7 +207,8 @@ percentage_change <- facilities %>%
     filter(!is.infinite(ten_day_change)) %>%    # what to do about dividing by zero?
     slice_head(n = 1) %>%
     select(Name, State, Date, Residents.Confirmed, ten_days_ago, ten_day_change) %>%
-    ungroup()
+    ungroup() %>%
+    mutate(StateFull = behindbarstools::translate_state(State))
 
 # get top 3 facilities per state
 top_three_by_state <- percentage_change %>%
@@ -231,7 +236,7 @@ plot_bars_by_state <- function(dat, xvar, yvar) {
     do(plot=ggplot(data=.) +
            aes_string(x = xvar, y = yvar) + 
            geom_bar(stat = "identity") + 
-           labs(title = glue('Prison COVID Infections in {unique(.$State)}'),
+           labs(title = glue('Prison COVID Infections in {unique(.$StateFull)}'),
                 subtitle = "Rate of change in number of incarcerated individuals infected (past 10 days)",
                 y = "") +
            scale_y_continuous(labels = scales::percent)
