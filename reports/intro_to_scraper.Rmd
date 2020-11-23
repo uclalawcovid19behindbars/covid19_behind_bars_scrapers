@@ -175,7 +175,8 @@ inverse_map_plot <- map_df %>%
 
 inverse_map_plot +
     ggtitle(
-        "No Current COVID-19 Tests Reported for the Incarcerated Population") + 
+        "No Tests on the Inside",
+        "States that have not recently reported any COVID-19 testing of incarcerated individuals ") + 
   theme(legend.title=element_blank())
 
 ```
