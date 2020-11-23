@@ -140,10 +140,10 @@ The numerator we're using to calculate rates is the total number of tests admini
 state_tested <- slist$current_data %>%
     filter(jurisdiction == "state") %>%
     group_by(State) %>%
-    summarize(Tested = sum_na_rm(Residents.Tadmin), .groups = "drop") %>%
+    summarize(Tests_administered = sum_na_rm(Residents.Tadmin), .groups = "drop") %>%
     left_join(prison_pop, by = c("State" = "name")) %>%
-    mutate(test_rate = Tested / aug_pop,
-           any_testing = ifelse(is.na(Tested), "No testing", "Some testing")) 
+    mutate(test_rate = Tests_administered / aug_pop,
+           any_testing = ifelse(is.na(Tests_administered), "No testing", "Some testing")) 
 
 map_df <- usa_sf("laea") %>%
     select(State = name, geometry) %>%
@@ -153,7 +153,8 @@ map_plot <- map_df %>%
     ggplot(aes(fill = test_rate, text = State)) +
     geom_sf() +
     theme_void() +
-    scale_fill_distiller(palette = "Spectral", direction = 1)
+    scale_fill_distiller(palette = "Spectral", direction = 1) +
+   geom_sf_text(aes(label = abbreviation))
 
 map_plot +
     ggtitle(
@@ -171,13 +172,16 @@ inverse_map_plot <- map_df %>%
   geom_sf() +
   theme_void() +
   scale_fill_manual(values = c("No testing" = "#f03b20", 
-                                 "Some testing" = "white"))
+                                 "Some testing" = "white")) +
+   geom_sf_text(aes(label = abbreviation))
+
 
 inverse_map_plot +
     ggtitle(
         "No Tests on the Inside",
         "States that have not recently reported any COVID-19 testing of incarcerated individuals ") + 
-  theme(legend.title=element_blank())
+  theme(legend.title=element_blank()) 
+
 
 ```
 
@@ -221,7 +225,7 @@ facilities <- slist$hist_data %>%
 percentage_change <- facilities %>%
     mutate(
         ten_days_ago = dplyr::lag(Residents.Confirmed, n = 10, order_by = Date),
-        ten_day_change = (Residents.Confirmed - ten_days_ago) / ten_days_ago
+        ten_day_change = (Residents.Confirmed - ten_days_ago) / (ten_days_ago + 0.00001) 
     ) %>%
     dplyr::arrange(desc(Date)) %>%
     filter(!is.infinite(ten_day_change)) %>%    # what to do about dividing by zero?
@@ -229,6 +233,10 @@ percentage_change <- facilities %>%
     select(Name, State, Date, Residents.Confirmed, ten_days_ago, ten_day_change) %>%
     ungroup() %>%
     mutate(StateFull = behindbarstools::translate_state(State))
+
+# threshold <- percentage_change %>%
+#   summarise()
+  
 
 ## get top 3 facilities per state
 top_three_wide <- percentage_change %>%
