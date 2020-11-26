@@ -38,8 +38,8 @@ virginia_beach_extract <- function(x){
         Drop.Staff.Population = "TOTAL DEPUTIES"
     )
     
-    df_staff <- x[[1]]
-    df_rez <- x[[2]]
+    df_staff <- x[[2]]
+    df_rez <- x[[3]]
     
     check_names(df_staff, exp_names_staff)
     check_names(df_rez, exp_names_rez)

@@ -17,7 +17,8 @@ michigan_restruct <- function(x){
     out_list <- ExtractTable(x)
 
     out_list_names <- x %>%
-        magick::image_crop("1900x25+0+45") %>%
+        # this is finnicky and needs to be changed
+        magick::image_crop("1900x220+0+0") %>%
         ExtractTable()
 
     names(out_list[[1]]) <- unname(unlist(out_list_names))

@@ -28,7 +28,8 @@ california_staff_extract <- function(x){
     names(ext_df) <- names(ext)
     
     ext_df %>%
-        select(-contains("Drop"))
+        select(-contains("Drop")) %>%
+        clean_scraped_df()
 }
 
 #' Scraper class for general california_staff COVID data

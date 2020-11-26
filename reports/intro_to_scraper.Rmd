@@ -10,6 +10,7 @@ output: html_document
 ##Define package list
 ##Install 'albersusa' repo once from GitHub 
 # # remotes::install_git("https://git.rud.is/hrbrmstr/albersusa.git")
+library(behindbarstools)
 Packages<-c("tidyverse", "DT", "albersusa", "plotly", "glue")
 .packages = Packages
 ##Install CRAN packages (if not already installed)
@@ -149,15 +150,18 @@ map_df <- usa_sf("laea") %>%
     left_join(state_tested, by = "State")
     
 map_plot <- map_df %>%
-    ggplot(aes(fill = test_rate, text = State)) +
+    mutate(test_rate_cat = cut(test_rate, c(0,1,2,5,15))) %>%
+    ggplot(aes(fill = test_rate_cat, text = State)) +
     geom_sf() +
     theme_void() +
-    scale_fill_distiller(palette = "Spectral", direction = 1)
+    scale_fill_brewer(
+        palette = "Spectral", direction = 1, na.value = "grey50")
 
 map_plot +
     ggtitle(
         "Incarcerated Population in State Prisons Testing Rate",
-        "Grey indicates no reported data")
+        "Grey indicates no reported data") +
+    labs(fill = "Test Rate\nPer Resident")
 
 ```
 
@@ -252,22 +256,108 @@ plots$plot
 
 ## Historical Data
 
-A strength of our dataset compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within a facility in Georgia in just a short period of time.
+A strength of our dataset compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within facilities with major outbreaks in the past week.
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
-fac_delta_df <- slist$hist_data %>%
-    filter(State == "GA" & jurisdiction == "state") %>%
-    group_by(Name) %>%
+fac_delta_df <-  slist$hist_data%>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    filter(!(str_detect(Name, "(?i)state") & str_detect(Name, "(?i)wide"))) %>%
+    filter(Date >= (lubridate::as_date((Sys.Date())) - lubridate::days(7))) %>%
+    group_by(Name, State, jurisdiction) %>%
     mutate(delta = last(Residents.Confirmed) - first(Residents.Confirmed)) %>%
     ungroup() %>%
-    filter(delta == max(delta))
+    filter(delta %in% head(sort(unique(delta), decreasing = TRUE), n = 4)) %>%
+    select(jurisdiction, State, Name) %>%
+    unique() %>%
+    left_join( slist$hist_data, by = c("jurisdiction", "State", "Name"))
 
 fac_delta_df %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    mutate(Title = str_c(State, ": ", Name)) %>%
     ggplot(aes(x = Date, y = Residents.Confirmed)) +
     geom_line() +
+    facet_wrap(~Title) +
+    labs(y = "Residents Confirmed") +
     theme_bw() +
-    ggtitle(str_c(
-        "Cumulative Residents Confirmed for ",
-        str_to_title(first(fac_delta_df$Name))))
+    ggtitle(
+        "High Outbreak Facilities",
+        "Carceral Facilities with Largest Increase In Resident Cases in Past 7 Days"
+    ) +
+    theme(
+        legend.text = element_text(size=13),
+        legend.title = element_text(size=15),
+        axis.text = element_text(size=13),
+        axis.title = element_text(size=15),
+        title =  element_text(size=17))
 ```
 
+## State Outbreak Comparison
+
+```{r}
+delta_df <-  slist$hist_data %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State, Date) %>%
+    summarize(Cases = sum(Residents.Confirmed, na.rm = TRUE), .groups = "drop") %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    filter(Date >= (lubridate::as_date((Sys.Date())) - lubridate::days(7))) %>%
+    filter(Date == max(Date) | Date == min(Date)) %>%
+    group_by(State) %>%
+    summarize(
+        prison_change = diff(Cases)/first(Cases)*100,
+        prison_cases = last(Cases), .groups = "drop") %>%
+    arrange(-prison_change)
+
+state_delta_data <- "https://api.covidtracking.com/v1/states/daily.csv" %>%
+    read_csv(col_types = cols()) %>%
+    mutate(Date = lubridate::ymd(as.character(date))) %>%
+    select(Date, state, positive) %>%
+    filter(Date >= (lubridate::as_date((Sys.Date())) - lubridate::days(7))) %>%
+    filter(Date == max(Date) | Date == min(Date)) %>%
+    arrange(state, Date) %>%
+    group_by(state) %>%
+    summarize(
+        pop_change = diff(positive)/first(positive)*100,
+        pop_cases = last(positive), .groups = "drop") %>%
+    mutate(State = translate_state(state)) %>%
+    select(-state) %>%
+    right_join(delta_df, by = "State")
+
+chnge_plot <- state_delta_data %>%
+  mutate(text = str_c(
+    "State: ", State, "\n",
+    "State Cases: ", pop_cases, "\n",
+    "Prison Cases: ", prison_cases, "\n"
+  )) %>%
+  ggplot(aes(x = pop_change, y = prison_change, text = text)) +
+  geom_point() +
+  theme_bw() +
+  labs(x = "State Covid Percentage Increases", y = "Prison Covid Percentage Increases")
+
+ggplotly(chnge_plot)
+
+```
+
+## Death Inconsistancies
+
+```{r}
+neg_death_df <- slist$hist_data %>%
+    select(jurisdiction, State, Name, Date, Residents.Deaths, Staff.Deaths) %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    arrange(jurisdiction, State, Name, Date) %>%
+    group_by(jurisdiction, State, Name) %>% 
+    mutate(lag_death = Residents.Deaths - lag(Residents.Deaths)) %>%
+    mutate(lag_staff_death = Staff.Deaths - lag(Staff.Deaths)) %>%
+    mutate(any_neg = any(lag_death < 0 | lag_staff_death < 0, na.rm = TRUE)) %>%
+    filter(any_neg) %>%
+    ungroup()
+
+# every once in a while we get negative deaths record all instances here
+neg_death_df %>%
+    select(-Residents.Deaths, -Staff.Deaths, -any_neg) %>%
+    mutate(title = str_c(State, ": ", Name)) %>%
+    select(-State, -Name, -jurisdiction) %>%
+    pivot_longer(lag_death:lag_staff_death) %>%
+    ggplot(aes(x = Date, y = value, color = name, linetype = name)) +
+    geom_line() +
+    facet_wrap(~title)
+```

@@ -8,7 +8,7 @@ wyoming_pull <- function(x){
 wyoming_restruct <- function(x){
     x %>%
         select(
-            Name, Staff.Recovered, Residents.Recovered, Residents.Active)
+            Name, Residents.Active)
 }
 
 wyoming_extract <- function(x){
@@ -21,8 +21,8 @@ wyoming_extract <- function(x){
 #' Scraper class for general wyoming COVID data
 #' 
 #' @name wyoming_scraper
-#' @description This will be a description of wyoming data and what the scraper
-#' does
+#' @description As of 11/20/20 Wyoming stopped reporting cumulative cases and
+#' only reports active resident cases.
 #' \describe{
 #'   \item{Facility_Name}{The faciilty name.}
 #' }

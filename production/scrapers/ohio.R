@@ -24,11 +24,11 @@ ohio_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Institution", "0", "Name",
-        "Housing Type (cell, open bay, combo)", "1", "Housing.Type",
-        "# of Staff who have Reported Positive Tests", "2", "Staff.Confirmed",
+        "# of Staff who have Reported Positive Tests", "1", "Staff.Confirmed",
+        "# of Staff Currently Positive", "2", "Drop.Staff.Active",
         "# of COVID- 19 Related Staff Deaths", "3", "Staff.Deaths",
         "# of Staff who have Recovered", "4", "Staff.Recovered",
-        "Units in Quarantine", "5", "Units.Quarantine",
+        "Housing Type (cell, open bay, combo)", "5", "Housing.Type",
         "# of Inmates in Quarantine", "6", "Residents.Quarantine",
         "# of Inmates in Isolation", "7", "Residents.Isolation",
         "# of inmates currently Positive for COVID-19", "8", "Residents.Confirmed",
@@ -45,7 +45,7 @@ ohio_extract <- function(x){
         df_ <- as_tibble(li[[1]])
         check_names_extractable(df_, col_name_df)
         renamed_df <- rename_extractable(df_, col_name_df) %>%
-            select(-Units.Quarantine, -Housing.Type) %>%
+            select(-Housing.Type) %>%
             filter(Name != "Institution" & Name != "Totals")})) %>%
         clean_scraped_df()
     
@@ -56,9 +56,11 @@ ohio_extract <- function(x){
     Ohio$Residents.Quarantine <- (Ohio$Residents.Quarantine)+
         (Ohio$Residents.Isolation)
 
-    Ohio <- select(
-        Ohio, -Residents.Pending, -Residents.Isolation, -Resident.Probable.Deaths)
-    
+    Ohio <- Ohio %>%
+        select(
+            -Drop.Staff.Active, -Residents.Pending, -Residents.Isolation,
+            -Resident.Probable.Deaths)
+
     Ohio
 }
 

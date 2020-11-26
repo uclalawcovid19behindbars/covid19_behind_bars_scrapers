@@ -1,12 +1,26 @@
 source("./R/utilities.R")
+library(behindbarstools)
 
 hist_data <- load_latest_data(TRUE, TRUE)
+
+hist_data %>%
+    filter(State == "Texas" & jurisdiction == "county") %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    mutate(Title = str_c(State, ": ", Name)) %>%
+    ggplot(aes(x = Date, y = Residents.Confirmed)) +
+    geom_line() +
+    facet_wrap(~Title) +
+    labs(y = "Residents Confirmed") +
+    theme_bw()
+
 
 
 fac_delta_df <- hist_data %>%
     mutate(Date = lubridate::mdy(Date)) %>%
     filter(!(str_detect(Name, "(?i)state") & str_detect(Name, "(?i)wide"))) %>%
     filter(Date >= (lubridate::as_date((Sys.Date())) - lubridate::days(7))) %>%
+    # i fucked up SD
+    filter(State != "South Dakota") %>%
     group_by(Name, State, jurisdiction) %>%
     mutate(delta = last(Residents.Confirmed) - first(Residents.Confirmed)) %>%
     ungroup() %>%

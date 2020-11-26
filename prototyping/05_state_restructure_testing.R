@@ -12,7 +12,8 @@ sapply(sc_files, source)
 ids_to_restructure <- c(
     "alaska", "colorado", "hawaii", "indiana", "maine",
     "maricopa_county", "minnesota", "nebraska", "north_dakota", "orange_county",
-    "polk_county", "tennessee", "texas", "west_virginia", "wisconsin"
+    "polk_county", "tennessee", "texas", "west_virginia", "wisconsin",
+    "north_carolina"
 )
 
 tests_unclear <- c(

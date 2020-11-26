@@ -1,4 +1,5 @@
 source("./R/utilities.R")
+library(behindbarstools)
 
 get_scraper_info <- function(){
     sc_files <- list.files("production/scrapers", full.names = TRUE)
@@ -33,7 +34,7 @@ list(
     scraper_df = get_scraper_info(),
     report_df = state_reporting(),
     current_data = load_latest_data(),
-    hist_data = read_historical_data() %>%
+    hist_data = load_latest_data(TRUE, coalesce = TRUE) %>%
         filter(!is.na(id), !is.na(jurisdiction)),
     current_state = "https://api.covidtracking.com/v1/states/current.csv" %>%
         read_csv(),

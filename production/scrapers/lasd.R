@@ -47,17 +47,17 @@ lasd_restruct <- function(x){
     }
     else{
         out <- tibble(
-            Residents.Confirmed = lasd_crop(x, "570x30+620+435", "(?i)total pos"),
-            Residents.Recovered = lasd_crop(x, "570x30+620+712", "(?i)recover"),
-            Residents.Deaths = lasd_crop(x, "570x30+620+795", "(?i)deaths"),
-            Residents.Quarantine = lasd_crop(x, "570x30+620+1140", "(?i)total"),
-            drop.neg.asymp = lasd_crop(x, "570x25+620+612", "(?i)negative"),
-            drop.neg.symp = lasd_crop(x, "570x25+20+612", "(?i)negative"),
-            drop.pos.asymp = lasd_crop(x, "560x25+620+555", "(?i)current"),
-            drop.pos.symp = lasd_crop(x, "562x25+20+555", "(?i)current"),
-            drop.test.asymp = lasd_crop(x, "562x25+620+645", "(?i)total"),
-            drop.test.symp = lasd_crop(x, "562x25+20+645", "(?i)total"),
-            Residents.Population = lasd_crop(x, "562x25+20+231", "(?i)jail pop"))
+            Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+745", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1067", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+600", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
 }
 
@@ -71,7 +71,7 @@ lasd_extract <- function(x){
 }
 
 #' Scraper class for general LASD staff COVID data
-#' 
+#' tibble(
 #' @name lasd_scraper
 #' @description Info comes from an image file hosted on the website however
 #' scraping the image is extremely difficult and has required multiple
