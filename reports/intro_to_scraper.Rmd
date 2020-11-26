@@ -141,9 +141,10 @@ The numerator we're using to calculate rates is the total number of tests admini
 state_tested <- slist$current_data %>%
     filter(jurisdiction == "state") %>%
     group_by(State) %>%
-    summarize(Tested = sum_na_rm(Residents.Tadmin), .groups = "drop") %>%
+    summarize(Tests_administered = sum_na_rm(Residents.Tadmin), .groups = "drop") %>%
     left_join(prison_pop, by = c("State" = "name")) %>%
-    mutate(test_rate = Tested / aug_pop)
+    mutate(test_rate = Tests_administered / aug_pop,
+           any_testing = ifelse(is.na(Tests_administered), "No testing", "Some testing")) 
 
 map_df <- usa_sf("laea") %>%
     select(State = name, geometry) %>%
@@ -154,14 +155,41 @@ map_plot <- map_df %>%
     ggplot(aes(fill = test_rate_cat, text = State)) +
     geom_sf() +
     theme_void() +
+<<<<<<< HEAD
     scale_fill_brewer(
         palette = "Spectral", direction = 1, na.value = "grey50")
+=======
+    scale_fill_distiller(palette = "Spectral", direction = 1) +
+   geom_sf_text(aes(label = abbreviation))
+>>>>>>> 0af52b0d8f7fbc3d4852373daaab1994b3d71212
 
 map_plot +
     ggtitle(
         "Incarcerated Population in State Prisons Testing Rate",
         "Grey indicates no reported data") +
     labs(fill = "Test Rate\nPer Resident")
+
+```
+Another map that highlights states with no testing. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+
+inverse_map_plot <- map_df %>%
+  filter(!is.na(any_testing)) %>%
+  ggplot(aes(fill = any_testing, text = State)) +
+  geom_sf() +
+  theme_void() +
+  scale_fill_manual(values = c("No testing" = "#f03b20", 
+                                 "Some testing" = "white")) +
+   geom_sf_text(aes(label = abbreviation))
+
+
+inverse_map_plot +
+    ggtitle(
+        "No Tests on the Inside",
+        "States that have not recently reported any COVID-19 testing of incarcerated individuals ") + 
+  theme(legend.title=element_blank()) 
+
 
 ```
 
@@ -201,11 +229,11 @@ facilities <- slist$hist_data %>%
     filter(jurisdiction == "state") %>%
     group_by(State, Name) 
 
-# get 10-day percentage change in cases
+## get 10-day percentage change in cases
 percentage_change <- facilities %>%
     mutate(
         ten_days_ago = dplyr::lag(Residents.Confirmed, n = 10, order_by = Date),
-        ten_day_change = (Residents.Confirmed - ten_days_ago) / ten_days_ago
+        ten_day_change = (Residents.Confirmed - ten_days_ago) / (ten_days_ago + 0.00001) 
     ) %>%
     dplyr::arrange(desc(Date)) %>%
     filter(!is.infinite(ten_day_change)) %>%    # what to do about dividing by zero?
@@ -214,16 +242,27 @@ percentage_change <- facilities %>%
     ungroup() %>%
     mutate(StateFull = behindbarstools::translate_state(State))
 
-# get top 3 facilities per state
-top_three_by_state <- percentage_change %>%
+# threshold <- percentage_change %>%
+#   summarise()
+  
+
+## get top 3 facilities per state
+top_three_wide <- percentage_change %>%
     group_by(State) %>%
     dplyr::arrange(desc(ten_day_change)) %>%
     slice_head(n = 3) %>%
     filter(!is.na(ten_day_change)) %>%
     ungroup()
 
-# get top five states (avg increase)
-top_five_states <- top_three_by_state %>%
+top_three_long <- top_three_wide %>%
+  rename(`Number infected (ten days ago)` = ten_days_ago,
+         `Number infected (today)` = Residents.Confirmed) %>%
+  pivot_longer(cols = c(`Number infected (ten days ago)`, `Number infected (today)`),
+               names_to = "Residents Infected")
+
+## get top five states (avg increase)
+## TO DO: change this to be a combination of 
+top_five_states <- top_three_wide %>%
     group_by(State) %>%
     mutate(avg_inc = mean(ten_day_change)) %>%
     dplyr::arrange(desc(avg_inc)) %>%
@@ -232,31 +271,37 @@ top_five_states <- top_three_by_state %>%
     slice_head(n = 5) %>%
     pull(State)
 
-# make plots
-plot_bars_by_state <- function(dat, xvar, yvar) {
+## make plots
+plot_bars_by_state <- function(dat, xvar, yvar, grpvar) {
   y_label = paste("Lag change", as_label(var))
   plots <- dat %>% 
     group_by(State) %>% 
     do(plot=ggplot(data=.) +
-           aes_string(x = xvar, y = yvar) + 
-           geom_bar(stat = "identity") + 
+           aes_string(x = xvar, y = yvar, fill = grpvar) + 
+           geom_bar(stat = "identity", position = position_dodge()) + 
            labs(title = glue('Prison COVID Infections in {unique(.$StateFull)}'),
                 subtitle = "Rate of change in number of incarcerated individuals infected (past 10 days)",
-                y = "") +
-           scale_y_continuous(labels = scales::percent)
+                y = "") + 
+         geom_text(aes_string(label=yvar), vjust=1.6, color="white",
+                   position = position_dodge(0.9), size=3.5) + 
+           scale_fill_brewer(palette="Paired")
        )
   return(plots)
 }
 
-plots <- top_three_by_state %>%
+plots <- top_three_long %>%
     filter(State %in% top_five_states) %>%
-    plot_bars_by_state(., xvar = "Name", yvar = "ten_day_change")
+    plot_bars_by_state(., xvar = "Name", yvar = "value", grpvar = "`Residents Infected`")
 plots$plot
 ```
 
 ## Historical Data
 
+<<<<<<< HEAD
 A strength of our dataset compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within facilities with major outbreaks in the past week.
+=======
+A strength of our data set compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within a facility in Georgia in just a short period of time.
+>>>>>>> 0af52b0d8f7fbc3d4852373daaab1994b3d71212
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 fac_delta_df <-  slist$hist_data%>%
