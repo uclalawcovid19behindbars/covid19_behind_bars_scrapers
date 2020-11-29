@@ -6,7 +6,7 @@ missouri_statewide_pull <- function(x){
 }
 
 missouri_statewide_restruct <- function(x){
-    Residents.Tested <- x %>%
+    Residents.Tadmin<- x %>%
         rvest::html_node(
             xpath="//h3[contains(text(),'Tests')]/following::ul") %>%
         rvest::html_text() %>%
@@ -30,46 +30,45 @@ missouri_statewide_restruct <- function(x){
         last() %>%
         string_to_clean_numeric()
     Name <- "State-wide"
-    MOSW <- data.frame(Name, Staff.Deaths, Residents.Deaths, Residents.Tested)
-    
-    
+    MOSW <- data.frame(Name, Staff.Deaths, Residents.Deaths, Residents.Tadmin)
     
     # Non Facility Row
-    NameNF <- "Non-Facility"
-    Staff.Confirmed <- x %>%
-        rvest::html_node(xpath="//h3[contains(text(),'Cumulative')]") %>%
-        rvest::html_text() %>%
-        str_split(":") %>%
-        .[[1]] %>%
-        last() %>%
-        string_to_clean_numeric()
+    # NameNF <- "Non-Facility"
+    # Staff.Confirmed <- x %>%
+    #     rvest::html_node(xpath="//h3[contains(text(),'Cumulative')]") %>%
+    #     rvest::html_text() %>%
+    #     str_split(":") %>%
+    #     .[[1]] %>%
+    #     last() %>%
+    #     string_to_clean_numeric()
+    # 
+    # Staff.Recovered <- x %>%
+    #     rvest::html_node(
+    #         xpath="//h3[contains(text(),'Cumulative')]/following::ul") %>%
+    #     rvest::html_node(xpath="//li[contains(text(),'Recovered')]") %>%
+    #     rvest::html_text() %>%
+    #     str_split(":") %>%
+    #     .[[1]] %>%
+    #     last() %>%
+    #     string_to_clean_numeric()
+    # 
+    # MO.NF <- data.frame(Name = NameNF, Staff.Confirmed, Staff.Recovered)
+    # 
+    # for(i in 1:ncol(MOSW)){
+    #     if(is.na(MOSW[,i])){
+    #         warning(str_c(
+    #             "Extracted NA value where not expected: ", names(MOSW)[i]))
+    #     }
+    # }
+    # for(i in 1:ncol(MO.NF)){
+    #     if(is.na(MO.NF[,i])){
+    #         warning(str_c(
+    #             "Extracted NA value where not expected: ", names(MO.NF)[i]))
+    #     }
+    # }
     
-    Staff.Recovered <- x %>%
-        rvest::html_node(
-            xpath="//h3[contains(text(),'Cumulative')]/following::ul") %>%
-        rvest::html_node(xpath="//li[contains(text(),'Recovered')]") %>%
-        rvest::html_text() %>%
-        str_split(":") %>%
-        .[[1]] %>%
-        last() %>%
-        string_to_clean_numeric()
-
-    MO.NF <- data.frame(Name = NameNF, Staff.Confirmed, Staff.Recovered)
-    
-    for(i in 1:ncol(MOSW)){
-        if(is.na(MOSW[,i])){
-            warning(str_c(
-                "Extracted NA value where not expected: ", names(MOSW)[i]))
-        }
-    }
-    for(i in 1:ncol(MO.NF)){
-        if(is.na(MO.NF[,i])){
-            warning(str_c(
-                "Extracted NA value where not expected: ", names(MO.NF)[i]))
-        }
-    }
-    
-    dplyr::bind_rows(MOSW, MO.NF)
+    #dplyr::bind_rows(MOSW, MO.NF)
+    MOSW
 }
 
 missouri_statewide_extract <- function(x){

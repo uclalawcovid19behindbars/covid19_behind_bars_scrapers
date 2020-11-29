@@ -13,8 +13,10 @@ iowa_restruct <- function(ia_html){
 iowa_extract <- function(x){
     names(x) <- str_squish(names(x))
     expected_names <- c(
-        "Prison", "Inmates Tested", "Inmates Positive", "Inmates Recovered", 
-        "Staff Positive*", "Staff Recovered", "COVID Related Inmate Deaths")
+        "Prison", "Inmates Tested", "Inmates Positive", 
+        "Inmates No Longer Positive", "Staff Positive*",
+        "Staff No Longer Positive", 
+        "COVID Related Inmate Deaths")
     
     check_names(x, expected_names)
     

@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 maryland_pull <- function(x){
     md_img <- get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)draft") %>%
+        x, "img", attr = "src", attr_regex = "(?i)pubic") %>%
         str_remove_all("-\\d{3,4}x\\d*")
 
     magick::image_read(md_img)
