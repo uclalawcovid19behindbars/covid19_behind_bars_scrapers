@@ -28,6 +28,7 @@ dc_extract <- function(x){
         # by default in the R package lubridate
         mutate(Date = lubridate::as_datetime(DATE_REPORTED/1000)) %>%
         mutate(Date = lubridate::as_date(Date)) %>%
+        filter(!is.na(TOTAL_POSITIVE_PSDP)) %>%
         filter(Date == max(Date)) %>%
         mutate(Staff.Confirmed = TOTAL_POSITIVE_PSDP) %>%
         mutate(Staff.Recovered = RECOVRD_RETURND_TO_WORK_PSDP) %>%
