@@ -692,18 +692,7 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
         select(-starts_with("Resident.Deaths")) %>%
         rename(Facility = Name) %>%
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
-        mutate(State = translate_state(State)) %>%
-        mutate(Residents.Confirmed = ifelse(
-        is.na(Residents.Confirmed),
-        vector_sum_na_rm(
-          Residents.Active, Residents.Deaths, Residents.Recovered),
-        Residents.Confirmed
-        )) %>%
-        mutate(Residents.Tadmin = ifelse(
-            is.na(Residents.Tadmin),
-            Residents.Tested,
-            Residents.Tadmin
-        ))
+        mutate(State = translate_state(State))
     
     nonfederal <- raw_df %>%
         filter(State != "Federal") %>%
@@ -732,7 +721,7 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
     if(coalesce){
         out_df <- out_df %>%
             select(-id) %>%
-            group_by_coalesce( Date, Name, State, jurisdiction)
+            group_by_coalesce( Date, Name, State, jurisdiction, .ignore = "source")
     }
     
     out_df  %>%
@@ -741,6 +730,17 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
             by = c("Name", "State")
         ) %>%
         mutate(Residents.Population = Population) %>%
+        mutate(Residents.Confirmed = ifelse(
+            is.na(Residents.Confirmed),
+            vector_sum_na_rm(
+               Residents.Active, Residents.Deaths, Residents.Recovered),
+            Residents.Confirmed
+        )) %>%
+        mutate(Residents.Tadmin = ifelse(
+            is.na(Residents.Tadmin),
+            Residents.Tested,
+            Residents.Tadmin
+        )) %>%
         # Select the order for names corresponding to Public facing google sheet
         select(
             ID, jurisdiction, State, Name, Date, source,
@@ -757,9 +757,9 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
             ", ", lubridate::year(Date)))
 }
 
-write_latest_data <- function(){
+write_latest_data <- function(coalesce = FALSE){
     
-    out_df <- load_latest_data()
+    out_df <- load_latest_data(coalesce = coalesce)
     
     out_df %>%
         select(
