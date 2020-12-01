@@ -17,7 +17,7 @@ missouri_extract <- function(x){
         "Staff Recovered", "2", "Staff.Recovered",
         "Offender Active Cases", "3", "Residents.Active",
         "Offenders Recovered", "4", "Residents.Recovered"
-    ), ncol = 3, nrow = 7, byrow = TRUE)
+    ), ncol = 3, nrow = 5, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)

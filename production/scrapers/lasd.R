@@ -45,6 +45,20 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
+    else if(abs(1605 - h_) <= 3 & w_ == 1200){
+        out <- tibble(
+            Residents.Confirmed = lasd_crop(x, "570x30+620+440", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+715", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+791", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1145", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+615", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+615", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "560x25+620+555", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+555", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+640", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+640", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+235", "(?i)jail pop"))
+    }
     else{
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),

@@ -1,4 +1,5 @@
 library(tidyverse)
+library(behindbarstools)
 
 #' Gets a web element based on a specific attribute that matches regex
 #'
@@ -42,22 +43,6 @@ get_src_by_attr <- function(
     
     xml2::url_absolute(url_portion, base)
     
-}
-
-clean_fac_col_txt <- function(x){
-    # get rid of excessive white space
-    str_squish(x) %>%
-        # remove trailing stars
-        str_remove("[\\*]+$") %>%
-        # remove leading stars
-        str_remove("^[\\*]+") %>%
-        # capitalize COVID wherever its found
-        str_replace_all("(?i)covid", "COVID") %>%
-        # replace COVID - 19 with  some form of spaces with COVID-19
-        str_replace_all("COVID[ ]*-[ ]*19", "COVID-19") %>%
-        str_replace_all("\\n", " ") %>%
-        str_replace_all("\\r", " ") %>%
-        str_squish()
 }
 
 basic_check <- function(true_names, expected_names){
@@ -751,6 +736,11 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
     }
     
     out_df  %>%
+        left_join(
+            read_pop_data(),
+            by = c("Name", "State")
+        ) %>%
+        mutate(Residents.Population = Population) %>%
         # Select the order for names corresponding to Public facing google sheet
         select(
             ID, jurisdiction, State, Name, Date, source,
@@ -758,7 +748,7 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
             Residents.Deaths, Staff.Deaths, Residents.Recovered,
             Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
             Staff.Negative, Residents.Pending, Staff.Pending,
-            Residents.Quarantine, Staff.Quarantine, Residents.Released, 
+            Residents.Quarantine, Staff.Quarantine, Residents.Active, 
             Residents.Population, Address, Zipcode, City, County, Latitude,
             Longitude, County.FIPS, hifld_id, Notes) %>%
         arrange(State, Name) %>%
