@@ -1,0 +1,15 @@
+# Scarper Production Code
+
+The [UCLA Law Covid-19 Behind Data Project](http://covid19behindbars.org/), launched in March 2020, tracks the spread and impact of Covid-19 in American carceral facilities and pushes for greater transparency and accountability around the pandemic response of the carceral system.
+
+Part of this project includes scraping state DOC websites, the federal BOP webiste, and county jail websites. For ecah of these websites, we pull data use a unique scraper which performs the following tasks
+
+1. Save a copy of the website in [perma.cc](perma.cc)
+2. Extract the raw source where the data we would like to collect is hosted. 
+3. Save this object to a flate file on your system
+4. Convert the raw data to a matrix, data frame, vector, or list of those objects 
+5. Clean and filter to the variables of concern for the project
+6. Do basic data checks
+7. Write extracted data to disk
+
+You can find each of our scrapers in the folder `production/scrapers`. More detailed documentation can be found [here](https://uclalawcovid19behindbars.github.io/covid19-behind-bars-public-docs/scraper_documentation/) for each of our scrapers. In ordder to run these scrapers an installation of the libaries listed at the top of the file `R/generic_scraper.R` as well as our teams own library [behindbarstools](https://github.com/uclalawcovid19behindbars/behindbarstools). Individual scrapers may require additional libraries which are listen in the individual scraper fie itself through explicit library calls.
