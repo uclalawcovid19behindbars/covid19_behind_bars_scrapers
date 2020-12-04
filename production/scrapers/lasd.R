@@ -61,10 +61,10 @@ lasd_restruct <- function(x){
     }
     else{
         out <- tibble(
-            Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
+            Residents.Confirmed = lasd_crop(x, "570x30+620+405", "(?i)total pos"),
             Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
-            Residents.Deaths = lasd_crop(x, "570x30+620+745", "(?i)deaths"),
-            Residents.Quarantine = lasd_crop(x, "570x30+620+1067", "(?i)total"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+738", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1063", "(?i)total"),
             drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
             drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
             drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),

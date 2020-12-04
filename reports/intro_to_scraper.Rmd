@@ -106,8 +106,8 @@ Below we present a table of the counts of our reported variables for state priso
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 slist$report_df %>%
-    select(-State, -Residents.Released, -Staff.Quarantine) %>%
-    summarize_all(sum) %>%
+    select(-State, -Staff.Quarantine) %>%
+    summarize_all(sum_na_rm) %>%
     pivot_longer(
         Residents.Confirmed:Staff.Pending, names_to = "Variable",
         values_to = "States+DC Reporting of 51") %>%
@@ -119,7 +119,7 @@ slist$report_df %>%
                 Residents.Tadmin, Residents.Negative, Residents.Pending,
                 Residents.Quarantine, Residents.Population, Staff.Confirmed,
                 Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
-                Staff.Pending) %>%
+                Residents.Active, Staff.Pending) %>%
             summarize_all(sum_na_rm) %>%
             pivot_longer(
                 Residents.Confirmed:Staff.Pending, names_to = "Variable",
@@ -155,13 +155,9 @@ map_plot <- map_df %>%
     ggplot(aes(fill = test_rate_cat, text = State)) +
     geom_sf() +
     theme_void() +
-<<<<<<< HEAD
     scale_fill_brewer(
-        palette = "Spectral", direction = 1, na.value = "grey50")
-=======
-    scale_fill_distiller(palette = "Spectral", direction = 1) +
+        palette = "Spectral", direction = 1, na.value = "grey50") +
    geom_sf_text(aes(label = abbreviation))
->>>>>>> 0af52b0d8f7fbc3d4852373daaab1994b3d71212
 
 map_plot +
     ggtitle(

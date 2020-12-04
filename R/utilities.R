@@ -636,7 +636,8 @@ coalesce_with_warnings <- function(...){
     })
 }
 
-load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
+load_latest_data <- function(
+    all_dates = FALSE, coalesce = FALSE, fill = FALSE){
   
     scrapers <- str_remove(list.files("./production/scrapers"), ".R")
     
@@ -721,7 +722,8 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
     if(coalesce){
         out_df <- out_df %>%
             select(-id) %>%
-            group_by_coalesce( Date, Name, State, jurisdiction, .ignore = "source")
+            group_by_coalesce(
+              Date, Name, State, jurisdiction, .ignore = "source", .method = "sum")
     }
     
     out_df  %>%
@@ -731,7 +733,7 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
         ) %>%
         mutate(Residents.Population = Population) %>%
         mutate(Residents.Confirmed = ifelse(
-            is.na(Residents.Confirmed),
+            is.na(Residents.Confirmed) & fill,
             vector_sum_na_rm(
                Residents.Active, Residents.Deaths, Residents.Recovered),
             Residents.Confirmed
@@ -757,9 +759,9 @@ load_latest_data <- function(all_dates = FALSE, coalesce = FALSE){
             ", ", lubridate::year(Date)))
 }
 
-write_latest_data <- function(coalesce = FALSE){
+write_latest_data <- function(coalesce = FALSE, fill = FALSE){
     
-    out_df <- load_latest_data(coalesce = coalesce)
+    out_df <- load_latest_data(coalesce = coalesce, fill = fill)
     
     out_df %>%
         select(

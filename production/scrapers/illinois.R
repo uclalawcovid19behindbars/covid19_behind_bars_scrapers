@@ -17,8 +17,10 @@ illinois_extract <- function(x){
         Name = "Locations",
         Staff.Confirmed = "Staff Confirmed",
         Staff.Recovered = "Staff Recovered",
-        Residents.Confirmed = "Incarcerated Individuals Confirmed",
-        Residents.Recovered = "Incarcerated Individuals Recovered"
+        Drop.Staff.Active = "Staff Current",
+        Residents.Confirmed = "OffendersConfirmed",
+        Residents.Recovered = "OffendersRecovered",
+        Residents.Active = "Offenders Current"
     )
     
     il <- x
@@ -30,6 +32,7 @@ illinois_extract <- function(x){
     
     il %>%
         filter(!str_detect(Name, "(?i)total")) %>%
+        select(-starts_with("Drop")) %>%
         clean_scraped_df() %>%
         as_tibble()
 }

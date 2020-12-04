@@ -98,6 +98,7 @@ arkansas_restruct <- function(img, enhancements = seq(100, 500, by = 50)){
 arkansas_extract <- function(x){
     x %>%
         mutate(Name = "state-wide") %>%
+        mutate(Residents.Active = Residents.Not.Recovered) %>%
         mutate(Residents.Confirmed = 
                    Residents.Recovered + Residents.Not.Recovered) %>%
         #mutate(Staff.Confirmed = 
@@ -162,7 +163,7 @@ if(sys.nframe() == 0){
     arkansas$pull_raw()
     arkansas$raw_data
     arkansas$save_raw()
-    arkansas$restruct_raw()
+    arkansas$restruct_raw(enhancements = seq(100, 150, by = 50))
     arkansas$restruct_data
     arkansas$extract_from_raw()
     arkansas$extract_data
