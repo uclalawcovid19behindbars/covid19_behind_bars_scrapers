@@ -565,7 +565,14 @@ read_historical_data <- function(){
     ind_vars <- c("Date", "Name", "State")
     
     list.files("./results/extracted_data", full.names = TRUE) %>%
-        lapply(read_csv, col_types = cols()) %>%
+        lapply(function(x){
+            df_ <- read_csv(x, col_types = cols())
+            if("Date" %in% names(df_)){
+              df_ <- df_ %>%
+                mutate(Date = lubridate::as_date(Date))
+            }
+            df_
+        }) %>%
         bind_rows() %>%
         select(-Resident.Deaths) %>%
         # remove values if they are missing a data name or state
@@ -759,7 +766,7 @@ load_latest_data <- function(
             ", ", lubridate::year(Date)))
 }
 
-write_latest_data <- function(coalesce = FALSE, fill = FALSE){
+write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
     out_df <- load_latest_data(coalesce = coalesce, fill = fill)
     

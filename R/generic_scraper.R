@@ -86,13 +86,61 @@ generic_scraper <- R6Class(
             flog.appender(appender.file(self$err_log))
             flog.threshold(WARN)
         },
-
-        pull_raw = function(url = self$url, ...){
-            if(self$log){
-                tryLog(self$raw_data <- self$pull_func(url, ...))
+        
+        reset_date = function(date){
+            
+            valid_types <- c(
+                html = ".html", img = ".png", json = ".json", pdf = ".pdf",
+                csv = ".csv", manual = ".csv"
+            )
+            
+            self$date <- as.Date(date)
+            
+            if(file.exists(self$err_log)){
+                file.remove(self$err_log)
             }
+            
+            self$err_log = paste0(
+                "./results/log_files/", self$date, "_", self$id, ".log")
+            
+            self$raw_dest = paste0(
+                "./results/raw_files/", self$date, "_", self$id,
+                valid_types[self$type])
+
+            self$extract_dest = paste0(
+                "./results/extracted_data/", self$date, "_", self$id, ".csv")
+            
+            # initiate logger
+            flog.appender(appender.file(self$err_log))
+            flog.threshold(WARN)
+
+            invisible(self)
+        },
+
+        pull_raw = function(url = self$url, ...){date
+
+            valid_types <- list(
+                html = xml2::read_html, img = magick::image_read, 
+                json = jsonlite::read_json, pdf = function(x) x, 
+                csv = read_csv, manual = read_csv
+            )
+
+            if(self$log){
+                if(self$date != Sys.Date()){
+                    tryLog(self$raw_data <- valid_types[[self$type]](self$raw_dest))
+                }
+                else{
+                    tryLog(self$raw_data <- self$pull_func(url, ...))
+                }
+            }
+
             else{
-                self$raw_data <- self$pull_func(url, ...)
+                if(self$date != Sys.Date()){
+                    self$raw_data <- valid_types[[self$type]](self$raw_dest)
+                }
+                else{
+                    self$raw_data <- self$pull_func(url, ...)
+                }
             }
             invisible(self)
         },

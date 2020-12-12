@@ -36,6 +36,7 @@ fac_delta_df <- hist_data %>%
     ggplot(aes(x = Date, y = Residents.Confirmed, color = Title)) +
     geom_line(size=1.25) +
     geom_point() +
+    ylim(0, 3000) +
     labs(y = "Residents Confirmed", color = "") +
     theme_behindbars() +
     scale_color_bbdiscrete() +
