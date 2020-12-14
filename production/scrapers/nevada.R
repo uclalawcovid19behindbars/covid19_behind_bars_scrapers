@@ -37,7 +37,19 @@ nevada_pull <- function(x){
     Sys.sleep(4)
     remDr$findElement(
         "xpath", "//div[@aria-label='Facility Name,  All']")$clickElement()
-    Sys.sleep(1)
+    Sys.sleep(3)
+    
+    nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    box_options <- nv_page %>%
+        rvest::html_nodes(".slicerText") %>%
+        rvest::html_text()
+    
+    deselect_index <- max(which(box_options == "Select all"))
+    
+    remDr$findElements(
+        "css", ".glyphicon.checkbox")[[deselect_index]]$clickElement()
+    Sys.sleep(3)
     
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
     dir.create(sub_dir, showWarnings = FALSE)

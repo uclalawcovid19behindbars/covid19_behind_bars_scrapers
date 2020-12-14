@@ -1,50 +1,6 @@
 library(tidyverse)
 library(behindbarstools)
 
-#' Gets a web element based on a specific attribute that matches regex
-#'
-#' @param base character string of the URL
-#' @param css css option to search html nodes
-#' @param xpath xpath option to search html nodes
-#' @param attr character the attribute to pull a string from
-#' @param attr_regex character regex to search in attributes
-#' @param date_regex character string to extract date from attribute
-#' @param date_fromat character the format to convert the date from
-#' 
-#' @return character of the url specified by the search
-
-get_src_by_attr <- function(
-    base, css, xpath, attr, attr_regex, date_regex = NULL, date_format = "mdy"){
-    
-    html_src <- xml2::read_html(base)
-    
-    web_page_imgs <- rvest::html_nodes(html_src, css, xpath)
-    
-    srcs <- rvest::html_attr(web_page_imgs, attr)
-    
-    if(is.null(date_regex)){
-        
-        url_portion <- srcs[grepl(attr_regex, srcs)]
-    }
-    
-    else{
-        condition_df <- tibble::tibble(
-            src_string = srcs,
-            match_grep = grepl(attr_regex, srcs),
-            date = lubridate::parse_date_time(
-                stringr::str_extract(srcs, date_regex), date_format)) %>%
-            dplyr::mutate(val = as.numeric(date)) %>%
-            dplyr::mutate(val = ifelse(match_grep, val, -Inf))
-        
-        im_pos <- which(condition_df$val == max(condition_df$val))
-        url_portion <- srcs[[im_pos]]
-    }
-    
-    
-    xml2::url_absolute(url_portion, base)
-    
-}
-
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
@@ -644,7 +600,7 @@ coalesce_with_warnings <- function(...){
 }
 
 load_latest_data <- function(
-    all_dates = FALSE, coalesce = FALSE, fill = FALSE){
+    all_dates = FALSE, coalesce = TRUE, fill = FALSE, debug = TRUE){
   
     scrapers <- str_remove(list.files("./production/scrapers"), ".R")
     
@@ -663,7 +619,7 @@ load_latest_data <- function(
       filter(str_detect(Jurisdiction, "(?i)federal")) %>%
       select(
         ID = Count.ID, State, Name, Address, Zipcode, City, County, 
-        Latitude, Longitude, County.FIPS, hifld_id) %>%
+        Latitude, Longitude, County.FIPS, hifld_id, hifld_pop = POPULATION) %>%
       mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
       unique()
     
@@ -702,26 +658,53 @@ load_latest_data <- function(
         mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
         mutate(State = translate_state(State))
     
-    nonfederal <- raw_df %>%
+    if(debug){
+        message(str_c("Base data frame contains ", nrow(raw_df), " rows."))
+    }
+    
+    nonfederal_unname <- raw_df %>%
         filter(State != "Federal") %>%
-        left_join(facn_df, by = c("Facility", "State")) %>%
+        left_join(facn_df, by = c("Facility", "State"))
+        
+    nonfederal <- nonfederal_unname %>%
         mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
         select(-Facility) %>%
         left_join(facd_df,  by = c("Name", "State", "ID"))
     
-    federal <- facn_df %>%
+    federal_unname <- facn_df %>%
         filter(State == "Federal") %>%
+        group_by(Facility) %>%
+        mutate(tmp = 1:n()) %>%
+        filter(tmp == 1) %>%
+        select(-tmp) %>%
+        ungroup() %>%
         right_join(
             raw_df %>%
                 filter(jurisdiction == "federal") %>%
-                select(-State),
-            by = "Facility") %>%
+                select(-State) %>%
+                group_by(Date, Facility, jurisdiction, id, source) %>%
+                summarize_all(sum_na_rm) %>%
+                ungroup(),
+            by = "Facility")
+    
+    if(debug){
+        bind_rows(nonfederal_unname, federal_unname) %>%
+            filter(is.na(Name)) %>%
+            select(State, jurisdiction, raw_name = Facility) %>%
+            write_csv("./prototyping/unmatched_names.csv")
+    }
+
+    federal <- federal_unname %>%
         mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
         select(-Facility, -State) %>%
         left_join(facdf_df,  by = c("Name", "ID")) %>%
         mutate(State = ifelse(is.na(State), "Not Available", State))
     
     full_df <- bind_rows(federal, nonfederal)
+    
+    if(debug){
+        message(str_c("Named data frame contains ", nrow(full_df), " rows."))
+    }
     
     out_df <- full_df %>%
         mutate(Residents.Released = NA, Notes = NA)
@@ -730,15 +713,30 @@ load_latest_data <- function(
         out_df <- out_df %>%
             select(-id) %>%
             group_by_coalesce(
-              Date, Name, State, jurisdiction, .ignore = "source", .method = "sum")
+              Date, Name, State, jurisdiction,
+              .ignore = "source", .method = "sum")
+        
+        if(debug){
+          message(str_c(
+              "Coalesced data frame contains ", nrow(out_df), " rows."))
+        }
     }
     
-    out_df  %>%
+    pop_df <- out_df  %>%
         left_join(
             read_pop_data(),
             by = c("Name", "State")
-        ) %>%
+        )
+    
+    if(debug){
+        message(str_c("Pop data frame contains ", nrow(pop_df), " rows."))
+    }
+    
+    pop_df %>%
         mutate(Residents.Population = Population) %>%
+        # fill in HIFLD pop where no alternative exists
+        mutate(Residents.Population = ifelse(
+            is.na(Residents.Population), hifld_pop, Residents.Population)) %>%
         mutate(Residents.Confirmed = ifelse(
             is.na(Residents.Confirmed) & fill,
             vector_sum_na_rm(
