@@ -222,32 +222,30 @@ Below, we compare infection rates in the general population to the incarcerated 
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 facilities <- slist$hist_data %>%
-    filter(jurisdiction == "state") %>%
-    group_by(State, Name) 
+  mutate(Date = lubridate::mdy(Date)) %>%
+  filter(jurisdiction == "state") %>%
+  group_by(State, Name) 
 
-## get 10-day percentage change in cases
+## !this is buggy
 percentage_change <- facilities %>%
     mutate(
         ten_days_ago = dplyr::lag(Residents.Confirmed, n = 10, order_by = Date),
         ten_day_change = (Residents.Confirmed - ten_days_ago) / (ten_days_ago + 0.00001) 
     ) %>%
     dplyr::arrange(desc(Date)) %>%
-    filter(!is.infinite(ten_day_change)) %>%    # what to do about dividing by zero?
+    filter(!is.infinite(ten_day_change)) %>%  
     slice_head(n = 1) %>%
     select(Name, State, Date, Residents.Confirmed, ten_days_ago, ten_day_change) %>%
     ungroup() %>%
     mutate(StateFull = behindbarstools::translate_state(State))
 
-# threshold <- percentage_change %>%
-#   summarise()
-  
-
 ## get top 3 facilities per state
 top_three_wide <- percentage_change %>%
     group_by(State) %>%
     dplyr::arrange(desc(ten_day_change)) %>%
+    filter(!is.na(ten_day_change),
+           Residents.Confirmed > 1) %>%
     slice_head(n = 3) %>%
-    filter(!is.na(ten_day_change)) %>%
     ungroup()
 
 top_three_long <- top_three_wide %>%
@@ -257,27 +255,25 @@ top_three_long <- top_three_wide %>%
                names_to = "Residents Infected")
 
 ## get top five states (avg increase)
-## TO DO: change this to be a combination of 
 top_five_states <- top_three_wide %>%
-    group_by(State) %>%
-    mutate(avg_inc = mean(ten_day_change)) %>%
-    dplyr::arrange(desc(avg_inc)) %>%
-    slice_head(n = 1) %>%
-    ungroup() %>%
-    slice_head(n = 5) %>%
-    pull(State)
+  group_by(State) %>%
+  mutate(avg_inc = mean(ten_day_change)) %>%
+  ungroup() %>%
+  dplyr::arrange(desc(avg_inc)) %>%
+  distinct(State) %>%
+  slice_head(n = 5) %>%
+  pull(State)
 
 ## make plots
 plot_bars_by_state <- function(dat, xvar, yvar, grpvar) {
-  y_label = paste("Lag change", as_label(var))
   plots <- dat %>% 
     group_by(State) %>% 
     do(plot=ggplot(data=.) +
            aes_string(x = xvar, y = yvar, fill = grpvar) + 
            geom_bar(stat = "identity", position = position_dodge()) + 
-           labs(title = glue('Prison COVID Infections in {unique(.$StateFull)}'),
+           labs(title = glue('Prison COVID Infections in {unique(.$State)}'),
                 subtitle = "Rate of change in number of incarcerated individuals infected (past 10 days)",
-                y = "") + 
+                x ="", y = "") + 
          geom_text(aes_string(label=yvar), vjust=1.6, color="white",
                    position = position_dodge(0.9), size=3.5) + 
            scale_fill_brewer(palette="Paired")
@@ -293,14 +289,10 @@ plots$plot
 
 ## Historical Data
 
-<<<<<<< HEAD
 A strength of our dataset compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within facilities with major outbreaks in the past week.
-=======
-A strength of our data set compared to other groups who collect similar data, is that we not only collect information on state level aggregates but also facility level data. This enables us to act as a surveillance mechanism, tracking outbreaks at facilities. Below we see an example of an outbreak occurring within a facility in Georgia in just a short period of time.
->>>>>>> 0af52b0d8f7fbc3d4852373daaab1994b3d71212
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
-fac_delta_df <-  slist$hist_data%>%
+fac_delta_df <-  slist$hist_data %>%
     mutate(Date = lubridate::mdy(Date)) %>%
     filter(!(str_detect(Name, "(?i)state") & str_detect(Name, "(?i)wide"))) %>%
     filter(Date >= (lubridate::as_date((Sys.Date())) - lubridate::days(7))) %>%
