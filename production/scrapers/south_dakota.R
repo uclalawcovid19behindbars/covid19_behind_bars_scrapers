@@ -12,6 +12,11 @@ south_dakota_restruct <- function(x){
 
 south_dakota_extract <- function(x){
     
+    headers <- sapply(x, function(z) stringr::str_c(z[1,], collapse = " "))
+    
+    rez_idx <- which(stringr::str_detect(headers, "(?i)offender"))
+    staff_idx <- which(stringr::str_detect(headers, "(?i)staff"))
+    
     col_name_st <- matrix(c(
         "Facility", "X0", "Name",
         "Cumulative Positive", "X1", "Staff.Confirmed",
@@ -38,9 +43,9 @@ south_dakota_extract <- function(x){
     
     exp <- c("Facility", "Total Positive", "Negative", "Recovered", "Death")
     
-    sd_staff <- as.data.frame(x[1]) %>%
+    sd_staff <- as.data.frame(x[staff_idx]) %>%
         .[2:nrow(.),]
-    sd_res <- as.data.frame(x[2]) %>%
+    sd_res <- as.data.frame(x[rez_idx]) %>%
         .[2:nrow(.),]
     
     check_names_extractable(sd_staff, col_name_st_df)

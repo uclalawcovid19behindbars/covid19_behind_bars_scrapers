@@ -10,10 +10,7 @@ facname_df <- "~/Documents/facility_data/data_sheets/fac_spellings.csv" %>%
 
 new_df <- load_latest_data()
 
-old_df <- "~/Downloads/UCLA Law Covid-19 Behind Bars Data Project " %>%
-    str_c(
-        "Professor Sharon Dolovich, Director - COVID-19 Jail_Prison ",
-        "Confirmed Cases and Deaths.csv") %>%
+old_df <- "~/Downloads/UCLA Law Covid-19 Behind Bars Data Project _Professor Sharon Dolovich, Director_ - COVID-19 Jail_Prison Confirmed Cases and Deaths.csv" %>%
     read_csv(skip = 1, col_types = cols()) %>%
     .[2:nrow(.),] %>%
     rename(Name = "County / Name of Facility") %>%
@@ -30,6 +27,24 @@ full_join(
     old_df %>%
         group_by(State) %>%
         summarize(Staff.Confirmed.Old = sum(Staff.Confirmed.Old, na.rm = T))) %>%
+    View()
+
+old_ddf <- "~/Downloads/UCLA Law Covid-19 Behind Bars Data Project _Professor Sharon Dolovich, Director_ - COVID-19 Jail_Prison Confirmed Cases and Deaths.csv" %>%
+    read_csv(skip = 1, col_types = cols()) %>%
+    .[2:nrow(.),] %>%
+    rename(Name = "County / Name of Facility") %>%
+    select(
+        Facility, Name, State, 
+        Staff.Deaths.Old = "Confirmed Deaths\n(Staff)")
+
+full_join(
+    new_df %>%
+        group_by(State) %>%
+        summarize(Staff.Deaths.New = sum(Staff.Deaths, na.rm = T)),
+    
+    old_ddf %>%
+        group_by(State) %>%
+        summarize(Staff.Deaths.Old = sum(Staff.Deaths.Old, na.rm = T))) %>%
     View()
 
 compare_df <- "~/Downloads/UCLA Law Covid-19 Behind Bars Data Project " %>%

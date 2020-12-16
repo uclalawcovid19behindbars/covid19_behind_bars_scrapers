@@ -536,7 +536,13 @@ read_historical_data <- function(){
         # order the names alphabetically
         select(!!sort(names(.))) %>%
         # put the indicator variables first
-        select(!!ind_vars, !!(names(.)[!(names(.) %in% ind_vars)]))
+        select(!!ind_vars, !!(names(.)[!(names(.) %in% ind_vars)])) %>%
+        filter(!is.na(id), !is.na(jurisdiction))
+}
+
+write_historical_data <- function(){
+    read_historical_data() %>%
+        write_csv("./results/summary_data/aggregated_data.csv")
 }
 
 translate_state <- function(x, reverse = FALSE){
@@ -743,11 +749,11 @@ load_latest_data <- function(
                Residents.Active, Residents.Deaths, Residents.Recovered),
             Residents.Confirmed
         )) %>%
-        mutate(Residents.Tadmin = ifelse(
-            is.na(Residents.Tadmin),
-            Residents.Tested,
-            Residents.Tadmin
-        )) %>%
+        # mutate(Residents.Tadmin = ifelse(
+        #     is.na(Residents.Tadmin),
+        #     Residents.Tested,
+        #     Residents.Tadmin
+        # )) %>%
         # Select the order for names corresponding to Public facing google sheet
         select(
             ID, jurisdiction, State, Name, Date, source,

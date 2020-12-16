@@ -64,32 +64,37 @@ nevada_pull <- function(x){
         if(i > 200){
             break
         }
-        
+    
         nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
-        
+    
         box_options <- nv_page %>%
             rvest::html_nodes(".slicerText") %>%
             rvest::html_text()
-        
+    
         valid_prison_options <- box_options %>%
             str_replace_all("[^a-zA-Z0-9 -]", "") %>%
             str_replace_all(" ", "") %>%
             {grepl("^[[:upper:]]+$", .)} %>%
             which()
-        
-        names(valid_prison_options) <- box_options[valid_prison_options]
-        
+    
+        names(valid_prison_options) <- clean_fac_col_txt(
+            box_options[valid_prison_options])
+    
         new_options <- valid_prison_options[
             !(names(valid_prison_options) %in% names(html_list))]
-        
+    
         remDr$findElements(
             "css", ".glyphicon.checkbox")[[new_options[1]]]$clickElement()
-        
+    
         Sys.sleep(5)
         
-        html_list[[names(new_options[1])]] <- xml2::read_html(
+        print(names(new_options[1]))
+    
+        clean_name <- clean_fac_col_txt(names(new_options[1]))
+
+        html_list[[clean_name]] <- xml2::read_html(
             remDr$getPageSource()[[1]])
-        
+
         more_options <- any(!(
             names(valid_prison_options) %in% names(html_list)))
     }

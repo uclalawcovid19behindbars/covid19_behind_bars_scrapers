@@ -14,12 +14,12 @@ orange_county_restruct <- function(x){
 
 orange_county_extract <- function(x){
     exp_names <- c(
-        Drop.Active = "# Current COVID-19 Positive",
+        Residents.Active = "# Current COVID-19 Positive",
         Residents.Recovered = "# Inmates Recovered",
         Residents.Confirmed = "# Inmates Positive",
         Residents.Negative = "# Inmates Negative",
         Residents.Pending = "# Results Pending",
-        Residents.Tadmin = "# Tests Administered"
+        Residents.Tested = "# Unique Inmates Tested"
     )
     
     check_names(x, exp_names)
