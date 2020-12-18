@@ -30,13 +30,14 @@ fac_delta_df <- hist_data %>%
 (out_plot <- fac_delta_df %>%
     mutate(Date = lubridate::mdy(Date)) %>%
     filter(!is.na(Residents.Confirmed)) %>%
+    filter(Date >= lubridate::mdy("11-12-2020")) %>%
     mutate(Title = str_c(Name, "\n", State)) %>%
     mutate(Title = str_replace(Title, "SATF ", "")) %>%
     mutate(Title = str_replace(Title, "RECEPTION AND GUIDANCE CENTER", "RCC")) %>%
     ggplot(aes(x = Date, y = Residents.Confirmed, color = Title)) +
     geom_line(size=1.25) +
     geom_point() +
-    ylim(0, 3000) +
+    ylim(0, 2000) +
     labs(y = "Residents Confirmed", color = "") +
     theme_behindbars() +
     scale_color_bbdiscrete() +
@@ -45,14 +46,16 @@ fac_delta_df <- hist_data %>%
         "Facilities with Largest Increase In Resident Cases in Past 7 Days"
     ) +
     theme(
-        legend.text = element_text(size=10),
-        legend.title = element_text(size=13),
+        legend.text = element_text(size=13),
+        legend.title = element_text(size=15),
         axis.text = element_text(size=13),
         axis.title = element_text(size=15),
         title =  element_text(size=20, color = "#555526")))
 
 
-ggsave("./data/Adult Facility Counts/weekly_facility_monitor.png", out_plot)
+ggsave(
+    "./data/Adult Facility Counts/weekly_facility_monitor.png",
+    out_plot, width = 12, height = 7.5, units = "in")
 
 neg_death_df <- hist_data %>%
     select(jurisdiction, State, Name, Date, Residents.Deaths, Staff.Deaths) %>%
@@ -76,4 +79,6 @@ neg_death_plot <- neg_death_df %>%
     geom_line() +
     facet_wrap(~title)
 
-ggsave("./data/Adult Facility Counts/neg_death_monitor.png", neg_death_plot)
+ggsave(
+    "./data/Adult Facility Counts/neg_death_monitor.png",
+    neg_death_plot, width = 12, height = 7.5, units = "in")

@@ -45,12 +45,12 @@ generic_scraper <- R6Class(
         permalink = NULL,
         jurisdiction = NULL,
         initialize = function(
-            url, id, pull_func, type, restruct_func, extract_func, log, state, jurisdiction){
+            url, id, pull_func, type, restruct_func, extract_func, log,
+            state, jurisdiction){
 
             valid_types <- c(
-                html = ".html", img = ".png", json = ".json", pdf = ".pdf", csv = ".csv",
-                manual = ".csv"
-            )
+                html = ".html", img = ".png", json = ".json", pdf = ".pdf",
+                csv = ".csv", manual = ".csv")
 
             stopifnot(is.character(url), length(url) == 1)
             stopifnot(is.character(id), length(id) == 1)
@@ -216,6 +216,17 @@ generic_scraper <- R6Class(
                 str_extract("\\d+-\\d+-\\d+") %>%
                 lubridate::as_date() %>%
                 max()
+        },
+        
+        get_previous_run_dates = function(){
+            valid_types <- c(
+                html = ".html", img = ".png", json = ".json", pdf = ".pdf",
+                csv = ".csv", manual = ".csv")
+            
+            m_str = paste0("\\d+-\\d+-\\d+_", self$id, valid_types[self$type])
+            
+            list.files("./results/raw_files", pattern = m_str, full.names = T)
+            
         },
         
         perma_save = function(tries = 3){

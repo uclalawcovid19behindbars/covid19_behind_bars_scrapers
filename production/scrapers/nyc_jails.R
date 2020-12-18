@@ -2,24 +2,36 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 nyc_jails_pull <- function(x){
-    get_latest_manual("New York City Jails")
+    xml2::read_html(x)
 }
 
 nyc_jails_restruct <- function(x){
-    x %>%
-        select(
-            Resident.Deaths, Staff.Confirmed, Residents.Confirmed,
-            Staff.Deaths, Resident.Population, Residents.Quarantine, Name)
+    tabs <- x %>%
+        rvest::html_nodes("table")
+    
+    if(str_detect(rvest::html_text(tabs[[1]]), "(?i)deaths")){
+        warning("URL MAY HAVE CHANGED SCTRUCTURE INSPECT")
+    }
+    
+    lapply(tabs, rvest::html_table)
 }
 
 nyc_jails_extract <- function(x){
-    x %>%
-        rename(
-            Residents.Deaths = Resident.Deaths, 
-            Residents.Population = Resident.Population) %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
-        filter(!is.na(Name))
+    conf_df <- x[[1]] %>%
+        mutate(Name = "New York City Jails") %>%
+        clean_scraped_df() %>%
+        mutate(Residents.Confirmed = `Incarcerated Population` + Parolees) %>%
+        rename(Staff.Confirmed = Staff) %>%
+        select(-`Incarcerated Population`, -Parolees)
+    
+    death_df <- x[[2]] %>%
+        mutate(Name = "New York City Jails") %>%
+        clean_scraped_df() %>%
+        mutate(Residents.Deaths = `Incarcerated Population` + Parolees) %>%
+        rename(Staff.Deaths = Staff) %>%
+        select(-`Incarcerated Population`, -Parolees)
+    
+    full_join(conf_df, death_df, by = "Name")
 }
 
 #' Scraper class for general nyc_jails COVID data
@@ -38,9 +50,9 @@ nyc_jails_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www1.nyc.gov/site/boc/covid-19.page",
+            url = "https://doccs.ny.gov/doccs-covid-19-report",
             id = "nyc_jails",
-            type = "manual",
+            type = "html",
             state = "NY",
             jurisdiction = "county",
             # pull the JSON data directly from the API

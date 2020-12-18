@@ -11,46 +11,64 @@ south_dakota_restruct <- function(x){
 }
 
 south_dakota_extract <- function(x){
-    
+
     headers <- sapply(x, function(z) stringr::str_c(z[1,], collapse = " "))
-    
+
     rez_idx <- which(stringr::str_detect(headers, "(?i)offender"))
     staff_idx <- which(stringr::str_detect(headers, "(?i)staff"))
-    
-    col_name_st <- matrix(c(
-        "Facility", "X0", "Name",
-        "Cumulative Positive", "X1", "Staff.Confirmed",
-        "Negative", "X2", "Staff.Negative",
-        "Recovered", "X3", "Staff.Recovered",
-        "Active Positive", "X4", "Drop.Staff.Active",
-        "Death", "X5", "Staff.Deaths"
-    ), ncol = 3, nrow = 6, byrow = TRUE)
-    
-    colnames(col_name_st) <- c("check", "raw", "clean")
-    col_name_st_df <- as_tibble(col_name_st)
-    
-    col_name_res <- matrix(c(
-        "Facility", "X0", "Name",
-        "Cumulative Positive", "X1", "Residents.Confirmed",
-        "Negative", "X2", "Residents.Negative",
-        "Recovered", "X3", "Residents.Recovered",
-        "Active Positive", "X4", "Residents.Active",
-        "Death", "X5", "Residents.Deaths"
-    ), ncol = 3, nrow = 6, byrow = TRUE)
-    
-    colnames(col_name_res) <- c("check", "raw", "clean")
-    col_name_res_df <- as_tibble(col_name_res)
-    
-    exp <- c("Facility", "Total Positive", "Negative", "Recovered", "Death")
-    
+
     sd_staff <- as.data.frame(x[staff_idx]) %>%
         .[2:nrow(.),]
     sd_res <- as.data.frame(x[rez_idx]) %>%
         .[2:nrow(.),]
+
+    if(ncol(sd_staff) == 6){
+        col_name_st <- matrix(c(
+            "Facility", "X0", "Name",
+            "Cumulative Positive", "X1", "Staff.Confirmed",
+            "Negative", "X2", "Staff.Negative",
+            "Recovered", "X3", "Staff.Recovered",
+            "Active Positive", "X4", "Drop.Staff.Active",
+            "Death", "X5", "Staff.Deaths"
+        ), ncol = 3, nrow = 6, byrow = TRUE)
+    
+        col_name_res <- matrix(c(
+            "Facility", "X0", "Name",
+            "Cumulative Positive", "X1", "Residents.Confirmed",
+            "Negative", "X2", "Residents.Negative",
+            "Recovered", "X3", "Residents.Recovered",
+            "Active Positive", "X4", "Residents.Active",
+            "Death", "X5", "Residents.Deaths"
+        ), ncol = 3, nrow = 6, byrow = TRUE)
+    }
+
+    else{
+        col_name_st <- matrix(c(
+            "Facility", "X0", "Name",
+            "Total Positive", "X1", "Staff.Confirmed",
+            "Negative", "X2", "Staff.Negative",
+            "Recovered", "X3", "Staff.Recovered",
+            "Death", "X4", "Staff.Deaths"
+        ), ncol = 3, nrow = 5, byrow = TRUE)
+        
+        col_name_res <- matrix(c(
+            "Facility", "X0", "Name",
+            "Total Positive", "X1", "Residents.Confirmed",
+            "Negative", "X2", "Residents.Negative",
+            "Recovered", "X3", "Residents.Recovered",
+            "Death", "X4", "Residents.Deaths"
+        ), ncol = 3, nrow = 5, byrow = TRUE)
+    }
+
+    colnames(col_name_st) <- c("check", "raw", "clean")
+    col_name_st_df <- as_tibble(col_name_st)
+
+    colnames(col_name_res) <- c("check", "raw", "clean")
+    col_name_res_df <- as_tibble(col_name_res)
     
     check_names_extractable(sd_staff, col_name_st_df)
     check_names_extractable(sd_res, col_name_res_df)
-    
+
     sd_df <- rename_extractable(sd_staff, col_name_st_df) %>%
         as_tibble() %>%
         filter(!str_detect(Name, "(?i)facility|total")) %>%
@@ -61,7 +79,7 @@ south_dakota_extract <- function(x){
             by = "Name") %>%
         select(-starts_with("Drop")) %>%
         clean_scraped_df()
-    
+
     # legacy code
     sd_df$Name[sd_df$Name=="Jameson Annex"] <- 
         "Jameson Prison Annex Sioux Falls"
@@ -71,7 +89,7 @@ south_dakota_extract <- function(x){
         "Womens Prison Pierre"
     sd_df$Name[sd_df$Name=="South Dakota Women's Prison Unit E"] <- 
         "Unit E Pierre"
-    
+
     sd_df
 }
 
