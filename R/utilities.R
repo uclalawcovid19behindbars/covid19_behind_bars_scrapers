@@ -649,7 +649,16 @@ load_latest_data <- function(
             }
             date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
             f_ <- sub_files[which(date_vec == max(date_vec))]
-            return(read_csv(f_, col_types = cols()))
+            
+            sub_df <- read_csv(f_, col_types = cols())
+            if("Residents.Confirmed" %in% names(sub_df)){
+                test_class <- class(sub_df$Residents.Confirmed)
+                if(test_class != "numeric"){
+                    print(f_)
+                    print(test_class)
+                }
+            }
+            return(sub_df)
         }))
     }
     

@@ -82,3 +82,17 @@ neg_death_plot <- neg_death_df %>%
 ggsave(
     "./data/Adult Facility Counts/neg_death_monitor.png",
     neg_death_plot, width = 12, height = 7.5, units = "in")
+
+test <- hist_data %>%
+    filter(jurisdiction == "state") %>%
+    group_by(State, Date) %>%
+    summarise(Deaths = sum_na_rm(Residents.Deaths)) %>%
+    ungroup() %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    ggplot(aes(x = Date, y = Deaths, color = State)) +
+    geom_line() +
+    geom_point() +
+    theme_classic()
+
+library(plotly)
+ggplotly(test)

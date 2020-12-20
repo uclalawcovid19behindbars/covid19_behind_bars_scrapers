@@ -141,63 +141,57 @@ nevada_restruct <- function(x){
             unlist() %>%
             last() %>%
             str_remove("\\.html")
-    
-        recoveries <- op_page %>%
-            rvest::html_nodes(
-                xpath = str_c(
-                    "//div[@aria-label=",
-                    "' Card Total number of recovered COVID-19 cases.']")) %>%
-            rvest::html_nodes("tspan") %>%
-            rvest::html_text() %>%
-            matrix(nrow = 2, ncol=2) %>%
-            t()
-    
-        basic_check(recoveries[,2], c("Residents/Patients", "Staff"))
-    
-        resident_deaths <- op_page %>%
-            rvest::html_node(xpath = str_c(
-                "//div[@aria-label=",
-                "' Card Total number of COVID-19 resident deaths.']")) %>%
-            rvest::html_nodes("tspan") %>%
-            rvest::html_text()
-    
-        staff_deaths <- op_page %>%
-            rvest::html_node(xpath = str_c(
-                "//div[@aria-label=", 
-                "' Card Total number of COVID-19 staff deaths.']")) %>%
-            rvest::html_nodes("tspan") %>%
-            rvest::html_text()
         
-        tabid <- str_c(
-            "Confirmed COVID-19 Cases Clustered column chart Graph with the ",
-            "total number of confirmed COVID-19 cases, ",
-            "broken down by resident and staff.")
-    
-        confirmed_table <- op_page %>%
-            rvest::html_nodes(xpath = str_c(
-                "//div[@aria-label='", tabid, "']")) %>%
-            rvest::html_nodes(".label") %>%
-            rvest::html_text()
-    
+        # get the values of confirmed
+        confirmed <- op_page %>%
+            rvest::html_nodes(".labelGraphicsContext") %>%
+            .[[3]] %>%
+            rvest::html_nodes("text") %>%
+            rvest::html_text() %>%
+            as.numeric()
+        # make sure labels match what we expect
         confirmed_labels <- op_page %>%
-            rvest::html_nodes(xpath = str_c(
-                "//div[@aria-label='", tabid, "']")) %>%
-            rvest::html_nodes(".legend-item-text") %>%
+            rvest::html_nodes(".legend-item-container") %>%
+            .[[2]] %>%
+            rvest::html_nodes("text") %>%
             rvest::html_text()
-    
+        names(confirmed) <- confirmed_labels
+        
         basic_check(
             confirmed_labels, c("Residents/Patients", "Staff", "Imported"))
+
+        svg_cards <- op_page %>%
+            rvest::html_nodes(".card")
+        
+        resident_deaths <- svg_cards %>%
+            rvest::html_attr("aria-label") %>%
+            # get the card that has resident in it but isnt a percentage
+            {which(str_detect(., "Resident") & !str_detect(., "%"))} %>%
+            {svg_cards[.]} %>%
+            rvest::html_node("title") %>%
+            rvest::html_text() %>%
+            as.numeric()
+        
+        staff_deaths <- svg_cards %>%
+            rvest::html_attr("aria-label") %>%
+            # get the card that has staff in it but isnt a percentage
+            {which(str_detect(., "Staff") & !str_detect(., "%"))} %>%
+            {svg_cards[.]} %>%
+            rvest::html_node("title") %>%
+            rvest::html_text() %>%
+            as.numeric()
+        
+        if(any(is.null(c(confirmed, staff_deaths, resident_deaths)))){
+            warning(
+                "NA values extracted where there should not be. Please inspect")
+        }
     
         tibble(
             Name = facility,
-            Residents.Confirmed = confirmed_table[1], 
-            Residents.Recovered = 
-                recoveries[which(recoveries[,2] == "Residents/Patients"),1],
-            Residents.Deaths = resident_deaths[1],
-            Staff.Confirmed = confirmed_table[2],
-            Staff.Recovered = 
-                recoveries[which(recoveries[,2] == "Staff"),1],
-            Staff.Deaths = staff_deaths[1]) %>%
+            Residents.Confirmed = confirmed["Residents/Patients"],
+            Residents.Deaths = resident_deaths,
+            Staff.Confirmed = confirmed["Staff"],
+            Staff.Deaths = staff_deaths) %>%
             clean_scraped_df()
     }))
 }
