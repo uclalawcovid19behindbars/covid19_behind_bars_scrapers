@@ -82,6 +82,22 @@ generic_scraper <- R6Class(
             self$extract_dest = paste0(
                 "./results/extracted_data/", self$date, "_", id, ".csv")
             
+            if(!dir.exists("./results/")){
+                dir.create("./results/")
+            }
+            
+            if(!dir.exists("./results/extracted_data/")){
+                dir.create("./results/extracted_data/")
+            }
+            
+            if(!dir.exists("./results/raw_files/")){
+                dir.create("./results/raw_files/")
+            }
+            
+            if(!dir.exists("./results/log_files")){
+                dir.create("./results/log_files")
+            }
+            
             # initiate logger
             flog.appender(appender.file(self$err_log))
             flog.threshold(WARN)
