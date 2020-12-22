@@ -101,75 +101,6 @@ check_credits <- function(api_key=NULL) {
         as = 'parsed', type = 'application/json')
 }
 
-## Function to Retrieve the result by JobId
-retrieve_result <- function(api_key, job_id) {
-    retrieve_endpoint = "https://getresult.extracttable.com"
-    return(
-        httr::GET(
-            url = paste0(retrieve_endpoint, "/?JobId=", job_id),
-            httr::add_headers(`x-api-key` = api_key)
-        )
-    )
-}
-
-## Function to trigger a file for extraction
-proces_file <- function(api_key, filepath) {
-    trigger_endpoint = "https://trigger.extracttable.com"
-    return (
-        httr::POST(
-            url = trigger_endpoint,
-            httr::add_headers(
-                `Content-Type`="multipart/form-data", `x-api-key` = api_key),
-            body = list(input = httr::upload_file(filepath))
-        )
-    )
-}
-
-## Function to extract all tables from the input file
-ExtractTable <- function(img, file_type = ".png", api_key = NULL) {
-    if(is.null(api_key)){
-        api_key <- Sys.getenv("EXTRACTABLE_API_KEY")
-    }
-    
-    # TODO: this cant be the right way to check this? right
-    if(class(img) == "magick-image"){
-        f_ <- tempfile(fileext = file_type)
-        magick::image_write(img, f_)
-        img <- f_
-    }
-    
-    server_response <- proces_file(api_key, img)
-    parsed_resp <- parse_response(server_response)
-    # Wait for a maximum of 5 minutes to finish the trigger job
-    # Retries every 20 seconds
-    max_wait_time = 5*60
-    retry_interval = 20
-    while (parsed_resp$JobStatus == 'Processing' & max_wait_time >= 0) {
-        max_wait_time = max_wait_time - retry_interval
-        message(paste0(
-            "Job is still in progress. Let's wait for ", retry_interval, " seconds"))
-        Sys.sleep(retry_interval)
-        server_response <- retrieve_result(api_key, job_id=parsed_resp$JobId)
-        parsed_resp <- parse_response(server_response)
-    }
-    ### Parse the response for tables
-    et_tables <- httr::content(
-        server_response, as = 'parsed', type = 'application/json')
-    all_tables <- list()
-    if (tolower(parsed_resp$JobStatus) != "success") {
-        print(paste0("The processing was NOT SUCCESSFUL Below is the complete response from the server"))
-        print(parsed_resp)
-        return(all_tables)
-    }
-    ### Convert the extracted tabular JSON data as a dataframe for future use
-    ### Each data frame represents one table
-    for (i in 1:length(et_tables$Table)) {
-        all_tables[[i]] <- sapply(et_tables$Tables[[i]]$TableJson, unlist) %>% 
-            t() %>% as.data.frame()
-    }
-    return(all_tables)
-}
-
 Caps <- function(x) {
     s <- strsplit(x, " ")[[1]]
     paste(toupper(substring(s, 1,1)), substring(s, 2),
@@ -574,214 +505,9 @@ sum_na_rm <- function(x){
     sum(x, na.rm = TRUE)
 }
 
-#' A re-coding of the coalesce function to include warnings when multiple
-#' values are given which are not NA and are different
-#' 
-#' @param ... vectors of equal length and type to coalesce
-#' @return vector of coalesced values
-#' 
-#' @examples 
-#' coalesce_with_warnings(1:3, 4:6)
-#' coalesce_with_warnings(1:3, c(1:2, NA))
-
-coalesce_with_warnings <- function(...){
-    d <- cbind(...)
-    
-    sapply(1:nrow(d), function(i){
-        x <- d[i,]
-        if(all(is.na(x))){
-            out <- NA
-        }
-        else{
-            xbar <- unique(as.vector(na.omit(x)))
-            if(length(xbar) != 1){
-                warning(paste0(
-                  "Row ", i, " has multiple values that do not match."))
-            }
-            # only grab the first one
-            out <- xbar[1]
-        }
-    out
-    })
-}
-
-load_latest_data <- function(
-    all_dates = FALSE, coalesce = TRUE, fill = FALSE, debug = TRUE){
-  
-    scrapers <- str_remove(list.files("./production/scrapers"), ".R")
-    
-    facd_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
-        str_c("/facility_data/master/data_sheets/fac_data.csv") %>%
-        read_csv(col_types = cols()) %>%
-        select(
-            ID = Count.ID, State, Name, Address, Zipcode, City, County, 
-            Latitude, Longitude, County.FIPS, hifld_id) %>%
-        mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
-        unique()
-    
-    facdf_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
-      str_c("/facility_data/master/data_sheets/fac_data.csv") %>%
-      read_csv(col_types = cols()) %>%
-      filter(str_detect(Jurisdiction, "(?i)federal")) %>%
-      select(
-        ID = Count.ID, State, Name, Address, Zipcode, City, County, 
-        Latitude, Longitude, County.FIPS, hifld_id, hifld_pop = POPULATION) %>%
-      mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
-      unique()
-    
-    facn_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars" %>%
-        str_c("/facility_data/master/data_sheets/fac_spellings.csv") %>%
-        read_csv(col_types = cols()) %>%
-        select(
-          ID = Count.ID, State, Name = facility_name_clean,
-          Facility = facility_name_raw) %>%
-        mutate(Name = clean_fac_col_txt(str_to_upper(Name))) %>%
-        mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
-        unique()
-    
-    if(!all_dates){
-        dat_df <- bind_rows(lapply(scrapers, function(i){
-            sub_files <- list.files(
-                "results/extracted_data", full.names = TRUE,
-                pattern = str_c("\\d+-\\d+-\\d+_", i, ".csv"))
-            if(length(sub_files) == 0){
-                return(tibble())
-            }
-            date_vec <- as.Date(str_extract(sub_files, "\\d+-\\d+-\\d+"))
-            f_ <- sub_files[which(date_vec == max(date_vec))]
-            
-            sub_df <- read_csv(f_, col_types = cols())
-            if("Residents.Confirmed" %in% names(sub_df)){
-                test_class <- class(sub_df$Residents.Confirmed)
-                if(test_class != "numeric"){
-                    print(f_)
-                    print(test_class)
-                }
-            }
-            return(sub_df)
-        }))
-    }
-    
-    else{
-        dat_df <- read_historical_data() %>%
-            filter(!is.na(jurisdiction), !is.na(id))
-    }
-    
-    raw_df <- dat_df %>%
-        select(-starts_with("Resident.Deaths")) %>%
-        rename(Facility = Name) %>%
-        mutate(Facility = clean_fac_col_txt(str_to_upper(Facility))) %>%
-        mutate(State = translate_state(State))
-    
-    if(debug){
-        message(str_c("Base data frame contains ", nrow(raw_df), " rows."))
-    }
-    
-    nonfederal_unname <- raw_df %>%
-        filter(State != "Federal") %>%
-        left_join(facn_df, by = c("Facility", "State"))
-        
-    nonfederal <- nonfederal_unname %>%
-        mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
-        select(-Facility) %>%
-        left_join(facd_df,  by = c("Name", "State", "ID"))
-    
-    federal_unname <- facn_df %>%
-        filter(State == "Federal") %>%
-        group_by(Facility) %>%
-        mutate(tmp = 1:n()) %>%
-        filter(tmp == 1) %>%
-        select(-tmp) %>%
-        ungroup() %>%
-        right_join(
-            raw_df %>%
-                filter(jurisdiction == "federal") %>%
-                select(-State) %>%
-                group_by(Date, Facility, jurisdiction, id, source) %>%
-                summarize_all(sum_na_rm) %>%
-                ungroup(),
-            by = "Facility")
-    
-    if(debug){
-        bind_rows(nonfederal_unname, federal_unname) %>%
-            filter(is.na(Name)) %>%
-            select(State, jurisdiction, raw_name = Facility) %>%
-            write_csv("./prototyping/unmatched_names.csv")
-    }
-
-    federal <- federal_unname %>%
-        mutate(Name = ifelse(is.na(Name), Facility, Name)) %>%
-        select(-Facility, -State) %>%
-        left_join(facdf_df,  by = c("Name", "ID")) %>%
-        mutate(State = ifelse(is.na(State), "Not Available", State))
-    
-    full_df <- bind_rows(federal, nonfederal)
-    
-    if(debug){
-        message(str_c("Named data frame contains ", nrow(full_df), " rows."))
-    }
-    
-    out_df <- full_df %>%
-        mutate(Residents.Released = NA, Notes = NA)
-    
-    if(coalesce){
-        out_df <- out_df %>%
-            select(-id) %>%
-            group_by_coalesce(
-              Date, Name, State, jurisdiction,
-              .ignore = "source", .method = "sum")
-        
-        if(debug){
-          message(str_c(
-              "Coalesced data frame contains ", nrow(out_df), " rows."))
-        }
-    }
-    
-    pop_df <- out_df  %>%
-        left_join(
-            read_pop_data(),
-            by = c("Name", "State")
-        )
-    
-    if(debug){
-        message(str_c("Pop data frame contains ", nrow(pop_df), " rows."))
-    }
-    
-    pop_df %>%
-        mutate(Residents.Population = Population) %>%
-        # fill in HIFLD pop where no alternative exists
-        mutate(Residents.Population = ifelse(
-            is.na(Residents.Population), hifld_pop, Residents.Population)) %>%
-        mutate(Residents.Confirmed = ifelse(
-            is.na(Residents.Confirmed) & fill,
-            vector_sum_na_rm(
-               Residents.Active, Residents.Deaths, Residents.Recovered),
-            Residents.Confirmed
-        )) %>%
-        # mutate(Residents.Tadmin = ifelse(
-        #     is.na(Residents.Tadmin),
-        #     Residents.Tested,
-        #     Residents.Tadmin
-        # )) %>%
-        # Select the order for names corresponding to Public facing google sheet
-        select(
-            ID, jurisdiction, State, Name, Date, source,
-            Residents.Confirmed, Staff.Confirmed,
-            Residents.Deaths, Staff.Deaths, Residents.Recovered,
-            Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
-            Staff.Negative, Residents.Pending, Staff.Pending,
-            Residents.Quarantine, Staff.Quarantine, Residents.Active, 
-            Residents.Population, Address, Zipcode, City, County, Latitude,
-            Longitude, County.FIPS, hifld_id, Notes) %>%
-        arrange(State, Name) %>%
-        mutate(Date = str_c(
-            month.name[lubridate::month(Date)], " ", lubridate::day(Date),
-            ", ", lubridate::year(Date)))
-}
-
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
-    out_df <- load_latest_data(coalesce = coalesce, fill = fill)
+    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
     
     out_df %>%
         select(
@@ -795,7 +521,8 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
               Residents.Confirmed:Staff.Pending, names_to = "Variable",
               values_to = "Count") %>%
       print()
-  
+    
+    
     write_csv(
         out_df,
         str_c(
@@ -818,3 +545,19 @@ coalesce_by_column <- function(df) {
     return(coalesce(df[1], df[2]))
 }
 
+sync_remote_files <- function(raw = FALSE){
+    system(str_c(
+        "rsync --perms --chmod=777 -rtvu ssh --progress results/extracted_data/ ",
+        "ucla:/srv/shiny-server/scraper_data/extracted_data/"))
+
+    system(str_c(
+        "rsync --perms --chmod=777 -rtvu ssh --progress results/log_files/ ",
+        "ucla:/srv/shiny-server/scraper_data/log_files/"))
+    
+    if(raw){
+        system(str_c(
+            "rsync --perms --chmod=777 -rtvu ssh --progress results/raw_files/ ",
+            "ucla:/srv/shiny-server/scraper_data/raw_files/"))
+    }
+  
+}
