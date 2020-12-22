@@ -817,3 +817,4 @@ get_latest_manual <- function(state){
 coalesce_by_column <- function(df) {
     return(coalesce(df[1], df[2]))
 }
+

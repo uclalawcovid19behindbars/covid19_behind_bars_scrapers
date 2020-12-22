@@ -49,11 +49,11 @@ process_FL_cell <- function(x, crop, enhancement = 500, debug = FALSE){
 
 process_FL_image <- function(base_image, ...){
     tibble(
-        Residents.Confirmed = process_FL_cell(x, "300x42+0+300", ...),
-        Staff.Confirmed = process_FL_cell(x, "300x42+0+430", ...),
-        Residents.Recovered = process_FL_cell(x, "300x42+700+300", ...),
-        Staff.Recovered = process_FL_cell(x, "300x42+700+430", ...),
-        Residents.Deaths = process_FL_cell(x, "400x105+0+545", ...)
+        Residents.Confirmed = process_FL_cell(base_image, "300x42+0+300", ...),
+        Staff.Confirmed = process_FL_cell(base_image, "300x42+0+430", ...),
+        Residents.Recovered = process_FL_cell(base_image, "300x42+700+300", ...),
+        Staff.Recovered = process_FL_cell(base_image, "300x42+700+430", ...),
+        Residents.Deaths = process_FL_cell(base_image, "400x105+0+545", ...)
     )
 }
 
@@ -65,8 +65,8 @@ florida_url_restruct <-  function(x, enhancements = seq(100, 500, by = 50)){
         # we should write a test here if more than one value is returned as right
         # now the function will just return NA if there is more than one value
         # or there is no values extracted
-        summarize_all(function(x){
-            ifelse(length(unique(na.omit(x))) == 1, unique(na.omit(x)), NA)
+        summarize_all(function(z){
+            ifelse(length(unique(na.omit(z))) == 1, unique(na.omit(z)), NA)
         })
     
     for(i in names(dat_df)){
