@@ -19,6 +19,7 @@ names(scraper_name_vec) <- str_remove(scraper_name_vec, "_scraper")
 scraper_list <- lapply(scraper_name_vec, function(sn){
     # initialize an instance of the scraper
     scraper <- get(sn)$new(log = TRUE)
+    print(scraper)
     # run everything
     scraper$run_all()
     # return the scraper

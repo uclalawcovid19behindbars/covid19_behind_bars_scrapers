@@ -17,7 +17,7 @@ north_carolina_deaths_extract <- function(x){
     
     basic_check(
         names(df_),
-        rep("Confirmed COVID-19-Related Offender Deaths by Facility", 2)
+        rep("Offender Deaths By Facility", 2)
     )
     
     names(df_) <- c("Name", "Residents.Deaths")

@@ -4,5 +4,6 @@ library(tidyverse)
 source("./R/utilities.R")
 
 sync_remote_files(TRUE)
+Sys.sleep(7*60)
 write_latest_data()
 
