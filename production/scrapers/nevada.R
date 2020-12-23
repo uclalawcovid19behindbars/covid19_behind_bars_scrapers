@@ -87,8 +87,6 @@ nevada_pull <- function(x){
             "css", ".glyphicon.checkbox")[[new_options[1]]]$clickElement()
     
         Sys.sleep(5)
-        
-        print(names(new_options[1]))
     
         clean_name <- clean_fac_col_txt(names(new_options[1]))
 
