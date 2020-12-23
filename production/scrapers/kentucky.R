@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 kentucky_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)covid19") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)cases") %>%
         magick::image_read()
 }
 
