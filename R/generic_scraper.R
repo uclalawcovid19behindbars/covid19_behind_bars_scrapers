@@ -342,8 +342,16 @@ generic_scraper <- R6Class(
                 self$validate_process()
             }
             invisible(self)
-        }
-        ,
+        },
+        
+        print = function(...) {
+            cat("  ID: ", self$id, "\n", sep = "")
+            cat("  State: ", self$state, "\n", sep = "")
+            cat("  Jurisdiction:  ", self$jurisdiction, "\n", sep = "")
+            cat("  URL:  ", self$url, "\n", sep = "")
+            cat("  Type:  ", self$type, "\n", sep = "")
+            invisible(self)
+        },
         
         run_all = function(){
             self$perma_save()

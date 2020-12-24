@@ -235,15 +235,12 @@ info_scraper <- function(scraper){
 
 get_scraper_vec <- function(){
     # initiate all scrapers in the production folders
-    sapply(list.files("production/scrapers", full.names = TRUE), source)
-    
-    # grab only the scrapers and put their names in a vector
-    obj_space <- sapply(sapply(ls(), get), class)
-    scraper_space <- sapply(obj_space, function(x) "R6ClassGenerator" %in% x)
-    scraper_name_vec <- names(scraper_space[scraper_space]) %>%
-        .[. != "generic_scraper"]
-    names(scraper_name_vec) <- str_remove(scraper_name_vec, "_scraper")
-    scraper_name_vec
+    sc_vec <- list.files("production/scrapers", full.names = FALSE) %>%
+        str_replace(".R", "_scraper")
+
+    names(sc_vec) <- str_remove(sc_vec, "_scraper")
+
+    sc_vec
 }
 
 get_last_run <- function(file_name){
