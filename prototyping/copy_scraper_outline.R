@@ -33,6 +33,7 @@ replace_scraper <- R6Class(
             id = "replace",
             type = "pdf",
             state = "",
+            jurisdiction = "",
             # pull the JSON data directly from the API
             pull_func = replace_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -42,13 +43,14 @@ replace_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state)
+                log = log, state = state, jurisdiction = jurisdiction)
         }
     )
 )
 
 if(sys.nframe() == 0){
     replace <- replace_scraper$new(log=TRUE)
+    replace$perma_save()
     replace$raw_data
     replace$pull_raw()
     replace$raw_data
