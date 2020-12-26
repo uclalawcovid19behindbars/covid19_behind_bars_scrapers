@@ -30,7 +30,7 @@ washington_extract <- function(x){
     
     
     # get people in RCFs; they count as confirmed resident cases
-    rcf.tab <- rvest::html_table(wa_tables[[7]], fill = TRUE) %>% 
+    rcf.tab <- rvest::html_table(wa_tables[[8]], fill = TRUE) %>% 
         as.data.frame() %>%
         rename(
             "Name" = "Regional Care Facility",
@@ -69,7 +69,7 @@ washington_extract <- function(x){
     wa <- full_join(staff.tab, res.tab.lean, by = "Name")
     
     # statewide testing counts
-    test.tab <- rvest::html_table(wa_tables[[8]], fill = TRUE) %>%
+    test.tab <- rvest::html_table(wa_tables[[9]], fill = TRUE) %>%
         as.data.frame() %>%
         select(-c(`Individuals Tested`,`Positive Results`)) %>%
         rename(
@@ -80,7 +80,7 @@ washington_extract <- function(x){
     test.tab <- clean_scraped_df(test.tab)
     
     # statewide quarantine counts and add to the statewide table
-    quar.tab <- rvest::html_table(wa_tables[[9]], fill = TRUE) %>%
+    quar.tab <- rvest::html_table(wa_tables[[10]], fill = TRUE) %>%
         as.data.frame() %>%
         rename("isolated"  = "Incarcerated Individuals in Isolation",
                "quarantine" = "Incarcerated Individuals in Quarantine")

@@ -33,7 +33,9 @@ new_york_extract <- function(x){
     check_names_extractable(ny, col_name_df)
   
     rename_extractable(ny, col_name_df) %>%
-        filter(Name != "FACILITY") %>%
+        filter(!str_detect(Name, "(?i)FACILITY")) %>%
+        filter(Name != "") %>%
+        filter(!str_detect(Name, "(?i)total")) %>%
         clean_scraped_df() %>%
         as_tibble() %>%
         mutate(Name = ifelse(
