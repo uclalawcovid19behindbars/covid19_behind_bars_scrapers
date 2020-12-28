@@ -8,14 +8,22 @@ ohio_pull <- function(x){
 ohio_restruct <- function(x){
     oh_pgs <- magick::image_read_pdf(x)
     
-    tmp_files <- sapply(oh_pgs, function(li){
-        f <- tempfile(fileext = ".png")
-        li %>% 
-            magick::image_write(f, format = "png")
-        f
-    })
+    if(length(oh_pgs) == 1){
+        restruct_results <- list(oh_pgs %>%
+            magick::image_crop("2550x1350+0+518") %>%
+            ExtractTable())
+    }
     
-    restruct_results <- lapply(tmp_files, ExtractTable)
+    else{
+        tmp_files <- sapply(oh_pgs, function(li){
+            f <- tempfile(fileext = ".png")
+            li %>% 
+                magick::image_write(f, format = "png")
+            f
+        })
+        
+        restruct_results <- lapply(tmp_files, ExtractTable)
+    }
     
     restruct_results
 }
@@ -46,7 +54,8 @@ ohio_extract <- function(x){
         check_names_extractable(df_, col_name_df)
         renamed_df <- rename_extractable(df_, col_name_df) %>%
             select(-Housing.Type) %>%
-            filter(Name != "Institution" & Name != "Totals")})) %>%
+            filter(Name != "Institution" & Name != "Totals") %>%
+            filter(!str_detect(Name, "(?i)total"))})) %>%
         clean_scraped_df()
     
     Ohio$Residents.Deaths <- (Ohio$Residents.Deaths)+
@@ -69,7 +78,7 @@ ohio_extract <- function(x){
 #' @name ohio_scraper
 #' @description Data come from a pdf which is updated periodically. The link
 #' to the pdf itself does not change only the data within the pdf. We should be
-#' periodically checking to see if alternative sources are available as the data
+#' periodically checking to see i f alternative sources are available as the data
 #' collected are sometimes fickle.
 #' \describe{
 #'   \item{Institution}{}

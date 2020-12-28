@@ -10,10 +10,33 @@ oregon_testing_pull <- function(x){
             "bootstrapWhenNotified=true&%3Alanguage=en&publish=yes&:",
             "embed=y&:showVizHome=n&:apiID=host0#navType=0&navSrc=Parse")
     
+    fprof <- RSelenium::makeFirefoxProfile(list(
+        browser.startup.homepage = "about:blank",
+        startup.homepage_override_url = "about:blank",
+        startup.homepage_welcome_url = "about:blank",
+        startup.homepage_welcome_url.additional = "about:blank",
+        browser.download.dir = "/home/seluser/Downloads",
+        browser.download.folderList = 2L,
+        browser.download.manager.showWhenStarting = FALSE,
+        browser.download.manager.focusWhenStarting = FALSE,
+        browser.download.manager.closeWhenDone = TRUE,
+        browser.helperApps.neverAsk.saveToDisk = 
+            "text/plain,text/csv,application/csv,application/download,application/octet-stream",
+        pdfjs.disabled = TRUE,
+        plugin.scan.plid.all = FALSE,
+        plugin.scan.Acrobat = 99L))
+    
+    out_file <- "/tmp/sel_dl/ODOC_COVID-19_Testing_data.csv"
+    
+    if(file.exists(out_file)){
+        file.remove(out_file)
+    }
+    
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
-        browserName = "firefox"
+        browserName = "firefox",
+        extraCapabilities=fprof
     )
     
     del_ <- capture.output(remDr$open())
@@ -33,14 +56,19 @@ oregon_testing_pull <- function(x){
     remDr$switchToWindow(new_window)
     Sys.sleep(10)
     
-    xml2::read_html(remDr$getPageSource()[[1]])
+    remDr$findElement(
+        "css", "[class='csvLink_summary']")$clickElement()
+    Sys.sleep(10)
+    
+    if(!file.exists(out_file)){
+        stop("OR testing unable to download csv")
+    }
+    
+    return(read_csv(out_file, col_types = cols()))
 }
 
 oregon_testing_restruct <- function(x){
-    x %>%
-        rvest::html_node("table") %>%
-        rvest::html_table() %>%
-        as_tibble()
+    x
 }
 
 oregon_testing_extract <- function(x){
@@ -48,8 +76,8 @@ oregon_testing_extract <- function(x){
     exp_names <- c(
         "Name" = "Institution",
         "Type" = "Type",
-        "Date" = "MDY(Test Result Date)",
-        "Value" = "CNT(Sheet1)"
+        "Date" = "Month, Day, Year of Test Result Date",
+        "Value" = "Count of Sheet1"
     )
     
     df_ <- x
@@ -82,7 +110,7 @@ oregon_testing_scraper <- R6Class(
             log,
             url = "https://public.tableau.com/profile/josh4372#!/vizhome/ODOCCovid-19TestResultDates/ODOCCOVID-19Testing?publish=yes",
             id = "oregon_testing",
-            type = "html",
+            type = "csv",
             state = "OR",
             jurisdiction = "state",
             # pull the JSON data directly from the API
