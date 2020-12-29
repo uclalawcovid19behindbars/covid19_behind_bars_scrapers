@@ -33,7 +33,8 @@ michigan_staff_extract <- function(x){
         as_tibble() %>%
         filter(Name != "Location" & !grepl(Name, pattern = "Tota")) %>%
         clean_scraped_df() %>%
-        mutate(Staff.Deaths = ifelse(is.na(Staff.Deaths), 0, Staff.Deaths))
+        mutate(Staff.Deaths = ifelse(is.na(Staff.Deaths), 0, Staff.Deaths),
+               Name = str_remove(Name, "^Location ")) 
 }
 
 #' Scraper class for general Michigan staff COVID data

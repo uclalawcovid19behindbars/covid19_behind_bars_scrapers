@@ -32,7 +32,7 @@ singularity build singularity-r.simg R.Singularity.4.0.2 &> build.log
 Next you will need set up the selenium docker image to run and be mounted to the directory `/tmp/sel_dl` this allows for the files that are downloaded through the docker selenium image to also appear on the host system. You can start the image by running
 
 ```
-mkdir
+mkdir /tmp/sel_dl
 
 docker run -d -p 4445:4444 -p 5901:5900 -v /tmp/sel_dl:/home/seluser/Downloads \
     selenium/standalone-firefox-debug:2.53.1

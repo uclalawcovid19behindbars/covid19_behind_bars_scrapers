@@ -17,10 +17,10 @@ kentucky_extract <- function(x){
         "Institution", "0", "Name", 
         "Active Staff", "1", "Drop.Staff.Active",
         "Total Staff", "2", "Staff.Confirmed",
-        "Staff Deaths", "3", "Staff.Deaths", 
+        "Total Staff Deaths", "3", "Staff.Deaths", 
         "Active Inmates", "4", "Residents.Active",
         "Total Inmates", "5", "Residents.Confirmed",
-        "Inmate Deaths", "6", "Residents.Deaths"
+        "Total Inmate Deaths", "6", "Residents.Deaths"
     ), ncol = 3, nrow = 7, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
