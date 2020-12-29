@@ -4,6 +4,9 @@ library(tidyverse)
 library(R6)
 library(tryCatchLog)
 library(futile.logger)
+# need to explicitly authenticate for this rsession
+library(googlesheets4)
+gs4_auth("ucla.law.covid.staff@gmail.com")
 options(tryCatchLog.include.full.call.stack = FALSE)
 
 # initiate all scrapers in the production folders
