@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 utah_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)update") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)Screen_Shot") %>%
         .[[1]] %>%
         magick::image_read()
 }
