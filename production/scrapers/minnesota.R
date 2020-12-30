@@ -51,7 +51,7 @@ minnesota_restruct <- function(x){
         Residents.Pending = "Tests Pending",
         Resident.Hospital.Drop = "Hospitalized",
         Residents.Recovered = "Recovered",
-        Residents.Deaths = "Deceased"
+        Residents.Deaths = "Total Deceased"
     )
     
     exp_staff <- c(
