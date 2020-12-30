@@ -18,7 +18,8 @@ michigan_restruct <- function(x){
 
     out_list_names <- x %>%
         # this is finicky and needs to be changed
-        magick::image_crop("3300x405+0+0") %>%
+        # crop out the top row with the column names 
+        magick::image_crop("3300x150+0+0") %>%
         ExtractTable()
 
     names(out_list[[1]]) <- unname(unlist(out_list_names))

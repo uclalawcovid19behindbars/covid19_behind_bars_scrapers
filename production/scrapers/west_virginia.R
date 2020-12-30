@@ -24,7 +24,7 @@ west_virginia_restruct <- function(x){
 
 west_virginia_extract <- function(x){
     exp_cols <- c(
-        Name = "Facility", 
+        Name = "Regional Jails", 
         Drop.County = "County", 
         Residents.Population = "Pop.",
         Residents.Active = "Active cases",

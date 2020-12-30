@@ -19,7 +19,7 @@ new_york_extract <- function(x){
     
     
     col_name_mat <- matrix(c(
-            "FACILITY", "X0", "Name",
+            "REPORTED FACILITY", "X0", "Name",
             "RECOVERED", "X1", "Residents.Recovered",
             "DECEASED", "X2", "Residents.Deaths",
             "TOTAL POSITIVE", "X3", "Residents.Confirmed",

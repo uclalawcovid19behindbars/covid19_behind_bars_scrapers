@@ -5,10 +5,10 @@ hawaii_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Facilities", "0", "Name",
-        "Tested", "1", "Residents.Tadmin",
+        "Tests", "1", "Residents.Tadmin",
         "Results Pending", "2", "Residents.Pending",
         "Negative", "3", "Residents.Negative",
-        "Inconclusive", "4", "Residents.Inconclusive",
+        "Incon- clusive", "4", "Residents.Inconclusive",
         "Total Tested Positive", "5", "Residents.Confirmed",
         "Active Positive", "6", "Residents.Active",
         "Number of Persons in Medical Isolation", "7", "Residents.Isolation",
