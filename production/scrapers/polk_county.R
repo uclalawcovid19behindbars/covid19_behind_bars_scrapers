@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 polk_county_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "covid") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "covid-19-stats") %>%
         magick::image_read()
 }
 
@@ -53,7 +53,7 @@ polk_county_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.polkcountyiowa.gov/county-sheriff/news-press-releases/covid-19-quick-stats/",
+            url = "https://www.polkcountyiowa.gov/county-sheriff/news-press-releases/",
             id = "polk_county",
             type = "img",
             state = "IA",
@@ -85,4 +85,5 @@ if(sys.nframe() == 0){
     polk_county$validate_extract()
     polk_county$save_extract()
 }
+
 
