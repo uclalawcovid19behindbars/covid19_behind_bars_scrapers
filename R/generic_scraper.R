@@ -1,6 +1,7 @@
 library(tidyverse)
 library(R6)
 library(tryCatchLog)
+library(behindbarstools)
 library(futile.logger)
 
 UCLABB_MAIN_VARIABLES <- c(
@@ -159,6 +160,25 @@ generic_scraper <- R6Class(
                 }
             }
             invisible(self)
+        },
+        
+        pull_wayback_raw = function(url = self$url, ...){
+            archives <- wayback_archives(url)
+            
+            wb_url <- archives %>%
+                filter(timestamp <= self$date) %>%
+                filter(timestamp == max(timestamp)) %>%
+                pull(url)
+            
+            if(self$log){
+                tryLog(self$raw_data <- self$pull_func(wb_url, ...))
+            }
+            
+            else{
+                self$raw_data <- self$pull_func(wb_url, ...)
+            }
+            invisible(self)
+
         },
 
         save_raw = function(dest=self$raw_dest){
