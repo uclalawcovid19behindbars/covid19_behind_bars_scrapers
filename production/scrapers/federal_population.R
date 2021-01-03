@@ -39,6 +39,24 @@ federal_population_extract <- function(x) {
         mutate(Name = clean_fac_col_txt(Name, to_upper = TRUE))
 }
 
+#' Scraper class for Federal prison population data
+#' 
+#' @name federal_population_scraper
+#' @description Data pulled from federal pouplation api
+#' Brief description of api can be found here 
+#' http://prisondb.github.io/bopapidocs.html
+#' \describe{
+#'   \item{state}{US State not always provided}
+#'   \item{name}{Name of institution}
+#'   \item{popCount}{ Current Poulation}
+#'   \item{groupDescription}{Description of group type}
+#'   \item{sortKey}{}
+#'   \item{sortNameKey}{}
+#'   \item{sortpzapSequence}{}
+#'   \item{indentationIndicator}{}
+#'   \item{recordType}{}
+#' }
+
 federal_population_scraper <- R6Class(
     "federal_population_scraper",
     inherit = generic_scraper,
