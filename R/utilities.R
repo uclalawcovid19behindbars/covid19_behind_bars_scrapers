@@ -570,3 +570,9 @@ sync_remote_files <- function(raw = FALSE){
     }
   
 }
+
+stop_defunct_scraper <- function(url){
+    stop(paste0(
+        "This scraper is not currently functional. Please occasionally check ",
+        "the following URL to see if data may now be scraped: ", url))
+}

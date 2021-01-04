@@ -22,7 +22,10 @@ wyoming_extract <- function(x){
 #' 
 #' @name wyoming_scraper
 #' @description As of 11/20/20 Wyoming stopped reporting cumulative cases and
-#' only reports active resident cases.
+#' only reports active resident cases. Note that we only update Wyoming data if
+#' it is less than 7 days old. If WY hasnt produced a new data sheet after 7
+#' days then no data should be recorded by the scraper and this scraper should
+#' fail.
 #' \describe{
 #'   \item{Facility_Name}{The faciilty name.}
 #' }

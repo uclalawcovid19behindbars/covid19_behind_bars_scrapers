@@ -2,7 +2,8 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 spokane_county_pull <- function(x){
-    xml2::read_html(x)
+    stop_defunct_scraper(x)
+    #xml2::read_html(x)
 }
 
 spokane_county_restruct <- function(x){
