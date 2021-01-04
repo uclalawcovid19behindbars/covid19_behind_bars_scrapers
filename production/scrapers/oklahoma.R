@@ -22,8 +22,11 @@ sum_slashes <- function(col) {
     return(col)
 }
 
+oklahoma_pull <- function(x){
+    stop_defunct_scraper(x)
+}
+
 oklahoma_restruct <- function(ok_html){
-    NULL
     # p_elements <- ok_html %>%
     #     rvest::html_nodes("body") %>%
     #     rvest::html_nodes("p")
@@ -140,7 +143,7 @@ oklahoma_scraper <- R6Class(
             type = "html",
             jurisdiction = "state",
             # pull the JSON data directly from the API
-            pull_func = xml2::read_html,
+            pull_func = oklahoma_pull,
             # 
             restruct_func = oklahoma_restruct,
             # Rename the columns to appropriate database names and do some minor

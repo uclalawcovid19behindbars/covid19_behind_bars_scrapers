@@ -2,7 +2,8 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 orleans_parish_pull <- function(x){
-    get_latest_manual("Orleans Parish Jails")
+    stop_defunct_scraper(x)
+    #get_latest_manual("Orleans Parish Jails")
 }
 
 orleans_parish_restruct <- function(x){
