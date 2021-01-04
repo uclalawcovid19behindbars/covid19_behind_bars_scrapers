@@ -61,7 +61,7 @@ san_diego_jails_scraper <- R6Class(
         initialize = function(
             log,
             url = "https://www.sdsheriff.net/",
-            id = "san_diego_county",
+            id = "san_diego_jails",
             type = "img",
             state = "CA",
             jurisdiction = "county",
@@ -80,15 +80,15 @@ san_diego_jails_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    san_diego_county <- san_diego_jails_scraper$new(log=FALSE)
-    san_diego_county$raw_data
-    san_diego_county$pull_raw()
-    san_diego_county$raw_data
-    san_diego_county$save_raw()
-    san_diego_county$restruct_raw()
-    san_diego_county$restruct_data
-    san_diego_county$extract_from_raw()
-    san_diego_county$extract_data
-    san_diego_county$validate_extract()
-    san_diego_county$save_extract()
+    san_diego_jails <- san_diego_jails_scraper$new(log=FALSE)
+    san_diego_jails$raw_data
+    san_diego_jails$pull_raw()
+    san_diego_jails$raw_data
+    san_diego_jails$save_raw()
+    san_diego_jails$restruct_raw()
+    san_diego_jails$restruct_data
+    san_diego_jails$extract_from_raw()
+    san_diego_jails$extract_data
+    san_diego_jails$validate_extract()
+    san_diego_jails$save_extract()
 }
