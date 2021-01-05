@@ -651,6 +651,13 @@
       "Repository": "CRAN",
       "Hash": "49f7258fd86ebeaea1df24d9ded00478"
     },
+    "pdftools": {
+      "Package": "pdftools",
+      "Version": "2.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c395e2a35e1c2a4c9ba5424cd7cd26c7"
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.4.3",
@@ -748,6 +755,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "97def703420c8ab10d8f0e6c72101e02"
+    },
+    "qpdf": {
+      "Package": "qpdf",
+      "Version": "1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5a2907cd44279b5861ac5f813465b5c9"
     },
     "rJava": {
       "Package": "rJava",
@@ -965,6 +979,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f8e259f00c9fe116a167c838575d7d49"
+    },
+    "tesseract": {
+      "Package": "tesseract",
+      "Version": "4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bac4f7845ef18d54352e36389a2c030b"
     },
     "testthat": {
       "Package": "testthat",

@@ -10,7 +10,7 @@ lasd_crop <- function(img, crop, detect = "", rimg = FALSE){
     }
     
     sub_txt <- sub_img %>%
-        magick::image_ocr() %>%
+        tesseract::ocr() %>%
         str_remove_all("(?i)covid.?19") %>%
         clean_fac_col_txt()
     
