@@ -18,21 +18,13 @@ You can find each of our scrapers in the folder `production/scrapers`. More deta
 
 In order to run the scraper you will need the following: 
 
-* Singularity (for the R image) and docker (for selenium web scraping) installed and running
+* Renv installed (for R package versioning) and docker (for selenium web scraping) installed and running
 * API and SSH keys for the services we utilize, Extractable, PERMACC, and UCLA server
 
-**Note**: If you do not have singularity running, you can also recreate the R package environment using `renv` and then run `main.R` and `post_run.R` (steps 3 and 4 below) within RStudio directly. You will still need to set up the docker image with this approach. 
-
-The following steps should be completed in order to ensure the scraper will run properly. 
+1. **Set up renv**: The following steps should be completed in order to ensure the scraper will run properly.
 
 ```
 renv::restore()
-```
-
-1. **Set up singularity image**: In order to ensure that you are using a compatible form of `R`, you need to build the `R` singularity image using the following command on the command line
-
-```
-singularity build singularity-r.simg R.Singularity.4.0.2 &> build.log
 ```
 
 2. **Set up docker image**: You will need set up the selenium docker image to run and be mounted to the directory `/tmp/sel_dl`. This allows for the files that are downloaded through the docker selenium image to also appear on the host system. You can start the image by running: 
@@ -47,13 +39,41 @@ docker run -d -p 4445:4444 -p 5901:5900 -v /tmp/sel_dl:/home/seluser/Downloads \
 3. **Run scraper**: Now we can run the scraper. Ensure that you are in the root directory where `covid19_behind_bars_scrapers.Rproj` lives, and run the following command.
 
 ```
-singularity run --app Rscript init/singularity-r.simg production/main.R
+Rscript production/main.R
 ```
 
 4. **Run post-scraper**: There will invariably be some scrapers that will need to be rerun, so fix those given the opportunity. Afterwards, we can run the post-run script to add the data to the remote server database as well as write the latest csv to the data submodule. 
 
 ```
-singularity run --app Rscript init/singularity-r.simg production/post_run.R
+Rscript production/post_run.R
 ```
 
 5. **Commit changes**: Make sure to compare the totals from the run to what is on [the Google Sheet](https://docs.google.com/spreadsheets/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906) now to make sure nothing funky happened. Lastly, be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits. 
+
+```
+# go to the data data directory switch to master and pull latest data
+# to avoid fatal conflicts later
+cd data
+git checkout master
+git pull origin master
+# go back to the main directory
+cd ..
+
+# run the post run Rscript
+Rscript ./production/post_run.R
+
+# check the differnces between the new data and the old google sheet
+# if things looks good then commit all changes
+
+# commit changes in data repo
+cd data
+git add -A 
+git commit -m "update: the/current/date run of scraper"
+git push origin master
+
+# commit changes in code repo
+cd ..
+git add -A 
+git commit -m "update: the/current/date run of scraper"
+git push origin master
+```
