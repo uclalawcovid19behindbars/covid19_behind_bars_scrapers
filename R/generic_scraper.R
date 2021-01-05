@@ -373,6 +373,41 @@ generic_scraper <- R6Class(
             invisible(self)
         },
         
+        manual_change = function(column, facility_name, new_value){
+            if(is.null(self$extract_data)){
+                stop("Must have extracted data already")
+            }
+
+            if(!(column %in% names(self$extract_data))){
+                stop("column supplied is not a valid coulmn")
+            }
+
+            if(!(facility_name %in% self$extract_data$Name)){
+                stop("facilty name supplied is not present in data")
+            }
+
+            old_value <- self$extract_data[
+                self$extract_data$Name == facility_name, column]
+
+            if(is.na(old_value)){
+                old_value <- "NA"
+            }
+
+            self$extract_data[
+                self$extract_data$Name == facility_name, column] <- new_value
+
+            out_mes <- paste0(
+                "The value of ", column, " for facilty ", facility_name,
+                " was manually changed from ", old_value, " to ",
+                new_value, "."
+            )
+
+            # always log this part, sorry not sorry
+            tryLog(warning(out_mes))
+
+            invisible(self)
+        },
+
         run_all = function(){
             self$perma_save()
             self$pull_raw()
