@@ -21,7 +21,9 @@ In order to run the scraper you will need the following:
 * Renv installed (for R package versioning) and docker (for selenium web scraping) installed and running
 * API and SSH keys for the services we utilize, Extractable, PERMACC, and UCLA server
 
-1. **Set up renv**: The following steps should be completed in order to ensure the scraper will run properly.
+The following steps should be completed in order to ensure the scraper will run properly.
+
+1. **Set up renv**: You will first need to set up the R package environment. 
 
 ```
 renv::restore()
@@ -62,7 +64,7 @@ cd ..
 # run the post run Rscript
 Rscript ./production/post_run.R
 
-# check the differnces between the new data and the old google sheet
+# check the differences between the new data and the old google sheet
 # if things looks good then commit all changes
 
 # commit changes in data repo
