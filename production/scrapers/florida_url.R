@@ -49,7 +49,7 @@ process_FL_cell <- function(x, crop, enhancement = 500, debug = FALSE){
 
 process_FL_image <- function(base_image, ...){
     tibble(
-        Residents.Confirmed = process_FL_cell(base_image, "300x42+0+300", ...),
+        Residents.Confirmed = process_FL_cell(base_image, "300x42+0+310", ...),
         Staff.Confirmed = process_FL_cell(base_image, "300x42+0+430", ...),
         Residents.Recovered = process_FL_cell(base_image, "300x42+700+300", ...),
         Staff.Recovered = process_FL_cell(base_image, "300x42+700+430", ...),
