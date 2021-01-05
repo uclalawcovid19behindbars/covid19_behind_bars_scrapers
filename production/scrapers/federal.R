@@ -86,7 +86,9 @@ federal_extract <- function(x){
 #' data does not have detailed facility data only a city location. Not mentioned
 #' here is the location data that is available for all facilities including
 #' information on the kind of facility like max or min security and sex of
-#' residents. 
+#' residents. At present we know that residents.confirmed is consistently lower
+#' than residents.recovered this is because federal only reports confirmed for the 
+#' current inmate population.
 #' \describe{
 #'   \item{id}{The facility id}
 #'   \item{staffPositiveAmt}{staff active cases}
