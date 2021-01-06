@@ -16,6 +16,13 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
+    check_names(x, c(`Confirmed Cases`,
+                     `Active Cases In Custody`,
+                     `Resolved in Custody`,
+                     Deaths,
+                     `Cumulative Tested`,
+                     `Tests Pending`))
+    
     x %>%
         select(
             Residents.Confirmed = `Confirmed Cases`,
