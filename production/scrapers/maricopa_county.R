@@ -86,7 +86,7 @@ maricopa_county_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    maricopa_county <- maricopa_county_scraper$new(log=FALSE)
+    maricopa_county <- maricopa_county_scraper$new(log=TRUE)
     maricopa_county$raw_data
     maricopa_county$pull_raw()
     maricopa_county$raw_data
