@@ -17,6 +17,11 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
+    check_names(x, c(`Cumulative Cases`,
+                     `Active Cases In Custody`,
+                     `Total Tests Completed`,
+                     `Incarcerated People In Custody`))
+    
     x %>%
         select(
             Residents.Confirmed = `Cumulative Cases`,
