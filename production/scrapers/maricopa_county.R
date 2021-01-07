@@ -18,12 +18,8 @@ maricopa_county_restruct <- function(x){
     
     expect_names <- c(
         "Total Number of Tests and Re-tests" = "Residents.Tadmin",
-        "Negative Results" = "Residents.Negative",
         "Positive Results" = "Residents.Confirmed",
-        "Pending Results &in Med Obs/Med Iso" = "Residents.Pending", 
-        "Active Cases In Custody" = "Drop1",
-        "Recovered CasesIn Custody" = "Residents.Recovered",
-        "Released Cases" = "Drop2",
+        "Active Cases In Custody" = "Residents.Active",
         "Hospitalizations" = "Drop3",
         "Deaths" = "Residents.Deaths"
     )
@@ -36,9 +32,21 @@ maricopa_county_restruct <- function(x){
 }
 
 maricopa_county_extract <- function(x){
+    
+    # In 2021, Maricopa County reset its reported data to the start of 2021. 
+    # To get cumulative data, we have to add the totals from 2020
+    # Raw source: http://104.131.72.50:3838/scraper_data/raw_files/2021-01-05_maricopa_county.html 
+    
+    Residents.Tadmin_2020 <- 23131
+    Residents.Confirmed_2020 <- 1875
+    Residents.Deaths_2020 <- 0 
+
     x %>%
         select(-starts_with("Drop")) %>%
-        mutate(Name = "Maricopa County Jail")
+        mutate(Name = "Maricopa County Jail", 
+               Residents.Tadmin = Residents.Tadmin + Residents.Tadmin_2020, 
+               Residents.Confirmed = Residents.Confirmed + Residents.Confirmed_2020, 
+               Residents.Deaths = Residents.Deaths + Residents.Deaths_2020) 
     
 }
 
