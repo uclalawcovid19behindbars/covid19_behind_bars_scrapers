@@ -7,6 +7,19 @@ ice_pull <- function(x){
 
 ice_restruct <- function(x){
     
+    raw_date <- x %>%
+        rvest::html_nodes(".field-item.even.item-1") %>%
+        rvest::html_nodes(".timestamp") %>%
+        rvest::html_text() 
+    
+    update_date <- raw_date%>%
+        str_extract("\\d+/\\d+/\\d+") %>%
+        lubridate::mdy()
+    
+    if(as.numeric(Sys.Date() - update_date) > 7){
+        warning("Data may be outdated, last update was marked as: ", raw_date)
+    }
+    
     list(
         totals = x %>%
             rvest::html_nodes("table") %>%
