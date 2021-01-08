@@ -18,7 +18,8 @@ washington_extract <- function(x){
         rename(
             "Name" = "Location",
             "Residents.Confirmed" = "Number.Confirmed.Cases",
-            "Residents.Deaths" = "Number.of.Deaths") %>%
+            "Drop" = "Number.of.New.Positive.Cases.Confirmed..last.30.days.",
+            "Residents.Deaths" = "Number.of.Deaths..also.counted.in.Confirmed.Cases.") %>%
         # remove rows that are actually subheaders
         filter(
             !(Name %in% c("Work Release",
@@ -26,6 +27,7 @@ washington_extract <- function(x){
                           "Other",
                           "Totals",
                           "All Locations"))) %>%
+        select(-Drop) %>% 
         clean_scraped_df()
     
     

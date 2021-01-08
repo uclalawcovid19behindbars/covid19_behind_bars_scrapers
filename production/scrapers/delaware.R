@@ -8,7 +8,7 @@ delaware_pull <- function(x){
 delaware_restruct <- function(x){
     x %>%
         select(
-            Name, Staff.Confirmed, Residents.Confirmed,
+            Name, Staff.Confirmed, Residents.Confirmed, Residents.Active, 
             Staff.Deaths, Staff.Recovered, Residents.Recovered, 
             Residents.Deaths = Resident.Deaths)
 }
