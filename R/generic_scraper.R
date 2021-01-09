@@ -48,15 +48,15 @@ generic_scraper <- R6Class(
         initialize = function(
             url, id, pull_func, type, restruct_func, extract_func, log,
             state, jurisdiction){
-
+            
             valid_types <- c(
                 html = ".html", img = ".png", json = ".json", pdf = ".pdf",
                 csv = ".csv", manual = ".csv")
-
+            
             stopifnot(is.character(url), length(url) == 1)
             stopifnot(is.character(id), length(id) == 1)
             stopifnot((type %in% names(valid_types)))
-            stopifnot(jurisdiction %in% c("state", "county", "federal"))
+            stopifnot(jurisdiction %in% c("state", "county", "federal", "immigration"))
             
             self$log = log
             self$type = type
@@ -73,11 +73,11 @@ generic_scraper <- R6Class(
             self$jurisdiction = jurisdiction
             self$err_log = paste0(
                 "./results/log_files/", self$date, "_", id, ".log")
-
+            
             if(file.exists(self$err_log)){
                 file.remove(self$err_log)
             }
-
+            
             self$raw_dest = paste0(
                 "./results/raw_files/", self$date, "_", id, valid_types[type])
             self$extract_dest = paste0(
@@ -123,37 +123,51 @@ generic_scraper <- R6Class(
             self$raw_dest = paste0(
                 "./results/raw_files/", self$date, "_", self$id,
                 valid_types[self$type])
-
+            
             self$extract_dest = paste0(
                 "./results/extracted_data/", self$date, "_", self$id, ".csv")
             
             # initiate logger
             flog.appender(appender.file(self$err_log))
             flog.threshold(WARN)
-
+            
             invisible(self)
         },
-
-        pull_raw = function(url = self$url, ...){date
-
+        
+        pull_raw = function(url = self$url, ...){
+            
+            if(self$date != Sys.Date()){
+                rm_files <- list_remote_data("raw_files", self$id)
+                
+                url <- rm_files[stringr::str_detect(
+                    rm_files, as.character(self$date))]
+                
+                if(length(url) != 1){
+                    stop(
+                        "There is not a single past raw file for this scraper ",
+                        "for this date.")
+                }
+                
+            }
+            
             valid_types <- list(
                 html = xml2::read_html, img = magick::image_read, 
                 json = jsonlite::read_json, pdf = function(x) x, 
-                csv = read_csv, manual = read_csv
+                csv = readr::read_csv, manual = readr::read_csv
             )
-
+            
             if(self$log){
                 if(self$date != Sys.Date()){
-                    tryLog(self$raw_data <- valid_types[[self$type]](self$raw_dest))
+                    tryLog(self$raw_data <- valid_types[[self$type]](url))
                 }
                 else{
                     tryLog(self$raw_data <- self$pull_func(url, ...))
                 }
             }
-
+            
             else{
                 if(self$date != Sys.Date()){
-                    self$raw_data <- valid_types[[self$type]](self$raw_dest)
+                    self$raw_data <- valid_types[[self$type]](url)
                 }
                 else{
                     self$raw_data <- self$pull_func(url, ...)
@@ -178,9 +192,9 @@ generic_scraper <- R6Class(
                 self$raw_data <- self$pull_func(wb_url, ...)
             }
             invisible(self)
-
+            
         },
-
+        
         save_raw = function(dest=self$raw_dest){
             
             pdf_save <- function(x, y){
@@ -207,7 +221,7 @@ generic_scraper <- R6Class(
             }
             invisible(self)
         },
-
+        
         restruct_raw = function(raw = self$raw_data, ...){
             if(self$log){
                 tryLog(self$restruct_data <- self$restruct_func(raw, ...))
@@ -247,25 +261,18 @@ generic_scraper <- R6Class(
         },
         
         last_update = function(){
-            list.files("./results/extracted_data") %>%
-                {.[str_ends(., str_c(self$id, ".csv"))]} %>%
-                str_extract("\\d+-\\d+-\\d+") %>%
-                lubridate::as_date() %>%
-                max()
+            tail(list_remote_data("extracted_data", self$id, TRUE), 1)
         },
         
         get_previous_run_dates = function(){
-            valid_types <- c(
-                html = ".html", img = ".png", json = ".json", pdf = ".pdf",
-                csv = ".csv", manual = ".csv")
-            
-            m_str = paste0("\\d+-\\d+-\\d+_", self$id, valid_types[self$type])
-            
-            list.files("./results/raw_files", pattern = m_str, full.names = T)
-            
+            list_remote_data("extracted_data", self$id, TRUE)
         },
         
         perma_save = function(tries = 3){
+            if(self$date != Sys.Date()){
+                stop("Can't perma save for a date that is not today.")
+            }
+
             if(self$log){
                 # sometimes this wont work on the first try so give it a
                 # couple goes
@@ -342,7 +349,7 @@ generic_scraper <- R6Class(
                     }
                 }
             }
-
+            
             ### sanity checks no changes made only warnings thrown
             less_check("Staff.Confirmed", "Staff.Recovered")
             less_check("Residents.Confirmed", "Residents.Recovered")
@@ -377,37 +384,37 @@ generic_scraper <- R6Class(
             if(is.null(self$extract_data)){
                 stop("Must have extracted data already")
             }
-
+            
             if(!(column %in% names(self$extract_data))){
                 stop("column supplied is not a valid coulmn")
             }
-
+            
             if(!(facility_name %in% self$extract_data$Name)){
                 stop("facilty name supplied is not present in data")
             }
-
+            
             old_value <- self$extract_data[
                 self$extract_data$Name == facility_name, column]
-
+            
             if(is.na(old_value)){
                 old_value <- "NA"
             }
-
+            
             self$extract_data[
                 self$extract_data$Name == facility_name, column] <- new_value
-
+            
             out_mes <- paste0(
                 "The value of ", column, " for facilty ", facility_name,
                 " was manually changed from ", old_value, " to ",
                 new_value, "."
             )
-
+            
             # always log this part, sorry not sorry
             tryLog(warning(out_mes))
-
+            
             invisible(self)
         },
-
+        
         run_all = function(){
             self$perma_save()
             self$pull_raw()

@@ -92,7 +92,8 @@ texas_jails_extract <- function(x){
         clean_scraped_df() %>%
         mutate(Residents.Deaths = Drop.Res.Known + Drop.Res.Sus) %>%
         select(-starts_with("Drop")) %>%
-        filter(!str_detect(Name, "(?i)total"))
+        filter(!str_detect(Name, "(?i)total")) %>%
+        mutate(Name = str_c(Name, " Jail"))
 }
 
 #' Scraper class for general texas_jails COVID data
