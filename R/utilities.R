@@ -102,15 +102,24 @@ replace_os <- function(cell){
 }
 
 ## Function to Check credits usage
-check_credits <- function(api_key=NULL) {
+check_credits <- function(api_key=NULL, verbose=FALSE) {
     if(is.null(api_key)){
         api_key <- Sys.getenv("EXTRACTABLE_API_KEY")
     }
     
     validate_endpoint = 'https://validator.extracttable.com'
-    httr::content(httr::GET(
+    content <- httr::content(httr::GET(
         url = validate_endpoint, httr::add_headers(`x-api-key` = api_key)), 
         as = 'parsed', type = 'application/json')
+    
+    credits <- content[1]$usage$credits
+    used <- content[1]$usage$used
+    remaining <- credits - used 
+    
+    # By default: only throw a warning if remaining credits fall below 200 
+    if (remaining < 200) {warning(paste("Running low on ExtractTable credits. Remaining:", remaining))}
+  
+    if (verbose) {content}
 }
 
 Caps <- function(x) {
