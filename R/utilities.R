@@ -5,7 +5,6 @@ library(behindbarstools)
 library(futile.logger)
 source("R/generic_scraper.R")
 
-
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
@@ -539,7 +538,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         select(
             Residents.Confirmed, Residents.Deaths, Residents.Recovered,
             Residents.Tadmin, Residents.Negative, Residents.Pending,
-            Residents.Quarantine, Residents.Population, Staff.Confirmed,
+            Residents.Quarantine, Population.Feb20, Staff.Confirmed,
             Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
             Staff.Pending) %>%
           summarize_all(sum_na_rm) %>%
