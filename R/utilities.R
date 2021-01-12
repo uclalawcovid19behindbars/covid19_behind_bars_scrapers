@@ -1,5 +1,6 @@
 library(tidyverse)
 library(behindbarstools)
+# devtools::install_github("uclalawcovid19behindbars/behindbarstools")
 
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
@@ -531,7 +532,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         select(
             Residents.Confirmed, Residents.Deaths, Residents.Recovered,
             Residents.Tadmin, Residents.Negative, Residents.Pending,
-            Residents.Quarantine, Residents.Population, Staff.Confirmed,
+            Residents.Quarantine, Population.Feb20, Staff.Confirmed,
             Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
             Staff.Pending) %>%
           summarize_all(sum_na_rm) %>%
