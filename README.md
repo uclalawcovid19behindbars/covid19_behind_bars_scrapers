@@ -18,15 +18,15 @@ You can find each of our scrapers in the folder `production/scrapers`. More deta
 
 In order to run the scraper you will need the following: 
 
-* Renv installed (for R package versioning) and docker (for selenium web scraping) installed and running
+* Docker (for selenium web scraping) installed and running
 * API and SSH keys for the services we utilize, Extractable, PERMACC, and UCLA server
 
 The following steps should be completed in order to ensure the scraper will run properly.
 
-1. **Set up renv**: You will first need to set up the R package environment. 
+1. **Set up scraper environment**: You will first need to set up the R package environment. You can do this by running the script `production/pre_run.R` which will check to see if you have the appropriate packages and install them for you if missing, install the latest version of our teams package `behindbarstools`, and check to see if you have enough extractable credits to run the scrapers. 
 
 ```
-renv::restore()
+Rscript production/pre_run.R
 ```
 
 2. **Set up docker image**: You will need set up the selenium docker image to run and be mounted to the directory `/tmp/sel_dl`. This allows for the files that are downloaded through the docker selenium image to also appear on the host system. You can start the image by running: 
@@ -60,7 +60,7 @@ After calling the `manual_change` method, you will need to re-run the `validate_
 Rscript production/post_run.R
 ```
 
-5. **Commit changes**: Make sure to compare the totals from the run to what is on [the Google Sheet](https://docs.google.com/spreadsheets/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906) now to make sure nothing funky happened. Lastly, be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits. 
+5. **Commit changes**: Make sure to compare the totals from the run to what is on [the Google Sheet](https://docs.google.com/spreadsheets/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906) now to make sure nothing funky happened. Lastly, be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits. .
 
 ```
 # go to the data data directory switch to master and pull latest data
