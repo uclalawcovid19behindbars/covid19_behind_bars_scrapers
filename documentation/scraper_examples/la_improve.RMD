@@ -8,7 +8,7 @@ output:
 
 Currently one of the most problematic scrapers is the `la_jails` scraper. Data for the scraper is pulled from a pdf hosted on the [Los Angeles Sheriff's department](https://lasd.org/covid19updates/) website and from this file a series of OCR functions are run on the scraper in order to extract the data that is most relevant to our team. The problem is the file itself changes size, borders, and quality making it hard to have a single code base which is able to extract the data consistently. The current iteration of our scraper may be found [here](https://github.com/uclalawcovid19behindbars/covid19_behind_bars_scrapers/blob/master/production/scrapers/lasd.R). In order to improve this process we are seeking the help of volunteers to improve the code for extraction of covid data from the LASD website. By forking our repo and making changes to the `la_jails` scraper code we hope that you can re-extract our [historical record of raw files](http://104.131.72.50:3838/scraper_data/raw_files/) with a new and improved version of the LASD scraper. The process would look something like this.
 
-1. Edit the code
+1. Edit the code in [`production/scrapers/lasd.R`](https://github.com/uclalawcovid19behindbars/covid19_behind_bars_scrapers/blob/master/production/scrapers/lasd.R) working off of a new branch (i.e. not master)
 2. Initialize the scraper `lasd <- lasd_scraper$new(log=FALSE)`
 3. Pick a historical scraper date from the list provided by `list_remote_data("raw_files", "lasd", TRUE)`
 4. Pull the raw data from that date
