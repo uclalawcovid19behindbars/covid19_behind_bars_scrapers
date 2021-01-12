@@ -78,7 +78,7 @@ ice_extract <- function(x){
             tibble(
                 Name = "ICE Totals",
                 Residents.Population = x$totals[1],
-                Residents.Tested = x$totals[3]
+                Residents.Tadmin = x$totals[3]
             )
         )
     
