@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Scraper class for general Iowa COVID data</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+
+<table width="100%" summary="page for iowa_scraper"><tr><td>iowa_scraper</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Scraper class for general Iowa COVID data</h2>
+
+<h3>Description</h3>
+
+<p>Html table with minimal recoding and cleaning
+</p>
+
+<dl>
+<dt>Prison</dt><dd><p>The faciilty name</p>
+</dd>
+<dt>Inmates Tested</dt><dd><p>Cumulative residents tested. Not tests administered.</p>
+</dd>
+<dt>Inmates Positive</dt><dd><p>Cumulative number of residents who are positive.</p>
+</dd>
+<dt>Inmates Recovered</dt><dd><p>Cumulative residents recovered.</p>
+</dd>
+<dt>Staff Positive</dt><dd><p>Cumulative number of staff who are positive.</p>
+</dd>
+<dt>Staff Recovered</dt><dd><p>Cumulative staff recovered.</p>
+</dd>
+<dt>COVID Related Inmate Deaths</dt><dd><p>Cumulative residents who have died.</p>
+</dd>
+</dl>
+
+
+
+<h3>Details</h3>
+
+<p>The last run of the scraper was on 2021-01-11 and contained the extracted columns: Name, Residents.Tested, Residents.Confirmed, Residents.Recovered, Staff.Confirmed, Staff.Recovered, Residents.Deaths, State, Date, id, source, jurisdiction. We are missing the following core variables for the analysis: Staff.Deaths, Staff.Tested, Residents.Tadmin, Staff.Negative, Residents.Negative, Staff.Pending, Residents.Pending, Staff.Quarantine, Residents.Quarantine, Residents.Population, Residents.Active
+</p>
+
+
+<h3>Super class</h3>
+
+<p><code>R_GlobalEnv::generic_scraper</code> -&gt; <code>iowa_scraper</code>
+</p>
+
+
+<h3>Methods</h3>
+
+
+
+<h4>Public methods</h4>
+
+
+<ul>
+<li> <p><a href="#method-new"><code>iowa_scraper$new()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-clone"><code>iowa_scraper$clone()</code></a>
+</p>
+</li></ul>
+
+
+
+<details ><summary>Inherited methods</summary>
+
+<ul>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="extract_from_raw"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-extract_from_raw"><code>R_GlobalEnv::generic_scraper$extract_from_raw()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="get_previous_run_dates"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-get_previous_run_dates"><code>R_GlobalEnv::generic_scraper$get_previous_run_dates()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="last_update"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-last_update"><code>R_GlobalEnv::generic_scraper$last_update()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="manual_change"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-manual_change"><code>R_GlobalEnv::generic_scraper$manual_change()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="perma_save"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-perma_save"><code>R_GlobalEnv::generic_scraper$perma_save()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="print"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-print"><code>R_GlobalEnv::generic_scraper$print()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="pull_raw"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-pull_raw"><code>R_GlobalEnv::generic_scraper$pull_raw()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="pull_wayback_raw"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-pull_wayback_raw"><code>R_GlobalEnv::generic_scraper$pull_wayback_raw()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="reset_date"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-reset_date"><code>R_GlobalEnv::generic_scraper$reset_date()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="restruct_raw"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-restruct_raw"><code>R_GlobalEnv::generic_scraper$restruct_raw()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="run_all"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-run_all"><code>R_GlobalEnv::generic_scraper$run_all()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="save_extract"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-save_extract"><code>R_GlobalEnv::generic_scraper$save_extract()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="save_raw"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-save_raw"><code>R_GlobalEnv::generic_scraper$save_raw()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="validate_extract"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-validate_extract"><code>R_GlobalEnv::generic_scraper$validate_extract()</code></a></span>
+</p>
+</li>
+<li> <span class="pkg-link" data-pkg="R_GlobalEnv" data-topic="generic_scraper" data-id="validate_process"><p><a href="../../R_GlobalEnv/html/generic_scraper.html#method-validate_process"><code>R_GlobalEnv::generic_scraper$validate_process()</code></a></span>
+</p>
+</li></ul>
+
+</details>
+
+<hr>
+<a id="method-new"></a>
+
+
+
+<h4>Method <code>new()</code></h4>
+
+
+
+<h5>Usage</h5>
+
+<div class="r"><pre>iowa_scraper$new(
+  log,
+  url = "https://doc.iowa.gov/COVID19",
+  id = "iowa",
+  state = "IA",
+  type = "html",
+  jurisdiction = "state",
+  pull_func = xml2::read_html,
+  restruct_func = iowa_restruct,
+  extract_func = iowa_extract
+)</pre></div>
+
+
+<hr>
+<a id="method-clone"></a>
+
+
+
+<h4>Method <code>clone()</code></h4>
+
+<p>The objects of this class are cloneable with this method.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r"><pre>iowa_scraper$clone(deep = FALSE)</pre></div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+
+</body></html>
+

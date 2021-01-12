@@ -1,5 +1,10 @@
 library(tidyverse)
+library(R6)
+library(tryCatchLog)
 library(behindbarstools)
+library(futile.logger)
+source("R/generic_scraper.R")
+
 
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
@@ -267,16 +272,14 @@ get_scraper_vec <- function(){
 get_last_run <- function(file_name){
     scraper_name <- str_remove(str_split_fixed(file_name, "/", n = 3)[,3], ".R")
     
-    out_files <- list.files(
-        "results/extracted_data", full.names = TRUE,
-        pattern = str_c("\\d+-\\d+-\\d+_", scraper_name, ".csv"))
-    
+    out_files <- list_remote_data("extracted_data", scraper_name)
+
     run_dates <- lubridate::ymd(str_extract(out_files, "\\d+-\\d+-\\d+"))
-    
+
     last_file <- out_files[which.max(run_dates)]
-    
+
     df_ <- read_csv(last_file, col_types = cols())
-    
+
     list(cols = names(df_), date = max(run_dates))
 }
 
@@ -352,7 +355,11 @@ document_scraper <- function(
     sanitize_Rd = TRUE, runit = FALSE, check_package = FALSE, 
     check_as_cran = check_package, stop_on_check_not_passing = check_package, 
     clean = FALSE, debug = TRUE, ...){
-    if (is.null(working_directory)){
+
+    if(!dir.exists(output_directory)){
+        dir.create(output_directory)
+    }
+    if(is.null(working_directory)){
         working_directory <- file.path(
             tempdir(), paste0("document_", basename(tempfile(pattern = ""))))
     }
@@ -394,6 +401,7 @@ document_scraper <- function(
 document_all_scrapers <- function(){
     sc_files <- list.files("production/scrapers", full.names = TRUE)
     sapply(sc_files, function(x){
+        cat("Documenting scraper file", x, "\n")
         tryCatch(document_scraper(x), error=function(e) NULL)
     })
 }
