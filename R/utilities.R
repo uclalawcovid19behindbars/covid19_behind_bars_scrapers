@@ -541,13 +541,15 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
               values_to = "Count") %>%
       print()
     
-    
-    write_csv(
-        out_df,
-        str_c(
-            "./data/Adult Facility Counts/",
-            "adult_facility_covid_counts_today_latest.csv"), 
-      na="")
+    out_df %>%
+        rename(
+            jurisdiction = Jurisdiction,
+            Residents.Population = Population.Feb20) %>%
+        write_csv(
+            str_c(
+                "./data/Adult Facility Counts/",
+                "adult_facility_covid_counts_today_latest.csv"), 
+          na="")
 }
 
 get_latest_manual <- function(state){
