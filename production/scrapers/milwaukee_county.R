@@ -17,7 +17,7 @@ milwaukee_county_extract <- function(x){
 
     col_name <- matrix(c(
         "Name", "0", "",
-        "Drop.Residents.Active", "1", "Current Cases",
+        "Residents.Active", "1", "Current Cases",
         "Residents.Pending", "2", "Pending Tests",
         "Residents.Negative", "3", "Negative Tests",
         "Drop.Residents.Hospital", "4", "Hospitalized",
@@ -32,8 +32,12 @@ milwaukee_county_extract <- function(x){
         filter(Name != "" & Name != "-") %>%
         clean_scraped_df() %>%
         as_tibble() %>%
-        mutate_if(is.numeric, function(x) ifelse(is.na(x), 0, x)) %>%
-        select(-starts_with("Drop"))
+        select(-starts_with("Drop")) %>%
+        mutate(Name = clean_fac_col_txt(Name)) %>%
+        filter(Name %in% c(
+            "House of Correction", "Criminal Justice Facility",
+            "Juvenile Justice Center"
+        ))
 }
 
 #' Scraper class for general Milwaukee county COVID data

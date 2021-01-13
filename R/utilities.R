@@ -1,5 +1,6 @@
 library(tidyverse)
 library(behindbarstools)
+# devtools::install_github("uclalawcovid19behindbars/behindbarstools")
 
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
@@ -102,15 +103,24 @@ replace_os <- function(cell){
 }
 
 ## Function to Check credits usage
-check_credits <- function(api_key=NULL) {
+check_credits <- function(api_key=NULL, verbose=FALSE) {
     if(is.null(api_key)){
         api_key <- Sys.getenv("EXTRACTABLE_API_KEY")
     }
     
     validate_endpoint = 'https://validator.extracttable.com'
-    httr::content(httr::GET(
+    content <- httr::content(httr::GET(
         url = validate_endpoint, httr::add_headers(`x-api-key` = api_key)), 
         as = 'parsed', type = 'application/json')
+    
+    credits <- content[1]$usage$credits
+    used <- content[1]$usage$used
+    remaining <- credits - used 
+    
+    # By default: only throw a warning if remaining credits fall below 200 
+    if (remaining < 200) {warning(paste("Running low on ExtractTable credits. Remaining:", remaining))}
+  
+    if (verbose) {content}
 }
 
 Caps <- function(x) {
@@ -522,7 +532,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         select(
             Residents.Confirmed, Residents.Deaths, Residents.Recovered,
             Residents.Tadmin, Residents.Negative, Residents.Pending,
-            Residents.Quarantine, Residents.Population, Staff.Confirmed,
+            Residents.Quarantine, Population.Feb20, Staff.Confirmed,
             Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
             Staff.Pending) %>%
           summarize_all(sum_na_rm) %>%
@@ -531,13 +541,15 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
               values_to = "Count") %>%
       print()
     
-    
-    write_csv(
-        out_df,
-        str_c(
-            "./data/Adult Facility Counts/",
-            "adult_facility_covid_counts_today_latest.csv"), 
-      na="")
+    out_df %>%
+        rename(
+            jurisdiction = Jurisdiction,
+            Residents.Population = Population.Feb20) %>%
+        write_csv(
+            str_c(
+                "./data/Adult Facility Counts/",
+                "adult_facility_covid_counts_today_latest.csv"), 
+          na="")
 }
 
 get_latest_manual <- function(state){

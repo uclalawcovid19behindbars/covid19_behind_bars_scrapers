@@ -17,8 +17,6 @@ nevada_pull <- function(x){
     remDr$navigate(app_source)
     Sys.sleep(6)
     
-    remDr$screenshot(file = "~/Desktop/test.png")
-    
     remDr$findElement(
         "xpath", 
         str_c(

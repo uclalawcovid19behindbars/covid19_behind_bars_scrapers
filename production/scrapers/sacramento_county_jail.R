@@ -17,15 +17,35 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
+    check_names(x, c(
+        "As of Date", 
+        "Cumulative Confirmed Cases - Both Jails", 
+        "Cumulative Confirmed Cases - Intake/Quarantine Period - Both Jails", 
+        "Active in Custody - Main Jail", 
+        "Active in Custody - RCCC", 
+        "New Active Cases - Main Jail", 
+        "New Active Cases - RCCC", 
+        "Released while Active", 
+        "Resolved", 
+        "Deaths", 
+        "Cumulative Tested - Both Jails", 
+        "New Tests Administered - Both Jails", 
+        "Total Population - Both Jails", 
+        "Population Change - Both Jails", 
+        "% Population Newly Tested - Both Jails", 
+        "Notes", 
+        "Date"))
+    
     x %>%
+        mutate(Residents.Active = 
+                   `Active in Custody - Main Jail` + `Active in Custody - RCCC`) %>% 
         select(
-            Residents.Confirmed = `Confirmed Cases`,
-            Residents.Active = `Active in Custody`,
-            Residents.Recovered = `Resolved`,
+            Residents.Confirmed = `Cumulative Confirmed Cases - Both Jails`,
+            Residents.Active = Residents.Active,
             Residents.Deaths = Deaths,
-            Residents.Tadmin = `Cumulative Tested`,
-            Residents.Population = `Total Population`
-            ) %>%
+            Residents.Tadmin = `Cumulative Tested - Both Jails`,
+            Residents.Population = `Total Population - Both Jails`
+        ) %>%
         mutate(Name = "SACRAMENTO COUNTY JAIL")
 }
 
