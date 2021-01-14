@@ -1,6 +1,13 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+ice_str_word_detect <- function(string, pattern){
+    str_detect(string, str_c(" ", pattern, " ")) |
+        str_starts(string, str_c(pattern, " ")) |
+        str_ends(string, str_c(" ", pattern))
+}
+
+
 ice_pull <- function(x){
     xml2::read_html(x)
 }
@@ -8,8 +15,10 @@ ice_pull <- function(x){
 ice_restruct <- function(x){
     
     raw_date <- x %>%
-        rvest::html_nodes(".field-item.even.item-1") %>%
         rvest::html_nodes(".timestamp") %>%
+        # TODO: need to change the way this is grabbed as its very sensitive to
+        # changes in website structuring
+        .[39] %>%
         rvest::html_text() 
     
     update_date <- raw_date%>%
@@ -60,7 +69,7 @@ ice_extract <- function(x){
     
     name_compare <- c(
         Name = "Custody/AOR/Facility",
-        `Residents.Active` = "Confirmedcases currently under isolation or monitoring",
+        `Residents.Active` = "Confirmed cases currently under isolation or monitoring",
         `Residents.Deaths` = "Detainee deaths3",
         `Residents.Confirmed` = "Total confirmed COVID-19 cases4"
     )
@@ -76,11 +85,16 @@ ice_extract <- function(x){
         clean_scraped_df() %>%
         bind_rows(
             tibble(
-                Name = "ICE Totals",
+                Name = "ALL ICE FACILITIES",
                 Residents.Population = x$totals[1],
                 Residents.Tadmin = x$totals[3]
             )
-        )
+        ) %>%
+        mutate(Name = clean_fac_col_txt(Name, TRUE)) %>%
+        mutate(Name = ifelse(
+            ice_str_word_detect(Name, "ICE"),
+            Name,
+            str_c("ICE ", Name)))
     
 }
 
@@ -119,7 +133,7 @@ ice_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction)
         }
     )
 )
