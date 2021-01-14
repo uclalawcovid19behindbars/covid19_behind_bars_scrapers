@@ -14,7 +14,8 @@ arizona_restruct <- function(x){
             rvest::html_table() %>%
             rename(
                 "Name" = "Location",
-                "Residents.Tested" = "Inmates Negative",
+                "Residents.Tested" = "Inmates Tested",
+                "Residents.Negative" = "Inmates Negative",
                 "Residents.Confirmed" = "Inmates Confirmed",
                 "Residents.Pending" = "Inmates Pending",
                 "Residents.Recovered" = "Inmates Recovered",

@@ -29,7 +29,7 @@ kentucky_extract <- function(x){
     check_names_extractable(df_, col_name_df)
     
     rename_extractable(df_, col_name_df) %>%
-        filter(Name != "Institution" & Name != "Total") %>%
+        filter(Name != "Institution" & Name != "Total" & Name != "Location") %>%
         clean_scraped_df() %>%
         select(-starts_with("Drop")) %>%
         as_tibble()
