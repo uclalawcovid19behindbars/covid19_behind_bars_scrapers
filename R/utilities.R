@@ -543,10 +543,8 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
     out_df %>%
         write_csv(
-            str_c(
-                "./data/Adult Facility Counts/",
-                "adult_facility_covid_counts.csv"), 
-          na="")
+            "./data/latest-data/adult_facility_covid_counts.csv", 
+            na="")
 }
 
 get_latest_manual <- function(state){
