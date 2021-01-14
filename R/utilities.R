@@ -526,10 +526,7 @@ sum_na_rm <- function(x){
 
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE) %>%
-        # TODO: tmp remove immigration until we get the go ahead from the
-        # website and immigration teams
-        filter(Jurisdiction != "immigration")
+    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
     
     out_df %>%
         select(
@@ -545,13 +542,10 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
       print()
     
     out_df %>%
-        rename(
-            jurisdiction = Jurisdiction,
-            Residents.Population = Population.Feb20) %>%
         write_csv(
             str_c(
                 "./data/Adult Facility Counts/",
-                "adult_facility_covid_counts_today_latest.csv"), 
+                "adult_facility_covid_counts.csv"), 
           na="")
 }
 
