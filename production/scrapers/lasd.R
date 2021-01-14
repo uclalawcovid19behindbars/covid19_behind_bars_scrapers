@@ -46,7 +46,7 @@ lasd_restruct <- function(x){
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
     
-    else if(abs(1492 - h_) <= 2 & w_ == 1200){
+    else if(abs(1492 - h_) <= 4 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+400", "(?i)total pos"),
             Residents.Recovered = lasd_crop(x, "570x30+620+660", "(?i)recover"),
