@@ -47,3 +47,21 @@ for(tj in txj_files){
             txj)
     }
 }
+
+# change state in ice facilities from Federal to federal
+ice_files <- get_files("ice")
+for(ice in ice_files){
+    df_ <- read_csv(ice, col_types = cols())
+    if(all((df_$State == "Federal"))){
+        cat("This file had the jurisdiction wrong and will be updated:", ice, "\n")
+        df_$State <- "federal"
+        if(!DRY_RUN){
+            write_csv(df_, ice)
+        }
+    }
+    else if(any(df_$State == "Federal")){
+        warning(
+            "The following file has unorthdox names and should be inspected: ",
+            ice)
+    }
+}

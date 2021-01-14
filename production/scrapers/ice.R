@@ -125,7 +125,7 @@ ice_scraper <- R6Class(
             url = "https://www.ice.gov/coronavirus",
             id = "ice",
             type = "html",
-            state = "Federal",
+            state = "federal",
             jurisdiction = "immigration",
             pull_func = ice_pull,
             restruct_func = ice_restruct,
