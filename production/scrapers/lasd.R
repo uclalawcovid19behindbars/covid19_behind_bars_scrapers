@@ -18,7 +18,14 @@ lasd_crop <- function(img, crop, detect = "", rimg = FALSE){
         warning("Field does mot match expected text")
     }
     
-    as.numeric(str_c(unlist(str_extract_all(sub_txt, "[0-9]+")), collapse = ""))
+    out_val <- as.numeric(
+        str_c(unlist(str_extract_all(sub_txt, "[0-9]+")), collapse = ""))
+    
+    if(is.na(out_val)){
+        warning("Na value extracted but not expected. Please inspect.")
+    }
+    
+    return(out_val)
 }
 
 lasd_pull <- function(x, wait = 5){
@@ -65,7 +72,7 @@ lasd_restruct <- function(x){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+440", "(?i)total pos"),
             Residents.Recovered = lasd_crop(x, "570x30+620+715", "(?i)recover"),
-            Residents.Deaths = lasd_crop(x, "570x30+620+791", "(?i)deaths"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+790", "(?i)deaths"),
             Residents.Quarantine = lasd_crop(x, "570x30+620+1145", "(?i)total"),
             drop.neg.asymp = lasd_crop(x, "570x25+620+615", "(?i)negative"),
             drop.neg.symp = lasd_crop(x, "570x25+20+615", "(?i)negative"),
