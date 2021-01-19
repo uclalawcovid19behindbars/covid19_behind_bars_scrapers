@@ -545,6 +545,15 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
       print()
     
     out_df %>%
+        select(
+            Facility.ID, Jurisdiction, State, Name, Date, source,
+            Residents.Confirmed, Staff.Confirmed,
+            Residents.Deaths, Staff.Deaths, Residents.Recovered,
+            Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
+            Staff.Negative, Residents.Pending, Staff.Pending,
+            Residents.Quarantine, Staff.Quarantine, Residents.Active,
+            Population.Feb20, Address, Zipcode, City, County, Latitude,
+            Longitude, County.FIPS, HIFLD.ID) %>%
         rename(
             jurisdiction = Jurisdiction,
             Residents.Population = Population.Feb20) %>%
