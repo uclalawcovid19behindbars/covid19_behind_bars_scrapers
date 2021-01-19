@@ -571,16 +571,16 @@ coalesce_by_column <- function(df) {
 
 sync_remote_files <- function(raw = FALSE){
     system(str_c(
-        "rsync --perms --chmod=u+rwx -rtvu ssh --progress results/extracted_data/ ",
+        "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/extracted_data/ ",
         "ucla:/srv/shiny-server/scraper_data/extracted_data/"))
 
     system(str_c(
-        "rsync --perms --chmod=u+rwx -rtvu ssh --progress results/log_files/ ",
+        "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/log_files/ ",
         "ucla:/srv/shiny-server/scraper_data/log_files/"))
     
     if(raw){
         system(str_c(
-            "rsync --perms --chmod=u+rwx -rtvu ssh --progress results/raw_files/ ",
+            "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/raw_files/ ",
             "ucla:/srv/shiny-server/scraper_data/raw_files/"))
     }
   

@@ -20,7 +20,7 @@ if(length(missing_packages) != 0){
     for(i in 1:length(missing_packages)){
         mpkg <- missing_packages[i]
         cat("You are missing the ", mpkg, "package which will be installed.\n")
-        install.packages(mpkg)
+        install.packages(mpkg, repos = "http://cran.us.r-project.org")
     }
 }
 
