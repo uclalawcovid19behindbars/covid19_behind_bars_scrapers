@@ -533,13 +533,16 @@ sum_na_rm <- function(x){
 
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
+    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE) %>%
+        # TODO: tmp remove immigration until we get the go ahead from the
+        # website and immigration teams
+        filter(Jurisdiction != "immigration")
     
     out_df %>%
         select(
             Residents.Confirmed, Residents.Deaths, Residents.Recovered,
             Residents.Tadmin, Residents.Negative, Residents.Pending,
-            Residents.Quarantine, Residents.Population, Staff.Confirmed,
+            Residents.Quarantine, Population.Feb20, Staff.Confirmed,
             Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
             Staff.Pending) %>%
           summarize_all(sum_na_rm) %>%
@@ -548,13 +551,24 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
               values_to = "Count") %>%
       print()
     
-    
-    write_csv(
-        out_df,
-        str_c(
-            "./data/Adult Facility Counts/",
-            "adult_facility_covid_counts_today_latest.csv"), 
-      na="")
+    out_df %>%
+        select(
+            Facility.ID, Jurisdiction, State, Name, Date, source,
+            Residents.Confirmed, Staff.Confirmed,
+            Residents.Deaths, Staff.Deaths, Residents.Recovered,
+            Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
+            Staff.Negative, Residents.Pending, Staff.Pending,
+            Residents.Quarantine, Staff.Quarantine, Residents.Active,
+            Population.Feb20, Address, Zipcode, City, County, Latitude,
+            Longitude, County.FIPS, HIFLD.ID) %>%
+        rename(
+            jurisdiction = Jurisdiction,
+            Residents.Population = Population.Feb20) %>%
+        write_csv(
+            str_c(
+                "./data/Adult Facility Counts/",
+                "adult_facility_covid_counts_today_latest.csv"), 
+          na="")
 }
 
 get_latest_manual <- function(state){
@@ -573,16 +587,16 @@ coalesce_by_column <- function(df) {
 
 sync_remote_files <- function(raw = FALSE){
     system(str_c(
-        "rsync --perms --chmod=u+rwx -rtvu ssh --progress results/extracted_data/ ",
+        "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/extracted_data/ ",
         "ucla:/srv/shiny-server/scraper_data/extracted_data/"))
 
     system(str_c(
-        "rsync --perms --chmod=u+rwx -rtvu ssh --progress results/log_files/ ",
+        "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/log_files/ ",
         "ucla:/srv/shiny-server/scraper_data/log_files/"))
     
     if(raw){
         system(str_c(
-            "rsync --perms --chmod=u+rwx -rtvu ssh --progress results/raw_files/ ",
+            "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/raw_files/ ",
             "ucla:/srv/shiny-server/scraper_data/raw_files/"))
     }
   

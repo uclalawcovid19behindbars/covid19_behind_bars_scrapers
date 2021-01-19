@@ -12,7 +12,9 @@ new_mexico_restruct <- function(x){
             Residents.Confirmed,
             Residents.Active,
             Residents.Deaths = Resident.Deaths, 
-            Residents.Recovered)
+            Residents.Recovered,
+            Residents.Tadmin
+            )
 }
 
 new_mexico_extract <- function(x){

@@ -12,25 +12,28 @@ arizona_restruct <- function(x){
             rvest::html_nodes('table') %>%
             .[[2]] %>%
             rvest::html_table() %>%
-            plyr::rename(c("Location" = "Name", 
-                           "Inmates Tested" = "Residents.Tested",
-                           "Inmates Negative" = "Residents.Negative",
-                           "Inmates Confirmed" = "Residents.Confirmed",
-                           "Inmates Pending" = "Residents.Pending",
-                           "Inmates Recovered" = "Residents.Recovered",
-                           "Daily Total Population" = "Residents.Population",
-                           "Inmates Confirmed Deaths" = "Resident.Deaths1",
-                           "Inmates Potential Deaths" = "Resident.Deaths2"
-            )),
+            rename(
+                "Name" = "Location",
+                "Residents.Tested" = "Inmates Tested",
+                "Residents.Negative" = "Inmates Negative",
+                "Residents.Confirmed" = "Inmates Confirmed",
+                "Residents.Pending" = "Inmates Pending",
+                "Residents.Recovered" = "Inmates Recovered",
+                "Residents.Population" = "Daily Total Population",
+                "Resident.Deaths1" = "Inmates Confirmed Deaths",
+                "Resident.Deaths2" = "Inmates Potential Deaths"
+            ),
 
         x %>%
             rvest::html_nodes('table') %>%
             .[[3]] %>%
             rvest::html_table() %>%
-            plyr::rename(c("Self-Reported Staff Positive" = "Staff.Confirmed",
-                           "Staff Certified Recovered" = "Staff.Recovered")) %>%
+            rename(
+                "Staff.Confirmed" = "Self-Reported Staff Positive",
+                "Staff.Recovered" = "Staff Certified Recovered") %>%
             mutate(Name = "State-Wide")) %>%
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        as_tibble()
 }
 
 arizona_extract <- function(x){

@@ -1,23 +1,38 @@
 rm(list=ls())
 library(tidyverse)
-library(googlesheets4)
-source("R/utilities.R")
+library(behindbarstools)
 
-facname_df <- "~/Documents/facility_data/data_sheets/fac_spellings.csv" %>%
-    read_csv() %>%
-    select(State, Facility = facility_name_clean, Name = facility_name_raw) %>%
-    mutate(Name = str_to_upper(Name)) %>%
-    unique()
+new_df <- "data/Adult Facility Counts/adult_facility_covid_counts_today_latest.csv" %>%
+    read_csv()
 
-new_df <- behindbarstools::read_scrape_data()
+old_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/" %>%
+    str_c(
+        "master/Adult%20Facility%20Counts/",
+        "adult_facility_covid_counts_today_latest.csv") %>%
+    read_csv()
 
-old_df <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" %>%
-    read_sheet(sheet = 2, skip = 1) %>%
-    .[2:nrow(.),] %>%
-    rename(Name = "County / Name of Facility") %>%
-    select(
-        Facility, Name, State, 
-        Staff.Confirmed.Old = "Confirmed Cases (Staff)")
+
+VAR_COMPARE <- "Residents.Deaths"
+
+bind_rows(
+    new_df %>%
+        # filter(Jurisdiction %in% c("county", "state")) %>%
+        select(VAR_COMPARE, State, jurisdiction) %>%
+        mutate(Type = "New"),
+    old_df %>%
+        # filter(Jurisdiction %in% c("county", "state")) %>%
+        select(VAR_COMPARE, State, jurisdiction) %>%
+        mutate(Type = "Old")) %>%
+    select(-State) %>%
+    group_by(jurisdiction, Type) %>%
+    summarise_all(sum_na_rm) %>%
+    ungroup() %>%
+    pivot_wider(names_from = "Type", values_from = VAR_COMPARE) %>%
+    mutate(difference = New - Old) %>%
+    arrange(difference) %>%
+    print(n=Inf)
+
+
 
 full_join(
     new_df %>%
