@@ -5,7 +5,6 @@ library(behindbarstools)
 library(futile.logger)
 source("R/generic_scraper.R")
 
-
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
