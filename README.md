@@ -12,7 +12,7 @@ Part of this project includes scraping state DOC websites, the federal BOP websi
 6. Do basic data checks
 7. Write extracted data to disk
 
-You can find each of our scrapers in the folder `production/scrapers`. More detailed documentation can be found [here](https://uclalawcovid19behindbars.github.io/covid19-behind-bars-public-docs/scraper_documentation/) for each of our scrapers. In order to run these scrapers, you will need to install the libraries listed at the top of the file `R/generic_scraper.R` as well as our teams own library [behindbarstools](https://github.com/uclalawcovid19behindbars/behindbarstools). Individual scrapers may require additional libraries which are listen in the individual scraper files themselves through explicit library calls.
+You can find each of our scrapers in the folder `production/scrapers`. More detailed documentation can be found [here](https://uclalawcovid19behindbars.github.io/covid19-behind-bars-public-docs/scraper_documentation/) for each of our scrapers. If you would like to recreate the documentation with the latest information you can run the function `document_all_scrapers()`. In order to run these scrapers, you will need to install the libraries listed at the top of the file `R/generic_scraper.R` as well as our teams own library [behindbarstools](https://github.com/uclalawcovid19behindbars/behindbarstools). Individual scrapers may require additional libraries which are listen in the individual scraper files themselves through explicit library calls.
 
 ## Running the scraper
 
