@@ -15,8 +15,8 @@ virginia_restruct <- function(x){
 virginia_extract <- function(x){
     exp_names <- c(
         Name = "Location",
-        Drop.Active1 = "Offenders on-site",
-        Drop.Active2 = "Offenders in hospitals",
+        Drop.Active1 = "Offenders on-site active cases",
+        Drop.Active2 = "Offenders in hospitals active cases",
         Residents.Deaths = "Death of COVID-19 positive offender",
         Residents.Confirmed = "Total positive offendersonsite + hospital + deaths + releases + recovered + transfers in - transfers out",
         Drop.Active.Staff = "Staff active cases including employees & contractors"

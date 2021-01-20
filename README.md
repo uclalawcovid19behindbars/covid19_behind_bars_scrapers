@@ -26,11 +26,17 @@ The following steps should be completed in order to ensure the scraper will run 
 1. **Pull from remote repositories**: To make sure that you're working off of the latest files, pull before doing anything else.
 
 ```
+# Pull latest in the main repository 
 cd covid19_behind_bars_scrapers
 git checkout master
 git pull origin master
+
+# Pull latest in the data submodule 
 cd data
 git pull origin master
+
+# Return the main repository 
+cd .. 
 ```
 
 2. **Set up scraper environment**: You will first need to set up the R package environment. You can do this by running the script `production/pre_run.R` which will check to see if you have the appropriate packages and install them for you if missing, install the latest version of our teams package `behindbarstools`, and check to see if you have enough extractable credits to run the scrapers. 
@@ -70,7 +76,7 @@ After calling the `manual_change` method, you will need to re-run the `validate_
 Rscript production/post_run.R
 ```
 
-6. **Commit changes**: Make sure to compare the totals from the run to what is on [the Google Sheet](https://docs.google.com/spreadsheets/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906) now to make sure nothing funky happened. Lastly, be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits. .
+6. **Commit changes**: Make sure to compare the totals from the run to what is on [the Google Sheet](https://docs.google.com/spreadsheets/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906) now to make sure nothing funky happened. Lastly, be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits.
 
 ```
 # check the differences between the new data and the old google sheet

@@ -29,13 +29,22 @@ old_df <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" %>%
     read_sheet(sheet = 2, skip = 1) %>%
     .[2:nrow(.),] %>% 
     select(-Notes) %>% 
-    setNames(names(new_df))
+    setNames(c(
+        "Facility.ID", "Jurisdiction", "State", "Name", "Date", "source",
+        "Residents.Confirmed", "Staff.Confirmed",
+        "Residents.Deaths", "Staff.Deaths", "Residents.Recovered",
+        "Staff.Recovered", "Residents.Tadmin", "Staff.Tested", "Residents.Negative",
+        "Staff.Negative", "Residents.Pending", "Staff.Pending",
+        "Residents.Quarantine", "Staff.Quarantine", "Residents.Active",
+        "Population.Feb20", "Address", "Zipcode", "City", "County", "Latitude",
+        "Longitude", "County.FIPS", "HIFLD.ID"))
 
 # Get totals 
 new_total <- new_df %>% 
-    select(Residents.Confirmed:Residents.Active) %>% 
+    select(-source) %>% 
+    select(Residents.Active:Staff.Tested) %>% 
     summarise_all(sum_na_rm) %>% 
-    pivot_longer(cols = Residents.Confirmed:Residents.Active, 
+    pivot_longer(cols = Residents.Active:Staff.Tested, 
                  names_to = "Variable", 
                  values_to = "New Total")
 
