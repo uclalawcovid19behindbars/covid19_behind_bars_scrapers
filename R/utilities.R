@@ -549,8 +549,8 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         select(all_of(covid_vars)) %>%
         summarize_all(sum_na_rm) %>%
         pivot_longer(
-          Residents.Confirmed:Residents.Active, names_to = "Variable",
-          values_to = "Count") %>%
+            Residents.Confirmed:Residents.Active, names_to = "Variable",
+            values_to = "Count") %>%
         print()
     
     out_df %>%
