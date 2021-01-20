@@ -532,25 +532,29 @@ sum_na_rm <- function(x){
 
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
+    rowAny <- function(x) rowSums(x) > 0
+    
+    covid_vars <- c(
+        "Residents.Confirmed", "Staff.Confirmed", "Residents.Deaths", "Staff.Deaths", 
+        "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin", "Staff.Tested",  
+        "Residents.Negative", "Staff.Negative", "Residents.Pending", "Staff.Pending", 
+        "Residents.Quarantine", "Staff.Quarantine", "Residents.Active")
+  
     out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE) %>%
         # TODO: tmp remove immigration until we get the go ahead from the
         # website and immigration teams
         filter(Jurisdiction != "immigration")
     
     out_df %>%
-        select(
-            Residents.Confirmed, Residents.Deaths, Residents.Recovered,
-            Residents.Tadmin, Residents.Negative, Residents.Pending,
-            Residents.Quarantine, Population.Feb20, Staff.Confirmed,
-            Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
-            Staff.Pending) %>%
-          summarize_all(sum_na_rm) %>%
-          pivot_longer(
-              Residents.Confirmed:Staff.Pending, names_to = "Variable",
-              values_to = "Count") %>%
-      print()
+        select(all_of(covid_vars)) %>%
+        summarize_all(sum_na_rm) %>%
+        pivot_longer(
+            Residents.Confirmed:Residents.Active, names_to = "Variable",
+            values_to = "Count") %>%
+        print()
     
     out_df %>%
+        filter(rowAny(across(covid_vars, ~ !is.na(.x)))) %>% 
         select(
             Facility.ID, Jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
