@@ -134,9 +134,9 @@ generic_scraper <- R6Class(
             invisible(self)
         },
         
-        pull_raw = function(url = self$url, ...){
+        pull_raw = function(url = self$url, ..., .dated_pull = FALSE){
             
-            if(self$date != Sys.Date()){
+            if(self$date != Sys.Date() & !.dated_pull){
                 rm_files <- list_remote_data("raw_files", self$id)
                 
                 url <- rm_files[stringr::str_detect(
@@ -157,7 +157,7 @@ generic_scraper <- R6Class(
             )
             
             if(self$log){
-                if(self$date != Sys.Date()){
+                if(self$date != Sys.Date() & !.dated_pull){
                     tryLog(self$raw_data <- valid_types[[self$type]](url))
                 }
                 else{
@@ -166,7 +166,7 @@ generic_scraper <- R6Class(
             }
             
             else{
-                if(self$date != Sys.Date()){
+                if(self$date != Sys.Date() & !.dated_pull){
                     self$raw_data <- valid_types[[self$type]](url)
                 }
                 else{

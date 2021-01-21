@@ -7,7 +7,7 @@ historical_ice_str_word_detect <- function(string, pattern){
         str_ends(string, str_c(" ", pattern))
 }
 
-historical_ice_pull <- function(x){
+historical_ice_pull <- function(x, date = NULL){
     wide_df <- "https://raw.githubusercontent.com/ivnagpal/ICE-COVID19/" %>%
         # the specific commit we are pulling historical data from
         str_c("596de9a76c564ce48ab6aae39d5a9aa4b6566a94/imm_df.csv") %>%
@@ -21,7 +21,7 @@ historical_ice_pull <- function(x){
         pivot_wider(names_from = "Measure", values_from = "value")
 }
 
-historical_ice_restruct <- function(x){
+historical_ice_restruct <- function(x, date = NULL){
     x %>%
         rename(
             Name = "Custody/AOR/Facility",
@@ -85,20 +85,3 @@ historical_ice_scraper <- R6Class(
         }
     )
 )
-
-ice <- historical_ice_scraper$new(log=FALSE)
-# first pull the historical raw data
-ice$pull_raw()
-# the change paths
-ice$raw_data
-ice$reset_date("2021-01-12")
-ice$restruct_raw()
-ice$restruct_data
-ice$extract_from_raw(date = ice$date)
-ice$extract_data
-ice$extract_data$jurisdiction <- "immigration"
-ice$extract_data$State <- ice$state
-
-ice$extract_data %>%
-    clean_facility_name() %>%
-    View()
