@@ -28,6 +28,10 @@ alaska_restruct <- function(x){
         Residents.Pending = x %>%
             rvest::html_node('#pending_div .tracker_count') %>%
             rvest::html_text() %>%
+            parse_number(),
+        Residents.Deaths = x %>%
+            rvest::html_node('#deaths_div .tracker_count') %>%
+            rvest::html_text() %>%
             parse_number()
         )
 }
