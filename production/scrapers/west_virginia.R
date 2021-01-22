@@ -53,10 +53,15 @@ west_virginia_extract <- function(x){
     
     # get deaths
     resident_deaths <- x %>%
-        filter(str_starts(Name, "(?i)inmate deaths")) %>%
+        filter(
+            str_starts(Name, "(?i)inmate deaths") | 
+                str_starts(Name, "(?i)confirmed inmate deaths")) %>%
         pull(Name) %>%
         # remove items in parenthesis
         str_remove_all("\\([^)]*\\)") %>%
+        str_split("\\.") %>%
+        unlist() %>%
+        .[1] %>%
         # remove commas
         str_remove_all(",") %>%
         str_extract_all("[0-9]+") %>%
