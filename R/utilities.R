@@ -605,6 +605,23 @@ sync_remote_files <- function(raw = FALSE){
   
 }
 
+sync_diagnostic_files <- function() {
+    system(str_c(
+        "rsync --perms --chmod=u+rwx -rtvu --progress results/diagnostic_files/ ",
+        "ucla:/srv/shiny-server/scraper_data/diagnostic_files/"))
+}
+
+generate_diagnostics <- function() {
+    if (!dir.exists("./results/diagnostic_files/")) {
+        dir.create("./results/diagnostic_files/")
+    }
+  
+    date <- Sys.Date()
+    rmarkdown::render("./reports/post_diagnostics.Rmd", 
+                      output_file = paste0("../results/diagnostic_files/", date, "_post_diagnostics.html"), 
+                      quiet = TRUE)
+}
+
 stop_defunct_scraper <- function(url){
     stop(paste0(
         "This scraper is not currently functional. Please occasionally check ",
