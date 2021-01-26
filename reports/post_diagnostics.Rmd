@@ -8,9 +8,6 @@ output:
 ---
 
 ```{r setup, include = F}
-# To Run: rmarkdown::render("prototyping/post_diagnostics.Rmd", 
-#                           output_file = "../results/log_files/post_diagnostics.html")
-
 library(behindbarstools)
 library(tidyverse)
 library(googlesheets4)
@@ -233,7 +230,6 @@ check %>%
     select(State, Name, Residents.Deaths, previous_death_value, change_in_deaths) %>% 
     kable(col.names = c("State", "Name", "Current Deaths", "Previous Deaths", "Change")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    column_spec(2, border_right = "1px solid #d2d2d2") %>% 
     scroll_box(height = "250px")
 ```
 
@@ -246,11 +242,7 @@ check %>%
 **Did any facilities see a decrease in cumulative cases?**
 
 ``` {r echo = F}
-# Get date of last scrape, and the previous scrape to compare it to 
-date_last_scraped <- max(scrape_df$Date)
-date_before_last_scrape <- max(scrape_df$Date[scrape_df$Date != max(scrape_df$Date)])
-
-# Calculate change in deaths from previous date scraped
+# Calculate change in cumulative cases from previous date scraped
 check <- scrape_df %>%
     filter(Date == date_last_scraped | Date == date_before_last_scrape) %>%
     group_by(Name, State, Jurisdiction) %>%
@@ -268,7 +260,6 @@ check %>%
     arrange(cases_diff, State, Name) %>% 
     kable(col.names = c("State", "Name", "Current Cases", "Previous Cases", "Change")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    column_spec(2, border_right = "1px solid #d2d2d2") %>% 
     scroll_box(height = "250px") 
 ```
 
@@ -283,7 +274,6 @@ check %>%
     arrange(deaths_diff, State, Name) %>% 
     kable(col.names = c("State", "Name", "Current Deaths", "Previous Deaths", "Change")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    column_spec(2, border_right = "1px solid #d2d2d2") %>% 
     scroll_box(height = "250px") 
 ```
 
