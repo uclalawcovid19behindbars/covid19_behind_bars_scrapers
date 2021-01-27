@@ -8,7 +8,7 @@ wyoming_pull <- function(x){
 wyoming_restruct <- function(x){
     x %>%
         select(
-            Name, Residents.Active)
+            Name, Residents.Active, Resident.Deaths)
 }
 
 wyoming_extract <- function(x){

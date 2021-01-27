@@ -71,12 +71,14 @@ nevada_pull <- function(x){
     
         valid_prison_options <- box_options %>%
             str_replace_all("[^a-zA-Z0-9 -]", "") %>%
+            str_remove_all("-") %>%
             str_replace_all(" ", "") %>%
             {grepl("^[[:upper:]]+$", .)} %>%
             which()
     
-        names(valid_prison_options) <- clean_fac_col_txt(
-            box_options[valid_prison_options])
+        names(valid_prison_options) <- box_options[valid_prison_options] %>%
+            str_remove("(?i)NDOC -") %>%
+            clean_fac_col_txt()
     
         new_options <- valid_prison_options[
             !(names(valid_prison_options) %in% names(html_list))]
