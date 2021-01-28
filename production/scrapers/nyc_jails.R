@@ -2,36 +2,70 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 nyc_jails_pull <- function(x){
-    xml2::read_html(x)
+    html_page <- xml2::read_html(x)
+    
+    html_page %>%
+        rvest::html_nodes("a") %>%
+        .[str_squish(rvest::html_text(.)) == "CHS COVID-19 Data Snapshot"] %>%
+        rvest::html_attr("href")
 }
 
 nyc_jails_restruct <- function(x){
-    tabs <- x %>%
-        rvest::html_nodes("table")
+    txt_ext <- x %>%
+        magick::image_read_pdf(pages = 1) %>%
+        magick::image_crop("2550x685+0+365") %>%
+        magick::image_ocr()
     
-    if(str_detect(rvest::html_text(tabs[[1]]), "(?i)deaths")){
-        warning("URL MAY HAVE CHANGED SCTRUCTURE INSPECT")
+    line_results <- txt_ext %>%
+        str_split("\n") %>%
+        unlist()
+    
+    comb_txt <- c() 
+    j <- 1
+    
+    for(i in line_results){
+        if(length(comb_txt) < j){
+            comb_txt[j] <- ""
+        }
+        comb_txt[j] <- str_c(comb_txt[j], i, sep  = " ")
+        if(str_detect(i, ":")){
+            j <- j + 1
+        }
     }
     
-    lapply(tabs, rvest::html_table)
+    txt_mat <- comb_txt %>%
+        str_split_fixed(":", 2)
+    
+    colnames(txt_mat) <- c("text", "value")
+    
+    as_tibble(txt_mat)
 }
 
 nyc_jails_extract <- function(x){
-    conf_df <- x[[1]] %>%
-        mutate(Name = "New York City Jails") %>%
-        clean_scraped_df() %>%
-        mutate(Residents.Confirmed = `Incarcerated Population` + Parolees) %>%
-        rename(Staff.Confirmed = Staff) %>%
-        select(-`Incarcerated Population`, -Parolees)
     
-    death_df <- x[[2]] %>%
-        mutate(Name = "New York City Jails") %>%
-        clean_scraped_df() %>%
-        mutate(Residents.Deaths = `Incarcerated Population` + Parolees) %>%
-        rename(Staff.Deaths = Staff) %>%
-        select(-`Incarcerated Population`, -Parolees)
+    count_df <- x %>%
+        #remove rate rows
+        filter(!str_detect(text, "(?i)rate"))
     
-    full_join(conf_df, death_df, by = "Name")
+    idx_list <- list(
+        tests = which(str_detect(
+            count_df$text, "(?i)Total number of tests completed")),
+        confirmed = which(str_detect(
+            count_df$text, "(?i)positive tests completed among patients")),
+        active = which(str_detect(
+            count_df$text, "(?i)in custody with active infection"))
+    )
+    
+    if(any(sapply(idx_list, length) != 1)){
+        stop("Extraction not as expected please inspect further.")
+    }
+    
+    tibble(
+        Name = "NEW YORK CITY JAILS",
+        Residents.Confirmed = count_df$value[idx_list$confirmed],
+        Residents.Active = count_df$value[idx_list$active],
+        Residents.Tadmin = count_df$value[idx_list$tests]) %>%
+        clean_scraped_df()
 }
 
 #' Scraper class for general nyc_jails COVID data
@@ -50,14 +84,13 @@ nyc_jails_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://doccs.ny.gov/doccs-covid-19-report",
+            url = "https://www.nychealthandhospitals.org/correctionalhealthservices/",
             id = "nyc_jails",
-            type = "html",
+            type = "pdf",
             state = "NY",
             jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = nyc_jails_pull,
-            # restructuring the data means pulling out the data portion of the json
             restruct_func = nyc_jails_restruct,
             # Rename the columns to appropriate database names
             extract_func = nyc_jails_extract){
@@ -71,6 +104,7 @@ nyc_jails_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     nyc_jails <- nyc_jails_scraper$new(log=TRUE)
+    nyc_jails$perma_save()
     nyc_jails$raw_data
     nyc_jails$pull_raw()
     nyc_jails$raw_data

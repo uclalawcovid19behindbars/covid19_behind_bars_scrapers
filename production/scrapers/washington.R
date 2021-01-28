@@ -71,18 +71,19 @@ washington_extract <- function(x){
     wa <- full_join(staff.tab, res.tab.lean, by = "Name")
     
     # statewide testing counts
-    test.tab <- rvest::html_table(wa_tables[[9]], fill = TRUE) %>%
-        as.data.frame() %>%
-        select(-c(`Individuals Tested`,`Positive Results`)) %>%
-        rename(
-            "Residents.Tested" = "Tests Completed",
-            "Residents.Negative" = "Negative Results",
-            "Residents.Pending" = "Pending Lab Results") 
-    test.tab$Name <- "State-Wide"
-    test.tab <- clean_scraped_df(test.tab)
+    # no longer reported
+    # test.tab <- rvest::html_table(wa_tables[[9]], fill = TRUE) %>%
+    #     as.data.frame() %>%
+    #     select(-c(`Individuals Tested`,`Positive Results`)) %>%
+    #     rename(
+    #         "Residents.Tested" = "Tests Completed",
+    #         "Residents.Negative" = "Negative Results",
+    #         "Residents.Pending" = "Pending Lab Results") 
+    # test.tab$Name <- "State-Wide"
+    # test.tab <- clean_scraped_df(test.tab)
     
     # statewide quarantine counts and add to the statewide table
-    quar.tab <- rvest::html_table(wa_tables[[10]], fill = TRUE) %>%
+    quar.tab <- rvest::html_table(wa_tables[[9]], fill = TRUE) %>%
         as.data.frame() %>%
         rename("isolated"  = "Incarcerated Individuals in Isolation",
                "quarantine" = "Incarcerated Individuals in Quarantine")
@@ -92,7 +93,7 @@ washington_extract <- function(x){
     quar.tab <- select(quar.tab, -isolated, -quarantine)
     
     
-    state.tab <- full_join(test.tab, quar.tab, by = "Name")
+    state.tab <- quar.tab #full_join(test.tab, quar.tab, by = "Name")
     
     dplyr::bind_rows(state.tab, wa) %>%
         as_tibble()
@@ -102,7 +103,8 @@ washington_extract <- function(x){
 #' 
 #' @name washington_scraper
 #' @description WA has a number of html tables on their page with both facility
-#' specific and state-wide information.
+#' specific and state-wide information. As of 1-22-21 testing data stopped being
+#' reported.
 #' \describe{
 #'   \item{Residents Number Confirmed Cases}{Facility specific}
 #'   \item{Residents Number of Deaths}{Facility specific}

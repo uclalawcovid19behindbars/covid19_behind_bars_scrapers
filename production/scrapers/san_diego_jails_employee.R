@@ -2,7 +2,12 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 san_diego_jails_employee_pull <- function(x) {
-    get_src_by_attr(x, "a", "attr" = "href", attr_regex = "(?i)dsb-covid19-2.pdf") %>%
+    html_obj <- xml2::read_html(x)
+    html_obj %>%
+        rvest::html_nodes("a") %>%
+        .[str_detect(rvest::html_text(.), "(?i)employee status")] %>%
+        rvest::html_attr("href") %>%
+        xml2::url_absolute(x) %>%
         magick::image_read_pdf()
 }
 
@@ -60,7 +65,7 @@ san_diego_jails_employee_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.sdsheriff.net/",
+            url = "https://www.sdsheriff.net/resources/covid-19-response/covid-19-figures",
             id = "san_diego_jails_employee",
             type = "img",
             state = "CA",

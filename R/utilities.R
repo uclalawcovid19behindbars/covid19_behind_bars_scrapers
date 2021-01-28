@@ -1,6 +1,9 @@
 library(tidyverse)
+library(R6)
+library(tryCatchLog)
 library(behindbarstools)
-# devtools::install_github("uclalawcovid19behindbars/behindbarstools")
+library(futile.logger)
+source("R/generic_scraper.R")
 
 basic_check <- function(true_names, expected_names){
     if(length(true_names) != length(expected_names)){
@@ -183,7 +186,7 @@ string_to_clean_numeric <- function(column) {
     expected.nonnumeric.values <- 
         c("-", "N/A", "na", "n/a", "NA", "", " +",
           NA, "T", "[", "]", "o", "O",
-          "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "")
+          "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "", "PENDING")
     
     unexpected.nonnumeric.values <- column[
         !(grepl(column, pattern = "[0-9]+") | 
@@ -268,16 +271,14 @@ get_scraper_vec <- function(){
 get_last_run <- function(file_name){
     scraper_name <- str_remove(str_split_fixed(file_name, "/", n = 3)[,3], ".R")
     
-    out_files <- list.files(
-        "results/extracted_data", full.names = TRUE,
-        pattern = str_c("\\d+-\\d+-\\d+_", scraper_name, ".csv"))
-    
+    out_files <- list_remote_data("extracted_data", scraper_name)
+
     run_dates <- lubridate::ymd(str_extract(out_files, "\\d+-\\d+-\\d+"))
-    
+
     last_file <- out_files[which.max(run_dates)]
-    
+
     df_ <- read_csv(last_file, col_types = cols())
-    
+
     list(cols = names(df_), date = max(run_dates))
 }
 
@@ -353,7 +354,11 @@ document_scraper <- function(
     sanitize_Rd = TRUE, runit = FALSE, check_package = FALSE, 
     check_as_cran = check_package, stop_on_check_not_passing = check_package, 
     clean = FALSE, debug = TRUE, ...){
-    if (is.null(working_directory)){
+
+    if(!dir.exists(output_directory)){
+        dir.create(output_directory)
+    }
+    if(is.null(working_directory)){
         working_directory <- file.path(
             tempdir(), paste0("document_", basename(tempfile(pattern = ""))))
     }
@@ -395,6 +400,7 @@ document_scraper <- function(
 document_all_scrapers <- function(){
     sc_files <- list.files("production/scrapers", full.names = TRUE)
     sapply(sc_files, function(x){
+        cat("Documenting scraper file", x, "\n")
         tryCatch(document_scraper(x), error=function(e) NULL)
     })
 }
@@ -526,25 +532,38 @@ sum_na_rm <- function(x){
 
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
+    rowAny <- function(x) rowSums(x) > 0
+    
+    covid_vars <- c(
+        "Residents.Confirmed", "Staff.Confirmed", "Residents.Deaths", "Staff.Deaths", 
+        "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin", "Staff.Tested",  
+        "Residents.Negative", "Staff.Negative", "Residents.Pending", "Staff.Pending", 
+        "Residents.Quarantine", "Staff.Quarantine", "Residents.Active")
+  
     out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE) %>%
         # TODO: tmp remove immigration until we get the go ahead from the
         # website and immigration teams
         filter(Jurisdiction != "immigration")
     
     out_df %>%
-        select(
-            Residents.Confirmed, Residents.Deaths, Residents.Recovered,
-            Residents.Tadmin, Residents.Negative, Residents.Pending,
-            Residents.Quarantine, Population.Feb20, Staff.Confirmed,
-            Staff.Deaths, Staff.Recovered, Staff.Tested, Staff.Negative,
-            Staff.Pending) %>%
-          summarize_all(sum_na_rm) %>%
-          pivot_longer(
-              Residents.Confirmed:Staff.Pending, names_to = "Variable",
-              values_to = "Count") %>%
-      print()
+        select(all_of(covid_vars)) %>%
+        summarize_all(sum_na_rm) %>%
+        pivot_longer(
+            Residents.Confirmed:Residents.Active, names_to = "Variable",
+            values_to = "Count") %>%
+        print()
     
     out_df %>%
+        filter(rowAny(across(covid_vars, ~ !is.na(.x)))) %>% 
+        select(
+            Facility.ID, Jurisdiction, State, Name, Date, source,
+            Residents.Confirmed, Staff.Confirmed,
+            Residents.Deaths, Staff.Deaths, Residents.Recovered,
+            Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
+            Staff.Negative, Residents.Pending, Staff.Pending,
+            Residents.Quarantine, Staff.Quarantine, Residents.Active,
+            Population.Feb20, Address, Zipcode, City, County, Latitude,
+            Longitude, County.FIPS, HIFLD.ID) %>%
         rename(
             jurisdiction = Jurisdiction,
             Residents.Population = Population.Feb20) %>%
@@ -571,19 +590,36 @@ coalesce_by_column <- function(df) {
 
 sync_remote_files <- function(raw = FALSE){
     system(str_c(
-        "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/extracted_data/ ",
+        "rsync --perms --chmod=u+rwx -rtvu --progress results/extracted_data/ ",
         "ucla:/srv/shiny-server/scraper_data/extracted_data/"))
 
     system(str_c(
-        "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/log_files/ ",
+        "rsync --perms --chmod=u+rwx -rtvu --progress results/log_files/ ",
         "ucla:/srv/shiny-server/scraper_data/log_files/"))
     
     if(raw){
         system(str_c(
-            "rsync --perms --chmod=u+rwx -rtvu ~/.ssh --progress results/raw_files/ ",
+            "rsync --perms --chmod=u+rwx -rtvu --progress results/raw_files/ ",
             "ucla:/srv/shiny-server/scraper_data/raw_files/"))
     }
   
+}
+
+sync_diagnostic_files <- function() {
+    system(str_c(
+        "rsync --perms --chmod=u+rwx -rtvu --progress results/diagnostic_files/ ",
+        "ucla:/srv/shiny-server/scraper_data/diagnostic_files/"))
+}
+
+generate_diagnostics <- function() {
+    if (!dir.exists("./results/diagnostic_files/")) {
+        dir.create("./results/diagnostic_files/")
+    }
+  
+    date <- Sys.Date()
+    rmarkdown::render("./reports/post_diagnostics.Rmd", 
+                      output_file = paste0("../results/diagnostic_files/", date, "_post_diagnostics.html"), 
+                      quiet = TRUE)
 }
 
 stop_defunct_scraper <- function(url){

@@ -9,7 +9,8 @@ orange_county_restruct <- function(x){
     x %>%
         rvest::html_node("table") %>%
         rvest::html_table() %>%
-        as_tibble()
+        as_tibble() %>%
+        mutate(across(.fns =  function(x) str_remove(x, "\\([^)]*\\)")))
 }
 
 orange_county_extract <- function(x){
