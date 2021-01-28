@@ -3,7 +3,7 @@ library(tidyverse)
 
 # read in configuration file to see what historical scrapers to run
 config_df <- read_csv(
-    "./production/historical_scrape/config.csv", col_types = cols())
+    "./production/historical_scrape/historical_config.csv", col_types = cols())
 
 # load all the historical scrapers
 sapply(list.files(

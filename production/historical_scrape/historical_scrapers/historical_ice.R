@@ -53,7 +53,10 @@ historical_ice_extract <- function(x, date){
 #' the variables listed below. Unlike all other scrapers their are total column
 #' values that we want to keep which do not corresponds to a state but rather
 #' ICE as a whole. In addition we have found that facility names frequently
-#' change and require updates to the facility spellings sheet.
+#' change and require updates to the facility spellings sheet. Dates for this
+#' scraper should correspond to all dates which are present in the github sheet
+#' columns where the data is being pulled up to when the main scraper started
+#' pulling ice data 2021-01-12.
 #' \describe{
 #'   \item{Facility}{The facility name}
 #'   \item{Confirmed cases currently under isolation}{Residents with active inf}
@@ -71,6 +74,8 @@ historical_ice_scraper <- R6Class(
         initialize = function(
             log,
             url = "https://www.ice.gov/coronavirus",
+            # should not have historical in the name as it matches
+            # with places where we had data prior
             id = "ice",
             type = "csv",
             state = "federal",
@@ -85,3 +90,18 @@ historical_ice_scraper <- R6Class(
         }
     )
 )
+
+if(sys.nframe() == 0){
+    historical_ice <- historical_ice_scraper$new(log=TRUE)
+    historical_ice$reset_date("SET_DATE_HERE")
+    historical_ice$raw_data
+    historical_ice$pull_raw(date = scraper$date, .dated_pull = TRUE)
+    historical_ice$raw_data
+    historical_ice$save_raw()
+    historical_ice$restruct_raw(date = scraper$date)
+    historical_ice$restruct_data
+    historical_ice$extract_from_raw(date = scraper$date)
+    historical_ice$extract_data
+    historical_ice$validate_extract()
+    historical_ice$save_extract()
+}
