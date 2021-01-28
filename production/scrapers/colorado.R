@@ -80,7 +80,7 @@ colorado_restruct <- function(x){
     # that is as long as CO keeps the same formatting.
     col_vals <- cbind(
         z %>%
-            magick::image_crop("213x1080+387+1000") %>%
+            magick::image_crop("213x1080+387+1030") %>%
             ExtractTable() %>%
             unlist() %>%
             string_to_clean_numeric(),
@@ -92,13 +92,13 @@ colorado_restruct <- function(x){
             string_to_clean_numeric(),
 
         z %>%
-            magick::image_crop("213x1080+1264+1000") %>%
+            magick::image_crop("213x1080+1264+1030") %>%
             ExtractTable() %>%
             unlist() %>%
             string_to_clean_numeric(),
 
         z %>%
-            magick::image_crop("213x1080+1700+1000") %>%
+            magick::image_crop("213x1080+1700+1030") %>%
             ExtractTable() %>%
             unlist() %>%
             string_to_clean_numeric())

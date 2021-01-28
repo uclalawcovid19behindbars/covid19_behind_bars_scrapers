@@ -6,29 +6,48 @@ virginia_pull <- function(x){
 }
 
 virginia_restruct <- function(x){
-    x %>%
-        rvest::html_node("table") %>%
-        rvest::html_table() %>%
-        as_tibble()
+    
+    list(
+        web = x %>%
+            rvest::html_node("table") %>%
+            rvest::html_table() %>%
+            as_tibble(),
+        
+        
+        vac = tibble(
+            Name = "STATEWIDE",
+    
+            Residents.Vadmin = x %>%
+                rvest::html_nodes("span") %>%
+                .[which(str_detect(
+                    rvest::html_text(.), "(?i)inmate vaccinations"))-1] %>%
+                rvest::html_text(),
+        
+            Staff.Vadmin = x %>%
+                rvest::html_nodes("span") %>%
+                .[which(str_detect(
+                    rvest::html_text(.), "(?i)staff vaccinations"))-1] %>%
+                rvest::html_text()))
 }
 
 virginia_extract <- function(x){
     exp_names <- c(
         Name = "Location",
-        Drop.Active1 = "Offenders on-site active cases",
-        Drop.Active2 = "Offenders in hospitals active cases",
-        Residents.Deaths = "Death of COVID-19 positive offender",
-        Residents.Confirmed = "Total positive offendersonsite + hospital + deaths + releases + recovered + transfers in - transfers out",
+        Residents.Active = "Inmates on-site active cases",
+        Drop.Active2 = "Inmates in hospitals active cases",
+        Residents.Deaths = "Death of COVID-19 positive inmates",
+        Residents.Confirmed = "Total positive inmatesonsite hospital deaths releases recovered transfers in - transfers out",
         Drop.Active.Staff = "Staff active cases including employees & contractors"
     )
-    
-    check_names(x, exp_names)
-    df_ <- x
+
+    check_names(x$web, exp_names)
+    df_ <- x$web
     names(df_) <- names(exp_names)
     
     df_ %>%
         clean_scraped_df() %>%
-        select(-starts_with("Drop"))
+        select(-starts_with("Drop")) %>%
+        bind_rows(clean_scraped_df(x$vac))
 }
 
 #' Scraper class for general Virginia COVID data
@@ -43,6 +62,8 @@ virginia_extract <- function(x){
 #'   \item{Death of COVID-19 positive offender}{Residents deaths}
 #'   \item{Total positive offenders on site}{No transfers but cumulative}
 #'   \item{Staff active}{Staff currently infected}
+#'   \item{Residents Vaccinations Administered}{}
+#'   \item{Staff Vaccinations Administered}{}
 #' }
 
 virginia_scraper <- R6Class(
