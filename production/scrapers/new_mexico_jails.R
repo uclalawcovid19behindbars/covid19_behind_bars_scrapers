@@ -29,7 +29,6 @@ new_mexico_jails_extract <- function(x, exp_date = Sys.Date()){
             Name = `Detention Center`,
             Residents.Confirmed = Detainee,
             Staff.Confirmed = Staff,
-            # Residents.Active = Detainee # need to confirm it's not this one
         ) %>%
         filter(!str_detect(Name, "(?i)all")) # remove sum total
 }
