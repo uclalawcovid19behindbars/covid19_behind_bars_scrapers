@@ -8,13 +8,13 @@ wyoming_pull <- function(x){
 wyoming_restruct <- function(x){
     x %>%
         select(
-            Name, Residents.Active, Resident.Deaths)
+            Name, Residents.Active, Residents.Deaths)
 }
 
 wyoming_extract <- function(x){
     x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         filter(!is.na(Name))
 }
 

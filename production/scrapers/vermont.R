@@ -18,8 +18,8 @@ vermont_restruct <- function(x){
 
 vermont_extract <- function(x){
     x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         filter(!is.na(Name))
 }
 

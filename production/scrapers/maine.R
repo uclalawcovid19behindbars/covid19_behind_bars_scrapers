@@ -43,8 +43,7 @@ maine_extract <- function(x){
     check_names_extractable(df_, col_name_df)
     out_df <- rename_extractable(df_, col_name_df) %>%
         as_tibble() %>%
-        mutate(Residents.Tadmin = as.numeric(Residents.Tadmin)) %>%
-        mutate(Residents.Confirmed = as.numeric(Residents.Confirmed)) %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         filter(!(Name == "" | is.na(Residents.Tadmin))) %>%
         filter(!str_detect(Name, "(?i)total")) %>%
         mutate(Residents.Population = ifelse(

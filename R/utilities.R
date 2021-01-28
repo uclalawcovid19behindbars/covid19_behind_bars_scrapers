@@ -186,7 +186,7 @@ string_to_clean_numeric <- function(column) {
     expected.nonnumeric.values <- 
         c("-", "N/A", "na", "n/a", "NA", "", " +",
           NA, "T", "[", "]", "o", "O",
-          "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "")
+          "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "", "PENDING")
     
     unexpected.nonnumeric.values <- column[
         !(grepl(column, pattern = "[0-9]+") | 
