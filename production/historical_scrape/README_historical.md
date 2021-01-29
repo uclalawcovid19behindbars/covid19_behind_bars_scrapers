@@ -10,7 +10,7 @@ To see an example of this, please view the file in `production/historical_scrape
 
 #### Instructions: 
 
-1. Add the scraper to `production/historical_scrape_historical_scrapers`. Each historical scraper needs a `pull`, `restruct`, and `extract` function, and each of these functions must include a date parameter (regardless of whether that parameter is actually used within the function). The pipeline should reflect the following: 
-2. Add the scraper you would like to run (e.g. `historical_ice_scraper`) and the date(s) you would like to run it to the `production/historical_scrape/historical_config.csv` file. 
-3. Run the historical scrape pipeline by running `production/historical_scrape/main_historical.R`. 
-4. Sync your files with the remote database by calling `sync_remote_files(raw = TRUE)` within the console. 
+1. **Build scraper**: Add the scraper to `production/historical_scrape_historical_scrapers`. Each historical scraper needs a `pull`, `restruct`, and `extract` function, and each of these functions must include a date parameter (regardless of whether that parameter is actually used within the function). 
+2. **Update config file**: Add the scraper you would like to run (e.g. `historical_ice_scraper`) and the date(s) you would like to run it to the `production/historical_scrape/historical_config.csv` file. 
+3. **Run historical pipeline**: Run the historical scrape pipeline by running `production/historical_scrape/main_historical.R`. This will populate the `results` directory with the raw, extracted, and log files. It will also add perma.cc links for each raw file. 
+4. **Sync files**: Sync your files with the remote database by calling `sync_remote_files(raw = TRUE)` within the console. 
