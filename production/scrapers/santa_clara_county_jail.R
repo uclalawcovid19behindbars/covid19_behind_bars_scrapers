@@ -55,7 +55,7 @@ santa_clara_county_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://countysheriff.sccgov.org/covid-19/covid-19-dashboard",
+            url = "https://www.davisvanguard.org/tag/covid-19/",
             id = "santa_clara_county_jail",
             type = "csv",
             state = "CA",

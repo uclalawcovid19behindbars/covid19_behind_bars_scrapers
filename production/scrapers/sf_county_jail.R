@@ -1,18 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-yolo_county_jail_pull <- function(x){
-    "1FwW5oaUWmzmvzw4BXvrUYoCf4LBNCIGtUo5RbR_ZldA" %>%
+sf_county_jail_pull <- function(x){
+    "1hOBU6510jHZbxN3c3nVwXKGEUfyI9mlkv0vg2LiEJAA" %>%
         googlesheets4::read_sheet()
 }
 
-yolo_county_jail_restruct <- function(x){
+sf_county_jail_restruct <- function(x){
     x %>%
         mutate(Date = lubridate::mdy(`As of Date`)) %>%
         filter(Date == max(Date))
 }
 
-yolo_county_jail_extract <- function(x, exp_date = Sys.Date()){
+sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
@@ -22,40 +22,40 @@ yolo_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Active = `Active in Custody`,
             Residents.Recovered = `Resolved`,
             Residents.Deaths = Deaths,
-            Residents.Tadmin = `Cumulative Tested`,
-            Residents.Population = `Population`,
-            Residents.Quarantine = `Medical Isolation`
+            Residents.Quarantine = `Quarantined Cases`,
+            Residents.Population = `Incarcerated Population`
             ) %>%
-        mutate(Name = "YOLO COUNTY JAIL")
+        mutate_all(unlist) %>%
+        mutate(Name = "SF COUNTY JAIL")
 }
 
-#' Scraper class for general yolo_county_jail COVID data
+#' Scraper class for general sf_county_jail COVID data
 #' 
-#' @name yolo_county_jail_scraper
-#' @description This will be a description of yolo_county_jail data and what the scraper
+#' @name sf_county_jail_scraper
+#' @description This will be a description of sf_county_jail data and what the scraper
 #' does
 #' \describe{
 #'   \item{Facility_Name}{The faciilty name.}
 #' }
 
-yolo_county_jail_scraper <- R6Class(
-    "yolo_county_jail_scraper",
+sf_county_jail_scraper <- R6Class(
+    "sf_county_jail_scraper",
     inherit = generic_scraper,
     public = list(
         log = NULL,
         initialize = function(
             log,
             url = "https://www.davisvanguard.org/tag/covid-19/",
-            id = "yolo_county_jail",
+            id = "sf_county_jail",
             type = "csv",
             state = "CA",
             jurisdiction = "county",
             # pull the JSON data directly from the API
-            pull_func = yolo_county_jail_pull,
+            pull_func = sf_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json
-            restruct_func = yolo_county_jail_restruct,
+            restruct_func = sf_county_jail_restruct,
             # Rename the columns to appropriate database names
-            extract_func = yolo_county_jail_extract){
+            extract_func = sf_county_jail_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
@@ -65,16 +65,16 @@ yolo_county_jail_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    yolo_county_jail <- yolo_county_jail_scraper$new(log=TRUE)
-    yolo_county_jail$raw_data
-    yolo_county_jail$pull_raw()
-    yolo_county_jail$raw_data
-    yolo_county_jail$save_raw()
-    yolo_county_jail$restruct_raw()
-    yolo_county_jail$restruct_data
-    yolo_county_jail$extract_from_raw()
-    yolo_county_jail$extract_data
-    yolo_county_jail$validate_extract()
-    yolo_county_jail$save_extract()
+    sf_county_jail <- sf_county_jail_scraper$new(log=TRUE)
+    sf_county_jail$raw_data
+    sf_county_jail$pull_raw()
+    sf_county_jail$raw_data
+    sf_county_jail$save_raw()
+    sf_county_jail$restruct_raw()
+    sf_county_jail$restruct_data
+    sf_county_jail$extract_from_raw()
+    sf_county_jail$extract_data
+    sf_county_jail$validate_extract()
+    sf_county_jail$save_extract()
 }
 

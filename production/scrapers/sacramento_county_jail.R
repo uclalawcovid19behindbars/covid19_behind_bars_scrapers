@@ -65,7 +65,7 @@ sacramento_county_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.sacsheriff.com/pages/covid19.php",
+            url = "hhttps://www.davisvanguard.org/tag/covid-19/",
             id = "sacramento_county_jail",
             type = "csv",
             state = "CA",
