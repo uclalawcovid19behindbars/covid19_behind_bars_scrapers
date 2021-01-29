@@ -33,6 +33,7 @@ texas_extract <- function(x){
             Residents.Confirmed = Offender_Total_Positive_Cases,
             Residents.Quarantine,
             Residents.Recovered = Offender_Recovered,
+            Residents.Active = Offender_Active_Cases,
             Staff.Confirmed = Employee_Total_Positive_Cases,
             Staff.Recovered = Employee_Recovered
         )
