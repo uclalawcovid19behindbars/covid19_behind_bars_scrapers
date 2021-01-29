@@ -115,7 +115,7 @@ wisconsin_deaths_scraper <- R6Class(
             log,
             url = "https://doc.wi.gov/Pages/COVID19(Coronavirus)/COVID19TestingDashboard.aspx",
             id = "wisconsin_deaths",
-            type = "img",
+            type = "pdf",
             state = "WI",
             jurisdiction = "state",
             # pull the JSON data directly from the API
