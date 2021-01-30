@@ -22,6 +22,11 @@ historical_ice_pull <- function(x, date = NULL){
 }
 
 historical_ice_restruct <- function(x, date = NULL){
+    if(date > lubridate::ymd("2021-01-12")){
+        stop(
+            "historical_ice should not be run past 2021-01-12 as to",
+            "not overlap", "with ice_scraper")
+    }
     x %>%
         rename(
             Name = "Custody/AOR/Facility",
@@ -74,9 +79,7 @@ historical_ice_scraper <- R6Class(
         initialize = function(
             log,
             url = "https://www.ice.gov/coronavirus",
-            # should not have historical in the name as it matches
-            # with places where we had data prior
-            id = "ice",
+            id = "historical_ice",
             type = "csv",
             state = "federal",
             jurisdiction = "immigration",
