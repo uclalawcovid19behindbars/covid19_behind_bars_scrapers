@@ -18,7 +18,7 @@ parser <- ArgumentParser()
 parser$add_argument(
     "-c", "--config",
     help=paste0(
-        "A csv file with two columns. ",
+        "A path to a csv file with two columns. ",
         "Scraper: a character column of a valid historical scraper. ",
         "Date: YYYY-MM-DD date of which day to run the hsitorical scraper."
         ))
@@ -27,6 +27,11 @@ args <- parser$parse_args()
 
 # read in configuration file to see what historical scrapers to run
 config_df <- read_csv(args$config, col_types = cols())
+
+if(any(!(c("Date", "Scraper") %in% names(config_df)))){
+    stop("The config file must include the column names Date and Scraper")
+}
+
 
 # load all the historical scrapers
 sapply(list.files(
