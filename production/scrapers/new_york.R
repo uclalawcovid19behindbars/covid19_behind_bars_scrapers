@@ -17,7 +17,6 @@ new_york_extract <- function(x){
     ny <- as.data.frame(x) %>%
         filter(!(X0 %in% bad_names))
     
-    
     col_name_mat <- matrix(c(
             "REPORTED FACILITY", "X0", "Name",
             "RECOVERED", "X1", "Residents.Recovered",

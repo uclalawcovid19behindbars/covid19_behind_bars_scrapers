@@ -2,11 +2,12 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 pennsylvania_pull <- function(x){
-    tf_ <- tempfile()
-    # grab xlsx directly
-    "https://www.cor.pa.gov/Documents/PA-DOC-COVID-19-Testing.xlsx" %>%
-        download.file(destfile=tf_)
-    readxl::read_excel(tf_)
+    stop_defunct_scraper(x)
+    # tf_ <- tempfile()
+    # # grab xlsx directly
+    # "https://www.cor.pa.gov/Documents/DOC-COVID-19-Daily-Count.pdf" %>%
+    #     download.file(destfile=tf_)
+    # readxl::read_excel(tf_)
 }
 
 pennsylvania_restruct <- function(x){
