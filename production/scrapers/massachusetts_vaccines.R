@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-massachusetts_pull <- function(x){
+massachusetts_vaccine_pull <- function(x){
     tf <- tempfile(fileext = ".xlsx")
     
     # get data from sheet directly
@@ -9,36 +9,32 @@ massachusetts_pull <- function(x){
         str_c("1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291") %>%
         httr::GET(httr::write_disk(tf))
     
-    readxl::read_excel(tf, sheet="DOC Facilities")
+    readxl::read_excel(tf, sheet="Vaccines")
 }
 
-massachusetts_restruct <- function(x){
+massachusetts_vaccine_restruct <- function(x){
     x 
 }
 
-massachusetts_extract <- function(x){
+massachusetts_vaccine_extract <- function(x){
     x %>%
-        arrange(`DOC Facility`, Date) %>%
+        filter(County=="DOC") %>%
         select(
-            Name = "DOC Facility",
-            Residents.Population = "Total Population",
-            Residents.Active = "Active Prisoner Cases",
-            Residents.Tested = "N Tested - Detainees/Inmates",
-            Residents.Confirmed = "N Positive - Detainees/Inmates",
-            Staff.Tested = "N Tested - COs",
-            Staff.Confirmed = "N Positive - COs") %>%
+            Name = "County",
+            Residents.Initiated = "N 1st Dose - Prisoners",
+            Staff.Initiated = "N 1st Dose - Staff",
+            Residents.Completed = "N 2nd Dose - Prisoners",
+            Staff.Completed = "N 2nd Dose - Staff") %>%
         clean_scraped_df() %>%
         group_by(Name) %>%
-        mutate(Residents.Population = last(Residents.Population)) %>%
-        mutate(Residents.Active = last(Residents.Active)) %>%
-        group_by(Name, Residents.Population, Residents.Active) %>%
         summarize_all(sum, na.rm = T) %>%
-        ungroup()
+        ungroup() %>%
+        mutate(Name = "STATEWIDE")
 }
 
 #' Scraper class for general Massachusetts COVID data
 #' 
-#' @name massachusetts_scraper
+#' @name massachusetts_vaccine_scraper
 #' @description Massachusetts data comes from an xlsx file that is updated
 #' weekly. Currently a full time series is available but it is not exactly clear
 #' which numbers are cumulative. We consistently get tested values that are
@@ -59,24 +55,24 @@ massachusetts_extract <- function(x){
 #'   \item{Notes}{} 
 #' }
 
-massachusetts_scraper <- R6Class(
-    "massachusetts_scraper",
+massachusetts_vaccine_scraper <- R6Class(
+    "massachusetts_vaccine_scraper",
     inherit = generic_scraper,
     public = list(
         log = NULL,
         initialize = function(
             log,
             url = "https://www.mass.gov/guides/doc-coronavirus-information-guide",
-            id = "massachusetts",
+            id = "massachusetts_vaccine",
             type = "csv",
             state = "MA",
             jurisdiction = "state",
             # pull the JSON data directly from the API
-            pull_func = massachusetts_pull,
+            pull_func = massachusetts_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
-            restruct_func = massachusetts_restruct,
+            restruct_func = massachusetts_vaccine_restruct,
             # Rename the columns to appropriate database names
-            extract_func = massachusetts_extract){
+            extract_func = massachusetts_vaccine_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
@@ -86,16 +82,16 @@ massachusetts_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    massachusetts <- massachusetts_scraper$new(log=TRUE)
-    massachusetts$raw_data
-    massachusetts$pull_raw()
-    massachusetts$raw_data
-    massachusetts$save_raw()
-    massachusetts$restruct_raw()
-    massachusetts$restruct_data
-    massachusetts$extract_from_raw()
-    massachusetts$extract_data
-    massachusetts$validate_extract()
-    massachusetts$save_extract()
+    massachusetts_vaccine <- massachusetts_vaccine_scraper$new(log=TRUE)
+    massachusetts_vaccine$raw_data
+    massachusetts_vaccine$pull_raw()
+    massachusetts_vaccine$raw_data
+    massachusetts_vaccine$save_raw()
+    massachusetts_vaccine$restruct_raw()
+    massachusetts_vaccine$restruct_data
+    massachusetts_vaccine$extract_from_raw()
+    massachusetts_vaccine$extract_data
+    massachusetts_vaccine$validate_extract()
+    massachusetts_vaccine$save_extract()
 }
 

@@ -2,8 +2,21 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 sf_county_jail_pull <- function(x){
-    "1hOBU6510jHZbxN3c3nVwXKGEUfyI9mlkv0vg2LiEJAA" %>%
+    z = "1hOBU6510jHZbxN3c3nVwXKGEUfyI9mlkv0vg2LiEJAA" %>%
         googlesheets4::read_sheet()
+    
+    # for some reason this is saved weird and we need to do some
+    # minimal edits in order to save teh file
+    for(c in names(z)){
+        for(j in 1:length(z[[c]])){
+            if(length(z[[c]][[j]]) == 0){
+                z[[c]][[j]] <- NA
+            }
+        }
+    }
+    
+    z %>%
+        mutate_all(unlist)
 }
 
 sf_county_jail_restruct <- function(x){
@@ -26,6 +39,7 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Population = `Incarcerated Population`
             ) %>%
         mutate_all(unlist) %>%
+        mutate_all(as.numeric) %>%
         mutate(Name = "SF COUNTY JAIL")
 }
 
