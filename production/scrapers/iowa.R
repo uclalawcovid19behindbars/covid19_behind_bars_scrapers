@@ -1,13 +1,25 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-iowa_restruct <- function(ia_html){
-    ia_html %>%
-        rvest::html_nodes("table") %>%
-        # there is only one table on the page and it has no names
-        # associated with it
-        .[[1]] %>%
-        rvest::html_table(header = TRUE)
+iowa_restruct <- function(x){
+    
+    bind_rows(
+        x %>%
+            rvest::html_nodes("table") %>%
+            # there is only one table on the page and it has no names
+            # associated with it
+            .[[1]] %>%
+            rvest::html_table(header = TRUE), 
+        
+        # Staff deaths are reported in text at the bottom at the statewide level 
+        x %>%
+            rvest::html_nodes("span") %>% 
+            rvest::html_text() %>% 
+            as_tibble() %>% 
+            filter(stringr::str_detect(value, "Number of staff that have passed away with COVID-19")) %>%
+            separate(value, sep = ":", into = c("Prison", "Staff.Deaths")) %>% 
+            mutate(Prison = "STATEWIDE") 
+    )
 }
 
 iowa_extract <- function(x){
@@ -16,14 +28,14 @@ iowa_extract <- function(x){
         "Prison", "Inmates Tested", "Inmates Positive", 
         "Inmates No Longer Positive", "Staff Positive*",
         "Staff No Longer Positive", 
-        "COVID Related Inmate Deaths")
+        "COVID Related Inmate Deaths", "Staff.Deaths")
     
     check_names(x, expected_names)
     
     names(x) <- c(
         "Name", "Residents.Tested", "Residents.Active",
         "Residents.Recovered", "Staff.Active", "Staff.Recovered",
-        "Residents.Deaths")
+        "Residents.Deaths", "Staff.Deaths")
 
     x %>% 
         filter(!Name %in% c("Prison", "Total")) %>% 
