@@ -20,24 +20,17 @@ iowa_extract <- function(x){
     
     check_names(x, expected_names)
     
-    Iowa <- x
-    names(Iowa) <- c(
-        "Name", "Residents.Tested", "Residents.Confirmed",
-        "Residents.Recovered", "Staff.Confirmed", "Staff.Recovered",
+    names(x) <- c(
+        "Name", "Residents.Tested", "Residents.Active",
+        "Residents.Recovered", "Staff.Active", "Staff.Recovered",
         "Residents.Deaths")
 
-    Iowa <- subset(Iowa, Name!= "Prison")
-    Iowa <- subset(Iowa,Name!="Total")
-    Iowa <- subset(Iowa,Name!="Prison")
-    
-    Iowa <- clean_scraped_df(Iowa)
-    
-    Iowa$Residents.Confirmed <- Iowa$Residents.Confirmed +
-        Iowa$Residents.Recovered
-    Iowa$Staff.Confirmed     <- Iowa$Staff.Confirmed +
-        Iowa$Staff.Recovered 
-    
-    Iowa
+    x %>% 
+        filter(!Name %in% c("Prison", "Total")) %>% 
+        clean_scraped_df() %>% 
+        mutate(Residents.Confirmed = Residents.Active + Residents.Recovered, 
+               Staff.Confirmed = Staff.Active + Staff.Recovered) %>% 
+        select(-Staff.Active)
 }
 
 #' Scraper class for general Iowa COVID data
