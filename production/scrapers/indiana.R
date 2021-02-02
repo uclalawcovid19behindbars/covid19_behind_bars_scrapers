@@ -14,6 +14,11 @@ indiana_restruct <- function(x){
     
     # Wrangle Data
     if (length(results) == 2) {
+        if("0" %in% names(results[[1]])){
+            names(results[[1]]) <- as.character(
+                max(as.numeric(names(results[[2]]))) +
+                    as.numeric(names(results[[1]])) + 1)
+        }
         d <- cbind(results[[2]],results[[1]])
     } else {
         d <- results[[1]]
@@ -25,17 +30,17 @@ indiana_restruct <- function(x){
 indiana_extract <- function(x){
     col_name_mat <- matrix(c(
         "Correctional Facility", "0", "Name",
-        "COVID-19 Tests Administered to Staff", "1", "Staff.Tested",
-        "Staff Positive for COVID-19", "2", "Staff.Confirmed",
-        "Staff Recovered COVID-19", "3", "Staff.Recovered",
-        "Staff Confirmed / Presumed COVID-19 Death", "4", "Staff.Deaths",
-        "Offenders in Quarantine", "5", "Residents.Quarantine",
-        "Offenders in Isolation", "6", "Residents.Isolation",
-        "COVID-19 Tests Administered to Offenders", "7", "Residents.Tadmin",
-        "Offender Positive for COVID-19", "8", "Residents.Confirmed",
-        "Offenders Recovered COVID-19", "9", "Residents.Recovered",
-        "Offender Presumed COVID-19 Death", "10", "Resident.Deaths.Presumed",
-        "Offender Confirmed COVID-19 Death", "11", "Resident.Deaths.Confirmed"
+        "Staff Tested", "1", "Staff.Tested",
+        "Staff Current Positive", "2", "Drop.Staff.Active",
+        "Staff Total Positive", "3", "Staff.Confirmed",
+        "Staff Recovered", "4", "Staff.Recovered",
+        "Staff Death", "5", "Staff.Deaths",
+        "Offender Test", "6", "Residents.Tadmin",
+        "Offender Current Positive", "7", "Residents.Active",
+        "Offender Total Positive", "8", "Residents.Confirmed",
+        "Offender Recovered", "9", "Residents.Recovered",
+        "Offender Presumed Death", "10", "Drop.Res.Deaths.Presumed",
+        "Offender Confirmed Death", "11", "Drop.Res.Deaths.Confirmed"
         ), ncol = 3, nrow = 12, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
@@ -47,13 +52,10 @@ indiana_extract <- function(x){
         as_tibble() %>%
         filter(Name!="Correctional Facility" & Name!="Total") %>%
         clean_scraped_df() %>%
-        mutate(Residents.Quarantine =
-                   Residents.Quarantine + Residents.Isolation) %>%
         mutate(Residents.Deaths =
-                   Resident.Deaths.Presumed + Resident.Deaths.Confirmed) %>%
-        select(
-            -Resident.Deaths.Presumed, -Residents.Isolation,
-            -Resident.Deaths.Confirmed)
+                   Drop.Res.Deaths.Presumed + Drop.Res.Deaths.Confirmed) %>%
+        select(-starts_with("Drop"))
+        
 }
 
 #' Scraper class for general Indiana COVID data
