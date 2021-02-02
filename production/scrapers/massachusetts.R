@@ -26,6 +26,7 @@ massachusetts_extract <- function(x){
             Residents.Tested = "N Tested - Detainees/Inmates",
             Residents.Confirmed = "N Positive - Detainees/Inmates",
             Staff.Tested = "N Tested - COs",
+            Residents.Deaths = "N Deaths",
             Staff.Confirmed = "N Positive - COs") %>%
         clean_scraped_df() %>%
         group_by(Name) %>%

@@ -53,6 +53,10 @@ process_AR_image <- function(base_image, ...){
     )
 }
 
+arkansas_pull <- function(x){
+    stop_defunct_scraper(x)
+}
+
 #' Process an image multiple times to increase chance of successful extraction
 #' 
 #' @description Sometimes an image cannot be extracted with the numbers placed
@@ -135,16 +139,7 @@ arkansas_scraper <- R6Class(
             type = "img",
             jurisdiction = "state",
             # restructuring the data means pulling out the data portion of the json
-            pull_func = function(x) {
-                magick::image_read(get_src_by_attr(
-                    base = x,
-                    css = "a",
-                    attr = "href",
-                    attr_regex = "(?i)stats.?update",
-                    date_regex = "\\d+-\\d+-\\d+"
-                ))
-                
-            },
+            pull_func = arkansas_pull,
             # restructuring the data means pulling out the data portion of the json
             restruct_func = function(x, ...) arkansas_restruct(x, ...),
             # Rename the columns to appropriate database names
