@@ -71,8 +71,11 @@ ohio_extract <- function(x){
 #' @name ohio_scraper
 #' @description Data come from a pdf which is updated periodically. The link
 #' to the pdf itself does not change only the data within the pdf. We should be
-#' periodically checking to see i f alternative sources are available as the data
-#' collected are sometimes fickle.
+#' periodically checking to see if alternative sources are available as the data
+#' collected are sometimes fickle. Cumulative positive cases come from the sum of 
+#' Active + Recovered + Deaths. We're summing confirmed and probable deaths for 
+#' Residents.Deaths, but we're NOT including probable deaths in the Residents.Confirmed
+#' total. 
 #' \describe{
 #'   \item{Institution}{}
 #'   \item{Housing Type (cell, open bay, combo)}{}
