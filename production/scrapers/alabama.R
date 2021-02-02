@@ -26,6 +26,7 @@ alabama_extract <- function(x){
             Residents.Tested = Inmate_Tested,
             Residents.Confirmed = Inmate_Positive,
             Residents.Pending = Inmate_Pending,
+            Residents.Active = Inmate_Active_Cases, 
             Residents.Deaths = Inmate_Death,
             Residents.Recovered = Inmate_Recovered,
             Staff.Confirmed = Employee_Positive,
