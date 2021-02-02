@@ -13,20 +13,30 @@ virginia_restruct <- function(x){
             rvest::html_table() %>%
             as_tibble(),
         
-        
-        vac = tibble(
+        sw = tibble(
             Name = "STATEWIDE",
+            
+            Staff.Deaths =  x %>%
+                rvest::html_nodes(
+                    xpath = "//h4[contains(text(), 'Staff')]/parent::div") %>%
+                rvest::html_nodes(
+                    xpath = str_c(
+                        ".//span[contains(text(), 'deaths')]/",
+                        "preceding-sibling::span")) %>%
+                rvest::html_text(),
     
             Residents.Vadmin = x %>%
-                rvest::html_nodes("span") %>%
-                .[which(str_detect(
-                    rvest::html_text(.), "(?i)inmate vaccinations"))-1] %>%
+                rvest::html_nodes(
+                    xpath = str_c(
+                        "//span[contains(text(), 'inmate vaccinations')]/",
+                        "following-sibling::span")) %>%
                 rvest::html_text(),
         
             Staff.Vadmin = x %>%
-                rvest::html_nodes("span") %>%
-                .[which(str_detect(
-                    rvest::html_text(.), "(?i)staff vaccinations"))-1] %>%
+                rvest::html_nodes(
+                    xpath = str_c(
+                        "//span[contains(text(), 'staff vaccinations')]/",
+                        "following-sibling::span")) %>%
                 rvest::html_text()))
 }
 
@@ -47,7 +57,7 @@ virginia_extract <- function(x){
     df_ %>%
         clean_scraped_df() %>%
         select(-starts_with("Drop")) %>%
-        bind_rows(clean_scraped_df(x$vac))
+        bind_rows(clean_scraped_df(x$sw))
 }
 
 #' Scraper class for general Virginia COVID data
