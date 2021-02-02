@@ -17,17 +17,32 @@ massachusetts_restruct <- function(x){
 }
 
 massachusetts_extract <- function(x){
-    x %>%
-        arrange(`DOC Facility`, Date) %>%
-        select(
-            Name = "DOC Facility",
-            Residents.Population = "Total Population",
-            Residents.Active = "Active Prisoner Cases",
-            Residents.Tested = "N Tested - Detainees/Inmates",
-            Residents.Confirmed = "N Positive - Detainees/Inmates",
-            Staff.Tested = "N Tested - COs",
-            Residents.Deaths = "N Deaths",
-            Staff.Confirmed = "N Positive - COs") %>%
+    if(all(c("N Tested - COs", "N Positive - COs") %in% names(x))){
+        z <- x %>%
+            arrange(`DOC Facility`, Date) %>%
+            select(
+                Name = "DOC Facility",
+                Residents.Population = "Total Population",
+                Residents.Active = "Active Prisoner Cases",
+                Residents.Tested = "N Tested - Detainees/Inmates",
+                Residents.Confirmed = "N Positive - Detainees/Inmates",
+                Residents.Deaths = "N Deaths",
+                Staff.Tested = "N Tested - COs",
+                Staff.Confirmed = "N Positive - COs")
+    }
+    else{
+       z <-  x %>%
+            arrange(`DOC Facility`, Date) %>%
+            select(
+                Name = "DOC Facility",
+                Residents.Population = "Total Population",
+                Residents.Active = "Active Prisoner Cases",
+                Residents.Tested = "N Tested - Detainees/Inmates",
+                Residents.Confirmed = "N Positive - Detainees/Inmates",
+                Residents.Deaths = "N Deaths")
+    }
+    
+    z %>%
         clean_scraped_df() %>%
         group_by(Name) %>%
         mutate(Residents.Population = last(Residents.Population)) %>%
@@ -67,7 +82,7 @@ massachusetts_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.mass.gov/guides/doc-coronavirus-information-guide",
+            url = "https://data.aclum.org/sjc-12926-tracker/",
             id = "massachusetts",
             type = "csv",
             state = "MA",

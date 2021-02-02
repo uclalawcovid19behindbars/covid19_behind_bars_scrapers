@@ -1,65 +1,86 @@
-rm(list=ls())
-library(lubridate)
-library(tidyverse)
-library(R6)
-library(tryCatchLog)
-library(futile.logger)
+#!/usr/bin/env Rscript
+suppressPackageStartupMessages(library(argparse))
+suppressPackageStartupMessages(library(behindbarstools))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(R6))
+suppressPackageStartupMessages(library(tryCatchLog))
+suppressPackageStartupMessages(library(futile.logger))
+# need to explicitly authenticate for this rsession
+suppressPackageStartupMessages(library(googlesheets4))
+gs4_auth("ucla.law.covid.staff@gmail.com")
+options(tryCatchLog.include.full.call.stack = FALSE)
+source("R/utilities.R")
 # need to explicitly authenticate for this rsession
 options(tryCatchLog.include.full.call.stack = FALSE)
 
-# initiate all scrapers in the production folders
-sapply(list.files("production/scrapers", full.names = TRUE), source)
+scraper_name_vec <- get_scraper_vec()
 
-# read in the config file of all the wayback to 
-json_config <- "./production/historical_rescrape/wayback.json" %>%
-    jsonlite::read_json() %>%
-    lapply(as_tibble) %>%
-    bind_rows()
+parser <- ArgumentParser()
 
-# run through exh scraper described in the config
-for(i in 1:nrow(json_config)){
-    # only run if we get the run flag
-    if(!json_config$run[[i]]){
-        next
-    }
+# specify our desired options 
+# by default ArgumentParser will add an help option 
 
-    # grab the run parameters
-    STARTDATE <- ymd(json_config$start_date[i])
-    ENDDATE <- ymd(json_config$end_date[i])
-    scraper_name <- json_config$scraper[i]
+parser$add_argument(
+    "-sc", "--scraper",
+    help="The name of the scraper to rerun")
+parser$add_argument(
+    "-st", "--start",
+    help="The date to start the redo scraper run should be in YYYY-MM-DD format")
+parser$add_argument(
+    "-en", "--end",
+    help="The date to stop the redo scraper run should be in YYYY-MM-DD format")
 
-    # check to make sure dates are valid
-    if(ENDDATE < STARTDATE){
-        stop("End date must be later than start date.")
-    }
+args <- parser$parse_args()
 
-    d <- STARTDATE
+st_date <- lubridate::ymd(args$start)
+en_date <- lubridate::ymd(args$end)
 
-    cat("Starting wayback run for", scraper_name, "\n")
+if(!(args$scraper %in% names(scraper_name_vec))){
+    stop("scraper name provided is not a valid option")
+}
 
-    while(d <= ENDDATE){
-        # sunday is 1 and we only want SUN, MON, WED, FRI
-        if(wday(d) %in% c(1, 2, 4, 6)){
-            cat("On date", as.character(d), "\n")
-            
-            # run step by step but dont write to perma.cc
-            scraper <- get(scraper_name)$new(log = TRUE)
-            # reset the date to date of scrape
-            scraper$reset_date(date = d)
-            # pull from waybackmachine
-            scraper$pull_wayback_raw()
-            # rest of the process is normal
-            scraper$save_raw()
-            scraper$restruct_raw()
-            scraper$extract_from_raw()
-            scraper$validate_extract()
-            scraper$save_extract()
-            
-            Sys.sleep(30)
-        }
+source(str_c("production/scrapers/", args$scraper, ".R"))
+
+if(is.na(st_date)){
+    stop("Start date format is invalid")
+}
+
+if(is.na(en_date)){
+    stop("End date format is invaliud")
+}
+
+if(st_date > en_date){
+    stop("Start date can not be later than end date.")
+}
+
+current_date <- st_date
+
+
+# run through the scraper
+
+cat("Starting wayback run for", args$scraper, "\n")
+
+while(current_date <= en_date){
+    # sunday is 1 and we only want SUN, MON, WED, FRI
+    if(lubridate::wday(current_date) %in% c(1, 2, 4, 6)){
+        cat("On date", as.character(current_date), "\n")
         
-        # increment to the next day
-        d <- d + 1
+        # run step by step but dont write to perma.cc
+        scraper <- get(scraper_name_vec[args$scraper])$new(log = TRUE)
+        # reset the date to date of scrape
+        scraper$reset_date(date = current_date)
+        # pull from waybackmachine
+        scraper$pull_wayback_raw()
+        # rest of the process is normal
+        scraper$save_raw()
+        scraper$restruct_raw()
+        scraper$extract_from_raw()
+        scraper$validate_extract()
+        scraper$save_extract()
+        
+        Sys.sleep(30)
     }
     
+    # increment to the next day
+    current_date <- current_date + 1
 }
