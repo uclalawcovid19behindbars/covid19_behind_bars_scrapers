@@ -28,7 +28,7 @@ south_carolina_extract <- function(x){
         Name = "Assigned Locations",
         Residents.Confirmed = "Offenders",
         Residents.Recovered = "Offenders Cleared",
-        Residents.Drop = "Offender Active Cases",
+        Residents.Active = "Offender Active Cases",
         Residents.Deaths = "Offender Deaths"
     )
     
