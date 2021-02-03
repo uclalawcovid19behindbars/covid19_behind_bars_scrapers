@@ -21,7 +21,7 @@ north_carolina_extract <- function(x){
             Residents.Confirmed = Positive,
             Residents.Negative = Negative,
             Residents.Recovered = PresumedRecovered,
-            Residents.Quarantine = ActiveCases
+            Residents.Active = ActiveCases
             ) %>%
         clean_scraped_df() %>%
         filter(Name != "Statewide Totals")
