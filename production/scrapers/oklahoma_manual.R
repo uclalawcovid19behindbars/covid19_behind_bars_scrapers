@@ -77,14 +77,14 @@ oklahoma_manual_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     oklahoma_manual <- oklahoma_manual_scraper$new(log=TRUE)
-    oklahoma_manual_scraper$raw_data
-    oklahoma_manual_scraper$pull_raw()
-    oklahoma_manual_scraper$raw_data
-    oklahoma_manual_scraper$save_raw()
-    oklahoma_manual_scraper$restruct_raw()
-    oklahoma_manual_scraper$restruct_data
-    oklahoma_manual_scraper$extract_from_raw()
-    oklahoma_manual_scraper$extract_data
-    oklahoma_manual_scraper$validate_extract()
-    oklahoma_manual_scraper$save_extract()
+    oklahoma_manual$raw_data
+    oklahoma_manual$pull_raw()
+    oklahoma_manual$raw_data
+    oklahoma_manual$save_raw()
+    oklahoma_manual$restruct_raw()
+    oklahoma_manual$restruct_data
+    oklahoma_manual$extract_from_raw()
+    oklahoma_manual$extract_data
+    oklahoma_manual$validate_extract()
+    oklahoma_manual$save_extract()
 }
