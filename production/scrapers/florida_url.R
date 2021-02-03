@@ -49,10 +49,15 @@ process_FL_cell <- function(x, crop, enhancement = 500, debug = FALSE){
 
 process_FL_image <- function(base_image, ...){
     tibble(
+        # Positive inmates cleared: positives 
         Residents.Confirmed = process_FL_cell(base_image, "300x42+0+310", ...),
+        # Positive staff cleared: positives 
         Staff.Confirmed = process_FL_cell(base_image, "300x42+0+430", ...),
-        Residents.Recovered = process_FL_cell(base_image, "300x42+700+300", ...),
+        # Positive inmates cleared: cleared 
+        Residents.Recovered = process_FL_cell(base_image, "300x42+700+305", ...),
+        # Positive staff cleared: cleared 
         Staff.Recovered = process_FL_cell(base_image, "300x42+700+430", ...),
+        # COVID-19 related inmate deaths 
         Residents.Deaths = process_FL_cell(base_image, "400x105+0+545", ...)
     )
 }

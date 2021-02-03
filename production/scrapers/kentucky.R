@@ -14,11 +14,11 @@ kentucky_extract <- function(x){
     df_ <- as.data.frame(x[[1]])
     
     col_name_mat <- matrix(c(
-        "Location", "0", "Name", 
-        "Active Staff Cases", "1", "Drop.Staff.Active",
+        "Institution", "0", "Name", 
+        "Total Active Staff", "1", "Drop.Staff.Active",
         "Total Staff Cases", "2", "Staff.Confirmed",
         "Total Staff Deaths", "3", "Staff.Deaths", 
-        "Active Inmate Cases", "4", "Residents.Active",
+        "Total Active Inmates", "4", "Residents.Active",
         "Total Inmate Cases", "5", "Residents.Confirmed",
         "Total Inmate Deaths", "6", "Residents.Deaths"
     ), ncol = 3, nrow = 7, byrow = TRUE)
