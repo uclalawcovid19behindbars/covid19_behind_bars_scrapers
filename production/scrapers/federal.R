@@ -7,7 +7,8 @@ federal_pull <- function(x){
         rrc = "https://www.bop.gov/coronavirus/data/rrc.json",
         add = "https://www.bop.gov/coronavirus/data/additional.json",
         loc = "https://www.bop.gov/coronavirus/data/locations.json",
-        test = "https://www.bop.gov/coronavirus/json/inmateTestInfo.json"
+        test = "https://www.bop.gov/coronavirus/json/inmateTestInfo.json",
+        vaccine = "https://www.bop.gov/coronavirus/json/vaccineInfo.json"
     )
     
     lapply(url_list, function(z) jsonlite::read_json(z, simplifyVector = TRUE))
@@ -58,6 +59,13 @@ federal_restruct <- function(x){
                 as_tibble(x$loc$Locations) %>%
                     select(id = code, Name = nameDisplay),
                 by = "id") %>%
+            # need to discuss what to do abbout vaccine data
+            # full_join(
+            #     rename(
+            #         x$vaccine$bopVaccine,
+            #         id = facility, staffVacComp = staffCompleted, 
+            #         inmateVecComp =  inmateCompleted),
+            #     by = "id") %>%
             select(-id) %>%
             mutate(inmateDeathHcon = 0)
     )
