@@ -28,7 +28,7 @@ utah_extract <- function(x){
     
     col_name_mat2 <- matrix(c(
         "Location", "0", "Name",
-        "Total Inmates Tested", "1", "Residents.Tested",
+        "Tests Administered", "1", "Residents.Tadmin",
         "Inmates Confirmed", "2", "Residents.Confirmed",
         "Inmates Negative", "3", "Residents.Negative",
         "Inmates Recovered", "4", "Residents.Recovered",
