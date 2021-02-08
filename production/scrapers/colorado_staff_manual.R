@@ -20,8 +20,8 @@ colorado_staff_manual_extract <- function(x){
 #' Scraper class for colorado_staff COVID data
 #' 
 #' @name colorado_staff_manual_scraper
-#' @description colorado_staff's dashboard isn't machine-readable, so we manually extract 
-#' the relevant information. 
+#' @description colorado_staff's dashboard isn't machine-readable, so we manually
+#' extract the relevant information from the second page of the dashboard
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Staff Positive}{Staff Confirmed from the right most orange column}
