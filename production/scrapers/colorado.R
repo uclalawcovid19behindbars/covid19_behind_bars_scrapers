@@ -105,12 +105,25 @@ colorado_restruct <- function(x){
     
     colnames(col_vals) <- col_names
     
+    vacc_check <- magick::image_crop(z, "400x50+1940+1585") %>%
+        magick::image_ocr() %>%
+        str_detect("(?i)inmate vaccination")
+    
+    if(!vacc_check){
+        warning("Vaccination data not as expected, please inspect")
+    }
+    
+    vac_num <- magick::image_crop(z, "156x50+2075+1790") %>%
+        magick::image_ocr() %>%
+        string_to_clean_numeric()
+    
     col_vals %>%
         as_tibble() %>%
         mutate(Name = z %>%
                    magick::image_crop("213x1080+177+1030") %>%
                    ExtractTable() %>%
-                   unlist())
+                   unlist()) %>%
+        bind_rows(tibble(Name = "STATEWIDE", Residents.Vadmin = vac_num))
 }
 
 colorado_extract <- function(x){
@@ -122,7 +135,9 @@ colorado_extract <- function(x){
         Residents.Confirmed = "TOTAL POSITIVE",
         Residents.Active = "ACTIVE CASES",
         Residents.Deaths = "DEATHS",
-        Name = "Name")
+        Name = "Name",
+        Residents.Vadmin = "Residents.Vadmin"
+        )
     
     check_names(df_, exp_names)
     
