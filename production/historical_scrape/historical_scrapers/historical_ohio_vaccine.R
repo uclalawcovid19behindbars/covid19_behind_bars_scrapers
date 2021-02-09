@@ -38,7 +38,7 @@ historical_ohio_vac_scraper <- R6Class(
         initialize = function(
             log,
             url = "Ohio Department of Rehabilitation and Correction",
-            id = "historical_ohio_vac",
+            id = "historical_ohio_vaccine",
             type = "manual",
             state = "OH",
             jurisdiction = "state",
@@ -54,16 +54,16 @@ historical_ohio_vac_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    historical_ohio_vac <- historical_ohio_vac_scraper$new(log=TRUE)
-    historical_ohio_vac$reset_date("SET_DATE_HERE")
-    historical_ohio_vac$raw_data
-    historical_ohio_vac$pull_raw(date = scraper$date, .dated_pull = TRUE)
-    historical_ohio_vac$raw_data
-    historical_ohio_vac$save_raw()
-    historical_ohio_vac$restruct_raw(date = scraper$date)
-    historical_ohio_vac$restruct_data
-    historical_ohio_vac$extract_from_raw(date = scraper$date)
-    historical_ohio_vac$extract_data
-    historical_ohio_vac$validate_extract()
-    historical_ohio_vac$save_extract()
+    historical_ohio_vaccine <- historical_ohio_vac_scraper$new(log=TRUE)
+    historical_ohio_vaccine$reset_date("SET_DATE_HERE")
+    historical_ohio_vaccine$raw_data
+    historical_ohio_vaccine$pull_raw(date = scraper$date, .dated_pull = TRUE)
+    historical_ohio_vaccine$raw_data
+    historical_ohio_vaccine$save_raw()
+    historical_ohio_vaccine$restruct_raw(date = scraper$date)
+    historical_ohio_vaccine$restruct_data
+    historical_ohio_vaccine$extract_from_raw(date = scraper$date)
+    historical_ohio_vaccine$extract_data
+    historical_ohio_vaccine$validate_extract()
+    historical_ohio_vaccine$save_extract()
 }
