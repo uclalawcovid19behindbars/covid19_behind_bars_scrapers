@@ -19,24 +19,15 @@ historical_ohio_vac_extract <- function(x, date){
         select(-Date)
 }
 
-#' Scraper class for ice COVID data
+#' Scraper class for Ohio vaccine data
 #' 
-#' @name historical_ice_scraper
-#' @description This scraper pulls html data from the ice page which reports on
-#' the variables listed below. Unlike all other scrapers their are total column
-#' values that we want to keep which do not corresponds to a state but rather
-#' ICE as a whole. In addition we have found that facility names frequently
-#' change and require updates to the facility spellings sheet. Dates for this
-#' scraper should correspond to all dates which are present in the github sheet
-#' columns where the data is being pulled up to when the main scraper started
-#' pulling ice data 2021-01-12.
+#' @name historical_ohio_vac_scraper
+#' @description This scraper pulls data from a manual csv file. We're receiving 
+#' vaccine data from the ODRC once/week via email. We're getting statewide totals
+#' for residents and staff. 
 #' \describe{
-#'   \item{Facility}{The facility name}
-#'   \item{Confirmed cases currently under isolation}{Residents with active inf}
-#'   \item{Detainee deaths}{Resident deaths}
-#'   \item{Total confirmed COVID-19}{Residents cconfirmed cumulative}
-#'   \item{Detained Population}{Current Resident Population}
-#'   \item{Population Tested}{Tested}
+#'   \item{Inmates}{Number of doses administered to incarcerated residents}
+#'   \item{Staff}{Number of doses administered to staff}
 #' }
 
 historical_ohio_vac_scraper <- R6Class(
