@@ -4,6 +4,7 @@ library(tidyverse)
 
 ind_vars <- c("Date", "Name", "State")
     
+# Update aggregated_data.csv
 list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = TRUE) %>%
     lapply(function(x){
         df_ <- read_csv(x, col_types = cols())
@@ -25,3 +26,7 @@ list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = TRUE) %
     select(!!ind_vars, !!(names(.)[!(names(.) %in% ind_vars)])) %>%
     filter(!is.na(id), !is.na(jurisdiction)) %>%
     write_csv("/srv/shiny-server/scraper_data/summary_data/aggregated_data.csv")
+
+# Updated aggregated_data_clean.csv
+behindbarstools::read_scrape_data(all_dates = TRUE, coalesce = TRUE) %>% 
+    write_csv("/srv/shiny-server/scraper_data/summary_data/scraped_time_series.csv")
