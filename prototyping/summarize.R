@@ -27,6 +27,6 @@ list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = TRUE) %
     filter(!is.na(id), !is.na(jurisdiction)) %>%
     write_csv("/srv/shiny-server/scraper_data/summary_data/aggregated_data.csv")
 
-# Updated aggregated_data_clean.csv
+# Update time series scraped data 
 behindbarstools::read_scrape_data(all_dates = TRUE, coalesce = TRUE) %>% 
     write_csv("/srv/shiny-server/scraper_data/summary_data/scraped_time_series.csv")
