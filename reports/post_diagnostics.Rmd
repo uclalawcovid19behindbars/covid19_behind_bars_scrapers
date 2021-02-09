@@ -91,7 +91,7 @@ kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %
 
 ## State by State: Metrics which are declining which shouldnt be
 
-```{r check_previous, echo = F, message = F, warning = F}
+```{r check_previous_state, echo = F, message = F, warning = F}
 measure_decline_df <- full_join(
   new_df %>%
     filter(Jurisdiction == "state") %>%
@@ -197,7 +197,7 @@ scrape_df <- read_scrape_data(all_dates = TRUE, coalesce = TRUE)
 
 plot_recent_fac_increases(scrape_df = scrape_df, 
                           plot_days = 30, 
-                          num_fac = 5, 
+                          num_fac = 3, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
@@ -210,7 +210,7 @@ plot_recent_fac_increases(scrape_df = scrape_df,
 plot_recent_fac_increases(scrape_df = scrape_df, 
                           metric = "Residents.Active", 
                           plot_days = 30, 
-                          num_fac = 5, 
+                          num_fac = 3, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
