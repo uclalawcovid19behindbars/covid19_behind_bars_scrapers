@@ -6,13 +6,27 @@ nebraska_pull <- function(x){
 }
 
 nebraska_restruct <- function(x){
-    x %>%
-        rvest::html_nodes("table") %>%
-        lapply(rvest::html_table)
+    
+    list(
+        all_tabs = x %>%
+            rvest::html_nodes("table") %>%
+            lapply(rvest::html_table),
+    
+        active = x %>%
+            rvest::html_node(
+                xpath = str_c(
+                    # find the span that has active cases
+                    "//span[contains(text(), 'ACTIVE CASES')]",
+                    # get the grandparent node and find the next table for
+                    # active cases
+                    "/../../following-sibling::table[1]")) %>%
+            rvest::html_table() %>%
+            as_tibble() %>%
+            rename(Name = X1, Residents.Active = X2))
 }
 
 nebraska_extract <- function(x){
-    bind_cols(x[sapply(x, function(y) nrow(y) == 1)]) %>%
+    bind_cols(x$all_tabs[sapply(x$all_tabs, function(y) nrow(y) == 1)]) %>%
         mutate(Name = "State-Wide") %>%
         clean_scraped_df() %>%
         select(
@@ -21,7 +35,8 @@ nebraska_extract <- function(x){
             Residents.Confirmed = "Total Number of Confirmed Cases",
             Residents.Recovered = "Total Recovered Cases",
             Residents.Deaths = "Total Deaths") %>%
-        as_tibble()
+        as_tibble() %>%
+        bind_rows(x$active)
 }
 
 #' Scraper class for general nebraska COVID data
