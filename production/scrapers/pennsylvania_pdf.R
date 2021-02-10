@@ -7,7 +7,7 @@ pennsylvania_pdf_pull <- function(x){
 
 pennsylvania_pdf_restruct <- function(x){
     pa_pgs <- magick::image_read_pdf(x)
-    # ExtractTable(pa_pgs)
+    
     if(length(pa_pgs) == 1){
         restruct_results <- list(pa_pgs %>%
                                      # magick::image_crop("2550x1350+0+518") %>%
@@ -34,17 +34,20 @@ pennsylvania_pdf_extract <- function(x){
         "SCI", "X0", "Name",
         "Inmate Active Positive Cases", "X1", "Residents.Active",
         "Asymptomatic Inmate Positive", "X2", "Drop.Residents.Asymp",
-        "Inmate Deaths to date", "X3", "Residents.Deaths",
+        "Inmate Deaths to Date", "X3", "Residents.Deaths",
         "Employee Active Positive Cases", "X4", "Drop.Staff.Active",
-        "Employee Deaths to date", "X5", "Staff.Deaths"
+        "Employee Deaths to Date", "X5", "Staff.Deaths"
     ), ncol = 3, nrow = 6, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
-    df_ <- as.data.frame(x) 
+    
+    # Drop first row (second row is column names)
+    df_ <- as.data.frame(x) %>% 
+        slice(-1)
+    
     check_names_extractable(df_, col_name_df)
     
-    # check_names_extractable(df_, col_name_df)
     rename_extractable(df_, col_name_df) %>%
         filter(!str_detect(Name, "(?i)SCI")) %>%
         as_tibble() %>%

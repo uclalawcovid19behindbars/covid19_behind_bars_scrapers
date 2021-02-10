@@ -9,6 +9,7 @@ new_mexico_jails_pull <- function(x){
 new_mexico_jails_restruct <- function(x){
     x %>%
         mutate(Date = lubridate::mdy(`Date`)) %>%
+        filter(!is.na(Date)) %>% 
         filter(Date == max(Date))
 }
 
