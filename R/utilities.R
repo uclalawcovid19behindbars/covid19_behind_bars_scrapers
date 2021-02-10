@@ -550,7 +550,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
             values_to = "Count") %>%
         print()
     
-    out_df %>%
+      out_df %>%
         filter(rowAny(across(covid_vars, ~ !is.na(.x)))) %>% 
         select(
             Facility.ID, Jurisdiction, State, Name, Date, source,
@@ -559,7 +559,9 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
             Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
             Staff.Negative, Residents.Pending, Staff.Pending,
             Residents.Quarantine, Staff.Quarantine, Residents.Active,
-            Population.Feb20, Address, Zipcode, City, County, Latitude,
+            Population.Feb20, Residents.Population, Residents.Tested, 
+            Residents.Initiated, Staff.Initiated, Residents.Completed, Staff.Completed, 
+            Residents.Vadmin, Staff.Vadmin, Address, Zipcode, City, County, Latitude,
             Longitude, County.FIPS, HIFLD.ID) %>% 
         write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
                   na="")
