@@ -540,10 +540,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         "Residents.Negative", "Staff.Negative", "Residents.Pending", "Staff.Pending", 
         "Residents.Quarantine", "Staff.Quarantine", "Residents.Active")
   
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE) %>%
-        # TODO: tmp remove immigration until we get the go ahead from the
-        # website and immigration teams
-        filter(Jurisdiction != "immigration")
+    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
     
     out_df %>%
         select(all_of(covid_vars)) %>%
@@ -563,15 +560,9 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
             Staff.Negative, Residents.Pending, Staff.Pending,
             Residents.Quarantine, Staff.Quarantine, Residents.Active,
             Population.Feb20, Address, Zipcode, City, County, Latitude,
-            Longitude, County.FIPS, HIFLD.ID) %>%
-        rename(
-            jurisdiction = Jurisdiction,
-            Residents.Population = Population.Feb20) %>%
-        write_csv(
-            str_c(
-                "./data/Adult Facility Counts/",
-                "adult_facility_covid_counts_today_latest.csv"), 
-          na="")
+            Longitude, County.FIPS, HIFLD.ID) %>% 
+        write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
+                  na="")
 }
 
 get_latest_manual <- function(state){
