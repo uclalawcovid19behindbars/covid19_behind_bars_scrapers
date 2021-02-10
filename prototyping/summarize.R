@@ -1,5 +1,5 @@
 #!/usr/bin/Rscript
-
+remotes::install_github("uclalawcovid19behindbars/behindbarstools", upgrade = "never")
 library(tidyverse)
 
 ind_vars <- c("Date", "Name", "State")
