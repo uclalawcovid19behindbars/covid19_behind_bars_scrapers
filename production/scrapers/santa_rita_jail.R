@@ -2,13 +2,13 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 santa_rita_jail_pull <- function(x){
-    "1Uhc5P7yPG7d50rbgskqJbabRGxzmmY0NCovSamzV2Uc" %>%
+    "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
         googlesheets4::read_sheet()
 }
 
 santa_rita_jail_restruct <- function(x){
     x %>%
-        mutate(Date = lubridate::mdy(`As of Date`)) %>%
+        mutate(Date = lubridate::mdy(Date)) %>%
         filter(Date == max(Date))
 }
 
@@ -17,27 +17,45 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(x$Date, exp_date)
     
     check_names(x, c(
-        "As of Date", 
-        "Facilitiy Name", # Spelled this way in the Google Sheet  
-        "Confirmed Cases", 
-        "Active in Custody", 
-        "Released while Active", 
-        "Resolved in Custody", 
-        "Released after Resolved", 
-        "Deaths", 
-        "Cumulative Tested", 
-        "Tests Pending", 
-        "Errors", 
-        "Date"))
+        "Date", 
+        "SRJ Population (total)", 
+        "SRJ Population (diff)", 
+        "Tests (incarcerated population, total)", 
+        "Tests (Incarcerated population, difference)", 
+        "Pending tests", 
+        "Percentage of population tested within the past: 7 days", 
+        "Percentage of population tested within the past: 14 days", 
+        "Percentage of population tested within the past: 30 days", 
+        "Incarcerated population cases (total)", 
+        "Incarcerated population cases ('active')",
+        "1-day change in 'active' cases",
+        "Incarcerated population hospitalizations (total)",
+        "Staff cases (total)",
+        "1-day change in staff cases",
+        "Red patients (current)",
+        "Dark Red patients (current)",
+        "Orange patients (current)",
+        "1-day change in Orange patients",
+        "Percent of Orange patients in population",
+        "Total Resolved Cases",
+        "Released while Active",
+        "Percentage of total cases released while active",
+        "Released after Resolved",
+        "Percentage of total cases released after resolved",
+        "Resolved in Custody",
+        "Percentage of total cases resolved in custody",
+        "Deaths"))
     
     x %>%
         select(
-            Residents.Confirmed = `Confirmed Cases`,
-            Residents.Active = `Active in Custody`,
-            Residents.Recovered = `Resolved in Custody`,
+            Residents.Confirmed = `Incarcerated population cases (total)`,
+            Residents.Active = `Incarcerated population cases ('active')`,
+            Residents.Recovered = `Total Resolved Cases`,
             Residents.Deaths = Deaths,
-            Residents.Tadmin = `Cumulative Tested`,
-            Residents.Pending = `Tests Pending`
+            Residents.Tadmin = `Tests (incarcerated population, total)`,
+            Residents.Pending = `Pending tests`,
+            Residents.Population = `SRJ Population (total)`,
+            Staff.Confirmed = `Staff cases (total)`
             ) %>%
         mutate(Name = "SANTA RITA JAIL")
 }
