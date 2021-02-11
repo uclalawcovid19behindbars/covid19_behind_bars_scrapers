@@ -24,6 +24,14 @@ if(length(missing_packages) != 0){
     }
 }
 
+# delete local folders if they exist
+sc_dirs <- paste0("results/", c("log_files/", "extracted_data/", "raw_files/"))
+for(di in sc_dirs){
+    if(dir.exists(di)){
+        unlink(di, recursive = TRUE)
+    }
+}
+
 # always want to update barstools to the latest and greatest
 remotes::install_github("uclalawcovid19behindbars/behindbarstools")
 

@@ -89,6 +89,33 @@ kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %
     row_spec(which(joined$Difference < 0 & joined$cumulative_flag == 1), background = "#ffa07a") 
 ```
 
+## State by State: Metrics which are declining which shouldnt be
+
+```{r check_previous_state, echo = F, message = F, warning = F}
+measure_decline_df <- full_join(
+  new_df %>%
+    filter(Jurisdiction == "state") %>%
+    select(
+      State, Residents.Confirmed, Residents.Deaths, Residents.Tadmin,
+      Staff.Confirmed, Staff.Deaths) %>%
+    group_by(State) %>%
+    summarise_all(sum_na_rm) %>%
+    pivot_longer(-State, names_to = "Metric", values_to = "New"),
+  
+  old_df %>%
+    filter(Jurisdiction == "state") %>%
+    select(
+      State, Residents.Confirmed, Residents.Deaths, Residents.Tadmin,
+      Staff.Confirmed, Staff.Deaths) %>%
+    group_by(State) %>%
+    summarise_all(sum_na_rm) %>%
+    pivot_longer(-State, names_to = "Metric", values_to = "Old")) %>%
+  filter((New - Old) < 0)
+
+kable(measure_decline_df, format.args = list(big.mark = ",")) %>% 
+    kable_styling(bootstrap_options = c("condensed", "striped"))
+```
+
 ---
 
 # Comparison to AP/TMP
@@ -170,7 +197,7 @@ scrape_df <- read_scrape_data(all_dates = TRUE, coalesce = TRUE)
 
 plot_recent_fac_increases(scrape_df = scrape_df, 
                           plot_days = 30, 
-                          num_fac = 5, 
+                          num_fac = 3, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
@@ -183,7 +210,7 @@ plot_recent_fac_increases(scrape_df = scrape_df,
 plot_recent_fac_increases(scrape_df = scrape_df, 
                           metric = "Residents.Active", 
                           plot_days = 30, 
-                          num_fac = 5, 
+                          num_fac = 3, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
