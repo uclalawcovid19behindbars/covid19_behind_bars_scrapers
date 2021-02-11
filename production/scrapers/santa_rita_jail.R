@@ -8,7 +8,8 @@ santa_rita_jail_pull <- function(x){
 
 santa_rita_jail_restruct <- function(x){
     x %>%
-        mutate(Date = lubridate::mdy(Date)) %>%
+        filter(!is.na(Date)) %>%
+        mutate(Date = lubridate::ymd(Date)) %>%
         filter(Date == max(Date))
 }
 
@@ -27,7 +28,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
         "Percentage of population tested within the past: 14 days", 
         "Percentage of population tested within the past: 30 days", 
         "Incarcerated population cases (total)", 
-        "Incarcerated population cases ('active')",
+        'Incarcerated population cases ("active")',
         "1-day change in 'active' cases",
         "Incarcerated population hospitalizations (total)",
         "Staff cases (total)",
@@ -49,7 +50,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     x %>%
         select(
             Residents.Confirmed = `Incarcerated population cases (total)`,
-            Residents.Active = `Incarcerated population cases ('active')`,
+            Residents.Active = `Incarcerated population cases ("active")`,
             Residents.Recovered = `Total Resolved Cases`,
             Residents.Deaths = Deaths,
             Residents.Tadmin = `Tests (incarcerated population, total)`,
