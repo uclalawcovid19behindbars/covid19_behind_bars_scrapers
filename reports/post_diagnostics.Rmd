@@ -8,10 +8,12 @@ output:
 ---
 
 ```{r setup, include = F}
-library(behindbarstools)
+library(devtools)
 library(tidyverse)
 library(googlesheets4)
 library(kableExtra)
+devtools::install_github("uclalawcovid19behindbars/behindbarstools")
+library(behindbarstools)
 ```
 
 ---
@@ -24,13 +26,13 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 
 ``` {r echo = F, warning = F}
 # Read latest scraped data 
-new_df <- read_scrape_data()
+new_df <- behindbarstools::read_scrape_data()
 
 # Get all log files from the latest run 
 latest_date <- max(new_df$Date) %>% 
     as.character()
 
-log_status <- list_remote_data("log_files") %>% 
+log_status <- behindbarstools::list_remote_data("log_files") %>% 
     str_subset(pattern = latest_date) %>% 
     as_tibble_col(column_name = "log") %>% 
     mutate(scraper = str_extract(log, "(?<=log_files/).*"))%>% 
@@ -58,7 +60,7 @@ We expect all cumulative variables to increase with each subsequent scraper run.
 old_df <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" %>%
     read_sheet(sheet = 2, skip = 1) %>%
     .[2:nrow(.),] %>% 
-    select(-Notes) %>% 
+    # select(-Notes) %>% 
     setNames(names(new_df))
 
 # Get totals 
@@ -193,9 +195,9 @@ kable(joined %>%
 
 **Which facilities have seen the greatest increase in cumulative cases among incarcerated residents over the last 7 days?** 
 ``` {r, echo = F, fig.width = 15, fig.height = 7, warning = F}
-scrape_df <- read_scrape_data(all_dates = TRUE, coalesce = TRUE)
+scrape_df <- behindbarstools::read_scrape_data(all_dates = TRUE, coalesce = TRUE)
 
-plot_recent_fac_increases(scrape_df = scrape_df, 
+behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           plot_days = 30, 
                           num_fac = 3, 
                           auto_label = TRUE) + 
@@ -207,7 +209,7 @@ plot_recent_fac_increases(scrape_df = scrape_df,
 **Which facilities have seen the greatest increase in active cases among incarcerated residents over the last 7 days?**
 
 ``` {r, echo = F, fig.width = 15, fig.height = 7}
-plot_recent_fac_increases(scrape_df = scrape_df, 
+behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           metric = "Residents.Active", 
                           plot_days = 30, 
                           num_fac = 3, 
