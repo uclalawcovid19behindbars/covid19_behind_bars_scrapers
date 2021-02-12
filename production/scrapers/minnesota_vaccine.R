@@ -42,8 +42,11 @@ minnesota_vaccine_extract <- function(x, exp_date = Sys.Date()){
 #' @description Grabs manually entered Google Sheet data for MN vaccines 
 #' 
 #' \describe{
-#'   \item{Facility_Name}{The facilty name.}
-#'   
+#'   \item{Facility}{The facilty name}
+#'   \item{Staff Received 1st Dose}{Cumulative 1st doses received by staff}
+#'   \item{Staff Received 2nd Dose}{Cumulative 2nd doses received by staff}
+#'   \item{Client Received 2nd Dose}{Cumulative 1st doses received by incarcerated people}
+#'   \item{Client Received 2nd Dose}{Cumulative 2nd doses received by incarcerated people}
 #' }
 
 minnesota_vaccine_scraper <- R6Class(
