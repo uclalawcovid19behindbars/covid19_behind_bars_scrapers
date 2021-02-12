@@ -76,7 +76,9 @@ After calling the `manual_change` method, you will need to re-run the `validate_
 Rscript production/post_run.R
 ```
 
-6. **Commit changes**: Make sure to compare the totals from the run to what is on [the Google Sheet](https://docs.google.com/spreadsheets/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906) now to make sure nothing funky happened. Lastly, be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits.
+6. **Inspect diagnostics**: Look at the diagnostics file, and stop if there's anything crazy happening!
+
+7. **Commit changes**: Be sure to commit your changes to the master branch of both the `covid19_behind_bars_scrapers` repo and the `data` submodule. Note that this will require two commits.
 
 ```
 # check the differences between the new data and the old google sheet
@@ -95,5 +97,5 @@ git commit -m "update: the/current/date run of scraper"
 git push origin master
 ```
 
-7. **Look at GitHub**: Look at the commit hash labeling [the data submodule](https://github.com/uclalawcovid19behindbars/covid19_behind_bars_scrapers) (e.g., "data @ fa1492"). Compare this to the latest commit in [the data repo](https://github.com/uclalawcovid19behindbars/data/). Are these hashes the same? 
+8. **Look at GitHub**: Look at the commit hash labeling [the data submodule](https://github.com/uclalawcovid19behindbars/covid19_behind_bars_scrapers) (e.g., "data @ fa1492"). Compare this to the latest commit in [the data repo](https://github.com/uclalawcovid19behindbars/data/). Are these hashes the same? 
 
