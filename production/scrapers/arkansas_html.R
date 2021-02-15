@@ -6,13 +6,32 @@ arkansas_html_pull <- function(x){
 }
 
 arkansas_html_restruct <- function(x){
-    data_txt <- x %>%
+    
+    fsp <- x %>%
         # look for the latest inmate data
         rvest::html_node(xpath = "//strong[contains(text(), 'INMATES')]") %>%
         # get the parent
-        rvest::html_node(xpath = "parent::p") %>%
-        rvest::html_text() %>%
-        str_remove("INMATES/RESIDENTS") %>%
+        rvest::html_node(xpath = "parent::p")
+    
+    if(str_detect(rvest::html_text(fsp), "(?i)testing")){
+        mid_txt <- fsp
+            rvest::html_text() %>%
+            str_remove("INMATES/RESIDENTS")
+    }
+    
+    else{
+        p_txt <- x %>%
+            rvest::html_nodes("p") %>%
+            rvest::html_text()
+        
+        fidx <- which((str_detect(p_txt, "INMATES/RESIDENTS")))[1] + 1:2
+        
+        mid_text <- p_txt[fidx] %>%
+            str_c(collapse = "")
+        
+    }
+    
+    data_txt <- mid_text %>%
         str_split("Testing ") %>%
         unlist() %>%
         .[.!=""] %>%
