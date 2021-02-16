@@ -39,7 +39,7 @@ dc_extract <- function(x){
                    TOTAL_POSITIVE_ISO_PSDR + RES_QUARANTINE_PSDR) %>%
         mutate(Residents.Deaths = LIVE_LOST_RES_PSDR) %>%
         select(starts_with("Residents"), starts_with("Staff")) %>%
-        mutate(Name = "State-Wide")
+        mutate(Name = "COUNTY WIDE")
 }
 
 
