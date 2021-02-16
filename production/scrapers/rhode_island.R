@@ -53,20 +53,26 @@ rhode_island_pull <- function(x){
 
 rhode_island_restruct <- function(x){
     x %>%
-        mutate(`Deaths` = string_to_clean_numeric(`Deaths`)) %>%
+        extract(`Deaths`, into = c("n_deaths", "death_group"), "([0-9]+)\\s+\\(([^)]+)") %>%
         mutate(`Facility staff` = string_to_clean_numeric(`Facility staff`)) %>%
         mutate(`Facility residents` = 
                    string_to_clean_numeric(`Facility residents`)) %>%
         filter(!is.na(`Facility residents`)) %>%
-        filter(!str_detect(Name, "(?i)total"))
+        filter(!str_detect(Name, "(?i)total")) %>%
+        mutate(Residents.Deaths = ifelse(str_detect(death_group, "(?i)inmate"), n_deaths, NA),
+               Residents.Deaths = string_to_clean_numeric(Residents.Deaths),
+               Staff.Deaths = ifelse(str_detect(death_group, "(?i)staff"), n_deaths, NA),
+               Staff.Deaths = string_to_clean_numeric(Staff.Deaths))
 }
 
 rhode_island_extract <- function(x){
     x %>%
         select(
-            Name, Residents.Confirmed = `Facility residents`,
+            Name, 
+            Residents.Confirmed = `Facility residents`,
             Staff.Confirmed = `Facility staff`,
-            Residents.Deaths = Deaths)
+            Residents.Deaths,
+            Staff.Deaths)
 }
 
 #' Scraper class for general rhode_island COVID data
