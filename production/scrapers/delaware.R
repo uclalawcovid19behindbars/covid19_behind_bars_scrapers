@@ -2,22 +2,28 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 delaware_pull <- function(x){
-    get_latest_manual("Delaware")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "DE", 
+                                  col_types = "Dcccccccccc")
 }
 
 delaware_restruct <- function(x){
     x %>%
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date))
+}
+
+delaware_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    x %>% 
+        filter(!is.na(Name)) %>% 
         select(
             Name, Staff.Confirmed, Residents.Confirmed, Residents.Active, 
             Staff.Deaths, Staff.Recovered, Residents.Recovered, 
-            Residents.Deaths = Resident.Deaths)
-}
-
-delaware_extract <- function(x){
-    x %>%
-        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
-        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
-        filter(!is.na(Name))
+            Residents.Deaths = Resident.Deaths) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general delaware COVID data
@@ -68,4 +74,3 @@ if(sys.nframe() == 0){
     delaware$validate_extract()
     delaware$save_extract()
 }
-
