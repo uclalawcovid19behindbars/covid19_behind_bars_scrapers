@@ -65,3 +65,17 @@ for(ice in ice_files){
             ice)
     }
 }
+
+# change DC jurisdiction from state to county
+dc_files <- get_files("dc")
+for(dcf in dc_files){
+    df_dc <- read_csv(dcf, col_types = cols())
+    if(all((df_dc$jurisdiction == "state")) & all((df_dc$Name == "State-Wide"))){
+        cat("This file had the jurisdiction wrong and will be updated:", dcf, "\n")
+        df_dc$jurisdiction <- "county"
+        df_dc$Name <- "COUNTY WIDE"
+        if(!DRY_RUN){
+            write_csv(df_dc, dcf)
+        }
+    }
+}

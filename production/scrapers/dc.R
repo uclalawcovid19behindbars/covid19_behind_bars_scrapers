@@ -39,7 +39,7 @@ dc_extract <- function(x){
                    TOTAL_POSITIVE_ISO_PSDR + RES_QUARANTINE_PSDR) %>%
         mutate(Residents.Deaths = LIVE_LOST_RES_PSDR) %>%
         select(starts_with("Residents"), starts_with("Staff")) %>%
-        mutate(Name = "State-Wide")
+        mutate(Name = "COUNTY WIDE")
 }
 
 
@@ -77,7 +77,7 @@ dc_scraper <- R6Class(
             id = "dc",
             type = "json",
             state = "DC",
-            jurisdiction = "state",
+            jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = dc_pull,
             # restructuring the data means pulling out the data portion of the json
