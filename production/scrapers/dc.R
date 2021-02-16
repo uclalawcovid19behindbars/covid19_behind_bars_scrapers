@@ -77,7 +77,7 @@ dc_scraper <- R6Class(
             id = "dc",
             type = "json",
             state = "DC",
-            jurisdiction = "state",
+            jurisdiction = "county",
             # pull the JSON data directly from the API
             pull_func = dc_pull,
             # restructuring the data means pulling out the data portion of the json

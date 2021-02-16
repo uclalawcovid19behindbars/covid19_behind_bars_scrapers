@@ -59,15 +59,13 @@ federal_restruct <- function(x){
                 as_tibble(x$loc$Locations) %>%
                     select(id = code, Name = nameDisplay),
                 by = "id") %>%
-            # need to discuss what to do abbout vaccine data
-            # full_join(
-            #     rename(
-            #         x$vaccine$bopVaccine,
-            #         id = facility, staffVacComp = staffCompleted, 
-            #         inmateVecComp =  inmateCompleted),
-            #     by = "id") %>%
             select(-id) %>%
-            mutate(inmateDeathHcon = 0)
+            mutate(inmateDeathHcon = 0),
+        tibble(
+            Name = "ALL BOP FACILITIES",
+            Residents.Completed = sum(x$vaccine$bopVaccine$inmateCompleted),
+            Staff.Completed = sum(x$vaccine$bopVaccine$staffCompleted)
+        )
     )
     
 }
@@ -81,7 +79,9 @@ federal_extract <- function(x){
             Staff.Recovered = staffRecoveries,
             Residents.Recovered = inmateRecoveries,
             Residents.Tested = completedTest,
-            Residents.Pending = pendTest) %>%
+            Residents.Pending = pendTest,
+            Residents.Completed, Staff.Completed
+            ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
 }
 
