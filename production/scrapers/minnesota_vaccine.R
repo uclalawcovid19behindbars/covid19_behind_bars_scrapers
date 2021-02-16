@@ -3,12 +3,12 @@ source("./R/utilities.R")
 
 minnesota_vaccine_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "Minnesota Vaccine")
+        googlesheets4::read_sheet(sheet = "MN Vaccine", 
+                                  col_types = "Dccccc")
 }
 
 minnesota_vaccine_restruct <- function(x){
     x %>%
-        mutate(Date = lubridate::ymd(`Date`)) %>%
         filter(!is.na(Date)) %>% 
         filter(Date == max(Date))
 }
@@ -43,10 +43,10 @@ minnesota_vaccine_extract <- function(x, exp_date = Sys.Date()){
 #' 
 #' \describe{
 #'   \item{Facility}{The facilty name}
-#'   \item{Staff Received 1st Dose}{Cumulative 1st doses received by staff}
-#'   \item{Staff Received 2nd Dose}{Cumulative 2nd doses received by staff}
-#'   \item{Client Received 2nd Dose}{Cumulative 1st doses received by incarcerated people}
-#'   \item{Client Received 2nd Dose}{Cumulative 2nd doses received by incarcerated people}
+#'   \item{Staff Received 1st Dose}{Cumulative number of staff who received a 1st dose}
+#'   \item{Staff Received 2nd Dose}{Cumulative number of staff who received a 2nd dose}
+#'   \item{Client Received 1st Dose}{Cumulative number of incarcerated people who received a 1st dose}
+#'   \item{Client Received 2nd Dose}{Cumulative number of incarcerated people who received a 2nd dose}
 #' }
 
 minnesota_vaccine_scraper <- R6Class(
@@ -58,7 +58,7 @@ minnesota_vaccine_scraper <- R6Class(
             log,
             url = "https://mn.gov/doc/about/covid-19-updates/",
             id = "minnesota_vaccine",
-            type = "csv",
+            type = "manual",
             state = "MN",
             jurisdiction = "state",
             # pull the JSON data directly from the API
