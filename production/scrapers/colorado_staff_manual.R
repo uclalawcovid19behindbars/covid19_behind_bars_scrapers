@@ -2,30 +2,45 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 colorado_staff_manual_pull <- function(x){
-    get_latest_manual("Colorado_Staff")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "CO Staff", 
+                                  col_types = "Dccc")
 }
 
 colorado_staff_manual_restruct <- function(x){
     x %>%
-        select(Name, starts_with("Staff"), starts_with("Residents"))
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date))
 }
 
-colorado_staff_manual_extract <- function(x){
+colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    check_names(x, c(
+        "Date", 
+        "Name", 
+        "Staff Positive Cases", 
+        "Staff Vaccinations")
+    )
+    
     x %>%
-        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
-        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
-        filter(!is.na(Name))
+        select(
+            Name = `Name`,
+            Staff.Confirmed = `Staff Positive Cases`,
+            Staff.Vadmin = `Staff Vaccinations`) %>% 
+        clean_scraped_df()
 }
 
-#' Scraper class for colorado_staff COVID data
+#' Scraper class for Colorado staff COVID data
 #' 
 #' @name colorado_staff_manual_scraper
-#' @description colorado_staff's dashboard isn't machine-readable, so we manually
-#' extract the relevant information from the second page of the dashboard
+#' @description Colorado staff's dashboard isn't machine-readable, so we manually
+#' extract the relevant information from the second page of the dashboard. 
 #' \describe{
 #'   \item{Name}{The facility name.}
-#'   \item{Staff Positive}{Staff Confirmed from the right most orange column}
-#'   \item{Staff Vaccinations}{Total vaccinations given to staff}
+#'   \item{Staff Positive}{Staff Confirmed from the right most orange column.}
+#'   \item{Staff Vaccinations}{Total vaccinations given to staff.}
 #' }
 
 colorado_staff_manual_scraper <- R6Class(
