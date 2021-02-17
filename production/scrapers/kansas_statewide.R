@@ -2,27 +2,43 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 kansas_statewide_pull <- function(x){
-    get_latest_manual("kansas_statewide")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "KS Deaths", 
+                                  col_types = "Dccc")
 }
 
 kansas_statewide_restruct <- function(x){
-    x
+    x %>%
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date))
 }
 
-kansas_statewide_extract <- function(x){
+kansas_statewide_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    check_names(x, c(
+        "Date", 
+        "Name", 
+        "Staff Deaths", 
+        "Residents Deaths")
+    )
+    
     x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
-        filter(!is.na(Name))
+        select(
+            Name = `Name`,
+            Residents.Deaths = `Residents Deaths`,
+            Staff.Deaths = `Staff Deaths`) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general kansas_statewide COVID data
 #' 
 #' @name kansas_statewide_scraper
-#' @description This will be a description of kansas_statewide data and what the scraper
-#' does
+#' @description Kansas reports deaths in a footnote that we record manually. 
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Staff Deaths}{Number of staff deaths attributed to COVID.}
+#'   \item{Resident Deaths}{Number of incarcerated individual deaths attributed to COVID.}
 #' }
 
 kansas_statewide_scraper <- R6Class(
@@ -32,7 +48,7 @@ kansas_statewide_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.kansas_statewide.gov/corrections/sites/kansas_statewide.gov.corrections/files/inline-files/MDOC%20COVID19WebDashboard11-9-2020.pdf",
+            url = "https://www.doc.ks.gov/kdoc-coronavirus-updates/kdoc-covid-19-status",
             id = "kansas_statewide",
             type = "manual",
             state = "KS",
@@ -64,4 +80,3 @@ if(sys.nframe() == 0){
     kansas_statewide$validate_extract()
     kansas_statewide$save_extract()
 }
-

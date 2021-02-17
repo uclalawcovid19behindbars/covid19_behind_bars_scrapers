@@ -2,35 +2,55 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 new_mexico_pull <- function(x){
-    get_latest_manual("New Mexico")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "NM", 
+                                  col_types = "Dcccccc")
 }
 
 new_mexico_restruct <- function(x){
     x %>%
-        select(
-            Name,
-            Residents.Confirmed,
-            Residents.Active,
-            Residents.Deaths = Resident.Deaths, 
-            Residents.Recovered,
-            Residents.Tadmin
-            )
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date))
 }
 
-new_mexico_extract <- function(x){
+new_mexico_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    check_names(x, c(
+        "Date", 
+        "Name", 
+        "Active Cases", 
+        "Recoveries", 
+        "Total Positives to Date", 
+        "Deaths", 
+        "Total Tests Conducted")
+    )
+    
     x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
-        filter(!is.na(Name))
+        select(
+            Name = `Name`,
+            Residents.Active = `Active Cases`, 
+            Residents.Recovered = `Recoveries`, 
+            Residents.Confirmed = `Total Positives to Date`, 
+            Residents.Deaths = `Deaths`, 
+            Residents.Tadmin = `Total Tests Conducted`) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general new_mexico COVID data
 #' 
 #' @name new_mexico_scraper
-#' @description This will be a description of new_mexico data and what the scraper
+#' @description New Mexico's dashboard isn't machine-readable, so we manually
+#' extract the relevant information. 
 #' does
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Name}{The facility name.}
+#'   \item{Active cases}{Current active cases among incarcerated people by facility.}
+#'   \item{Recoveries}{Total recovered cases among incarcerated people by facility.}
+#'   \item{Total Positives to Date}{Cumulative cases among incarcerated people by facility.}
+#'   \item{Deaths}{Cumulative deaths among incarcerated people by facility.}
+#'   \item{Total Tests Conducted}{Statewide total number of tests conducted.}
 #' }
 
 new_mexico_scraper <- R6Class(
@@ -72,4 +92,3 @@ if(sys.nframe() == 0){
     new_mexico$validate_extract()
     new_mexico$save_extract()
 }
-

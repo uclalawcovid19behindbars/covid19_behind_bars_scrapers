@@ -2,38 +2,46 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 oklahoma_manual_pull <- function(x){
-    get_latest_manual("Oklahoma")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "OK", 
+                                  col_types = "Dcccccccc")
 }
 
 oklahoma_manual_restruct <- function(x){
     x %>%
-        select(
-            Name,
-            `Inmate Deaths by Facility`,
-            `Inmate Total Tested`,
-            `Inmate Total Positive`, 
-            `Inmate Total Currently Positive`,
-            `Employee Total Tested`, 
-            `Employee Total Positive`, 
-            `Employee Total Currently Positive`
-        )
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date)) 
 }
 
-oklahoma_manual_extract <- function(x){
+oklahoma_manual_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    check_names(x, c(
+        "Date", 
+        "Name", 
+        "Inmate Deaths by Facility", 
+        "Inmate Total Tested", 
+        "Inmate Total Positive", 
+        "Inmate Total Currently Positive", 
+        "Employee Total Tested", 
+        "Employee Total Positive", 
+        "Employee Total Currently Positive")
+    )
+    
     x %>%
-        rename("Residents.Deaths" = "Inmate Deaths by Facility", 
-               "Residents.Tadmin" = "Inmate Total Tested", 
-               "Residents.Confirmed" = "Inmate Total Positive", 
-               "Residents.Active" = "Inmate Total Currently Positive", 
-               "Staff.Tadmin.Drop_" = "Employee Total Tested", 
-               "Staff.Confirmed" = "Employee Total Positive", 
-               "Staff.Active.Drop_" = "Employee Total Currently Positive") %>% 
-        select(!ends_with(".Drop_")) %>% 
-        clean_scraped_df() %>% 
+        select(
+            Name = `Name`,
+            Residents.Deaths = `Inmate Deaths by Facility`, 
+            Residents.Tadmin = `Inmate Total Tested`, 
+            Residents.Confirmed = `Inmate Total Positive`, 
+            Residents.Active = `Inmate Total Currently Positive`, 
+            Staff.Confirmed = `Employee Total Positive`) %>% 
         # To avoid double-counting, statewide deaths should be NA 
         # These are reported at the facility-level instead 
         # This should be reflected in the manual entry, so this is just to be safe  
-        mutate(Residents.Deaths = ifelse(Name == "STATEWIDE", NA, Residents.Deaths))
+        mutate(Residents.Deaths = ifelse(Name == "STATEWIDE", NA, Residents.Deaths)) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for Oklahoma COVID data

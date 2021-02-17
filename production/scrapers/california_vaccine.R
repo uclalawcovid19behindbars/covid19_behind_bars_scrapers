@@ -2,32 +2,46 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 california_vaccine_pull <- function(x){
-    get_latest_manual("California_Vaccine")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "CA Vaccine", 
+                                  col_types = "Dccc")
 }
 
 california_vaccine_restruct <- function(x){
     x %>%
-        select(
-            Name, starts_with("Res"), starts_with("Staff"))
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date))
 }
 
-california_vaccine_extract <- function(x){
+california_vaccine_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    check_names(x, c(
+        "Date", 
+        "Facility", 
+        "Staff Received 1st Dose", 
+        "Incarcerated Individuals Received 1st Dose")
+    )
+    
     x %>%
-        mutate_at(vars(starts_with("Res")), as.numeric) %>%
-        mutate_at(vars(starts_with("Staff")), as.numeric) %>%
-        filter(!is.na(Name))
+        select(
+            Name = `Facility`,
+            Residents.Initiated = `Incarcerated Individuals Received 1st Dose`,
+            Staff.Initiated = `Staff Received 1st Dose`) %>% 
+        clean_scraped_df()
 }
 
-#' Scraper class for general california_vaccine COVID data
+#' Scraper class for California vaccine data
 #' 
 #' @name california_vaccine_scraper
-#' @description As of 11/20/20 california_vaccine stopped reporting cumulative cases and
-#' only reports active resident cases. Note that we only update california_vaccine data if
-#' it is less than 7 days old. If WY hasnt produced a new data sheet after 7
-#' days then no data should be recorded by the scraper and this scraper should
-#' fail.
+#' @description CA reports statewide vaccination data for incarcerated people and
+#' staff through daily updates in paragraph / unstructured form. Note that we only update 
+#' CA vaccine data if it is less than 7 days old. This scraper grabs manually entered 
+#' Google Sheet data. 
 #' \describe{
-#'   \item{Facility_Name}{The faciilty name.}
+#'   \item{Staff Received 1st Dose}{Number of staff that ave received first round vaccines statewide.}
+#'   \item{Incarcerated Individuals Received 1st Dose}{Number of incarcerated individuals that ave received first round vaccines statewide.}
 #' }
 
 california_vaccine_scraper <- R6Class(
@@ -69,4 +83,3 @@ if(sys.nframe() == 0){
     california_vaccine$validate_extract()
     california_vaccine$save_extract()
 }
-
