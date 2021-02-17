@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 kentucky_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)cases") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)covid19") %>%
         magick::image_read()
 }
 
@@ -15,12 +15,12 @@ kentucky_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Institution", "0", "Name", 
-        "Total Active Staff", "1", "Drop.Staff.Active",
-        "Total Staff Cases", "2", "Staff.Confirmed",
-        "Total Staff Deaths", "3", "Staff.Deaths", 
-        "Total Active Inmates", "4", "Residents.Active",
-        "Total Inmate Cases", "5", "Residents.Confirmed",
-        "Total Inmate Deaths", "6", "Residents.Deaths"
+        "Active Staff", "1", "Drop.Staff.Active",
+        "Total Staff", "2", "Staff.Confirmed",
+        "Staff Deaths", "3", "Staff.Deaths", 
+        "Active Inmates", "4", "Residents.Active",
+        "Total Inmates", "5", "Residents.Confirmed",
+        "Inmate Deaths", "6", "Residents.Deaths"
     ), ncol = 3, nrow = 7, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")

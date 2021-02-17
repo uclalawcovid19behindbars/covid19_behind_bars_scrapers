@@ -41,6 +41,8 @@ oklahoma_manual_extract <- function(x, exp_date = Sys.Date()){
         # These are reported at the facility-level instead 
         # This should be reflected in the manual entry, so this is just to be safe  
         mutate(Residents.Deaths = ifelse(Name == "STATEWIDE", NA, Residents.Deaths)) %>% 
+        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         clean_scraped_df()
 }
 
