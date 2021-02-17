@@ -2,25 +2,26 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 vermont_pull <- function(x){
-    get_latest_manual("Vermont")
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "VT", 
+                                  col_types = "Dccccccc")
 }
 
 vermont_restruct <- function(x){
     x %>%
-        select(
-            Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, 
-            Staff.Recovered, Residents.Recovered,
-            Residents.Tested, Residents.Negative, Residents.Pending, 
-            Residents.Population = Resident.Population, 
-            Staff.Quarantine, Residents.Quarantine,
-            Residents.Deaths = Resident.Deaths)
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date))
 }
 
-vermont_extract <- function(x){
-    x %>%
-        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
-        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
-        filter(!is.na(Name))
+vermont_extract <- function(x, exp_date = Sys.Date()){
+    
+    error_on_date(first(x$Date), exp_date)
+    
+    x %>% 
+        filter(!is.na(Name)) %>% 
+        select(Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, Residents.Deaths, 
+               Residents.Recovered, Residents.Tested) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general vermont COVID data
