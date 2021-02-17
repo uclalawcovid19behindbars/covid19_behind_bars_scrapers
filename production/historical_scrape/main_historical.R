@@ -9,6 +9,7 @@ suppressPackageStartupMessages(library(futile.logger))
 suppressPackageStartupMessages(library(googlesheets4))
 gs4_auth("ucla.law.covid.staff@gmail.com")
 options(tryCatchLog.include.full.call.stack = FALSE)
+source("R/utilities.R")
 
 parser <- ArgumentParser()
 
@@ -27,12 +28,12 @@ parser$add_argument(
 args <- parser$parse_args()
 
 # read in configuration file to see what historical scrapers to run
-config_df <- read_csv(args$config, col_types = cols())
+config_df <- read_csv(
+    args$config, col_types = c(Scraper = "c", Date = "D", File = "c"))
 
-if(any(!(c("Date", "Scraper") %in% names(config_df)))){
-    stop("The config file must include the column names Date and Scraper")
+if(any(!(c("Date", "Scraper", "File") %in% names(config_df)))){
+    stop("The config file must include the column names Date, Scraper, and File")
 }
-
 
 # load all the historical scrapers
 sapply(list.files(
@@ -62,3 +63,5 @@ for(i in 1:nrow(config_df)){
     scraper$save_extract()
 }
 
+# push the historical file to the remote server after successful run
+hist_config_update(config_df)
