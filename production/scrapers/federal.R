@@ -44,7 +44,7 @@ federal_restruct <- function(x){
             group_by(Name) %>%
             mutate(more_than_one = n() > 1) %>%
             ungroup() %>%
-            mutate(Name = ifelse(more_than_one, str_c(Name, " ", id), Name)) %>%
+            mutate(Name = str_c(Name, " ", id)) %>%
             select(
                 Name, completedTest, pendTest, posTest, inmateDeathAmt,
                 inmateDeathHcon, inmateRecoveries, inmatePositiveAmt,
