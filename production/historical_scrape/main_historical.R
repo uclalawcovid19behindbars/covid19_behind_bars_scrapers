@@ -18,9 +18,10 @@ parser <- ArgumentParser()
 parser$add_argument(
     "-c", "--config",
     help=paste0(
-        "A path to a csv file with two columns. ",
+        "A path to a csv file with three columns. ",
         "Scraper: a character column of a valid historical scraper. ",
-        "Date: YYYY-MM-DD date of which day to run the hsitorical scraper."
+        "Date: YYYY-MM-DD date of which day to run the hsitorical scraper.",
+        "File: a file that is associated with a date, may be NA if not required."
         ))
 
 args <- parser$parse_args()
@@ -51,7 +52,8 @@ for(i in 1:nrow(config_df)){
     print(scraper)
     cat("  Date: ", as.character(scraper$date), "\n")
     # pull data from an external file
-    scraper$pull_raw(date = scraper$date, .dated_pull = TRUE)
+    scraper$pull_raw(
+        date = scraper$date, file = config_df$File[i], .dated_pull = TRUE)
     # save the historical file
     scraper$save_raw()
     scraper$restruct_raw(date = scraper$date)
