@@ -620,3 +620,17 @@ stop_defunct_scraper <- function(url){
         "This scraper is not currently functional. Please occasionally check ",
         "the following URL to see if data may now be scraped: ", url))
 }
+
+hist_config_update <- function(df){
+    tf <- tempfile(fileext = ".csv")
+    old_records <- read_csv(
+        "http://104.131.72.50:3838/scraper_data/summary_data/hist_records.csv",
+        col_types = c(Scraper = "c", Date = "D", File = "c"))
+    old_records %>%
+        bind_rows(df) %>%
+        unique() %>%
+        write_csv(tf)
+    system(str_c(
+      "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
+      " ucla:/srv/shiny-server/scraper_data/summary_data/hist_records.csv"))
+}

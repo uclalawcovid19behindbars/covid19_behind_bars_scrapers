@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-historical_ohio_vac_pull <- function(x, date = NULL){
+historical_ohio_vac_pull <- function(x, date = NULL, file = NULL){
     get_latest_manual("Ohio_Vaccine")
 }
 

@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-historical_wyoming_pull <- function(x, date = NULL){
+historical_wyoming_pull <- function(x, date = NULL, file = NULL){
     get_latest_manual("Wyoming_Historical")
 }
 
