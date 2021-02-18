@@ -11,7 +11,7 @@ To see an example of this, please view the file in `production/historical_scrape
 #### Instructions: 
 
 1. **Build scraper**: Add the scraper to `production/historical_scrape_historical_scrapers`. Each historical scraper needs a `pull`, `restruct`, and `extract` function, and each of these functions must include a date parameter (regardless of whether that parameter is actually used within the function). 
-2. **Create a config file**: Write a config file, which is a csv with 2 columns: 
+2. **Create a config file**: Write a config file, which is a csv with 3 columns: 
 
 * `Scraper`: a character column of a valid historical scraper (e.g. `historical_ice_scraper`) 
 * `Date`: YYYY-MM-DD date of which day to run the historical scraper
@@ -21,4 +21,5 @@ To see an example of this, please view the file in `production/historical_scrape
 RScript production/historical_scrape/main_historical.R --config production/historical_scrape/config.csv
 ```
 This will populate the `results` directory with the raw, extracted, and log files. 
+
 4. **Sync files**: Sync your files with the remote database by calling `sync_remote_files(raw = TRUE)` within the console. 
