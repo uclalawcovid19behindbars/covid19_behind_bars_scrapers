@@ -155,7 +155,8 @@ generic_scraper <- R6Class(
             
             valid_types <- list(
                 html = xml2::read_html, img = magick::image_read, 
-                json = jsonlite::read_json, pdf = function(x) x, 
+                json = function(x) jsonlite::read_json(x, simplifyVector = TRUE), 
+                pdf = function(x) x, 
                 csv = function(x) readr::read_csv(x, guess_max = 100000),
                 manual = readr::read_csv
             )

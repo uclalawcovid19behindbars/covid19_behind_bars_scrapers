@@ -16,7 +16,7 @@ federal_pull <- function(x){
 
 federal_restruct <- function(x){
 
-    bind_rows(
+    comb_df <- bind_rows(
         full_join(
             as_tibble(x$test$rrcTesting) %>%
                 mutate(Name = str_remove_all(facilityName, "\\(([^)]+)\\)")) %>%
@@ -60,14 +60,19 @@ federal_restruct <- function(x){
                     select(id = code, Name = nameDisplay),
                 by = "id") %>%
             select(-id) %>%
-            mutate(inmateDeathHcon = 0),
-        tibble(
-            Name = "ALL BOP FACILITIES",
-            Residents.Completed = sum(x$vaccine$bopVaccine$inmateCompleted),
-            Staff.Completed = sum(x$vaccine$bopVaccine$staffCompleted)
-        )
-    )
+            mutate(inmateDeathHcon = 0))
     
+    if("vaccine" %in% names(x)){
+        comb_df <- bind_rows(
+            comb_df,
+            tibble(
+                Name = "ALL BOP FACILITIES",
+                Residents.Completed = sum(x$vaccine$bopVaccine$inmateCompleted),
+                Staff.Completed = sum(x$vaccine$bopVaccine$staffCompleted)
+            ))
+    }
+    
+    comb_df
 }
 
 federal_extract <- function(x){
@@ -80,7 +85,7 @@ federal_extract <- function(x){
             Residents.Recovered = inmateRecoveries,
             Residents.Tested = completedTest,
             Residents.Pending = pendTest,
-            Residents.Completed, Staff.Completed
+            starts_with("Residents."), starts_with("Staff.")
             ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
 }
