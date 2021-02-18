@@ -32,22 +32,25 @@ nevada_pull <- function(x){
         "xpath", 
         str_c("//div[@class='slicerItemContainer']",
               "/span[@title='Correctional']"))$clickElement()
-    Sys.sleep(5)
+    Sys.sleep(10)
     remDr$findElement(
         "xpath", "//div[@aria-label='Facility Name,  All']")$clickElement()
-    Sys.sleep(3)
-    
+    Sys.sleep(10)
+
     nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
     box_options <- nv_page %>%
         rvest::html_nodes(".slicerText") %>%
         rvest::html_text()
     
-    deselect_index <- max(which(box_options == "Select all"))
+    # TODO: Need to find a way of this is selected or not given that
+    # isElementSelected() is not retuening expected results
     
-    remDr$findElements(
-        "css", ".glyphicon.checkbox")[[deselect_index]]$clickElement()
-    Sys.sleep(3)
+    # deselect_index <- max(which(box_options == "Select all"))
+    # 
+    # remDr$findElements(
+    #     "css", ".glyphicon.checkbox")[[deselect_index]]$clickElement()
+    # Sys.sleep(3)
     
     
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
