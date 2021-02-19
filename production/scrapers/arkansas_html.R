@@ -14,7 +14,7 @@ arkansas_html_restruct <- function(x){
         rvest::html_node(xpath = "parent::p")
     
     if(str_detect(rvest::html_text(fsp), "(?i)testing")){
-        mid_txt <- fsp
+        mid_text <- fsp %>%
             rvest::html_text() %>%
             str_remove("INMATES/RESIDENTS")
     }

@@ -21,7 +21,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
         "Date", 
         "SRJ Population (total)", 
         "SRJ Population (diff)", 
-        "Tests (incarcerated population, total)", 
+        "Tests (Incarcerated population, total)", 
         "Tests (Incarcerated population, difference)", 
         "Pending tests", 
         "Percentage of population tested within the past: 7 days", 
@@ -45,7 +45,8 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
         "Percentage of total cases released after resolved",
         "Resolved in Custody",
         "Percentage of total cases resolved in custody",
-        "Deaths"))
+        "Deaths",
+        "Current staff cases"))
     
     x %>%
         select(
@@ -53,7 +54,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Active = `Incarcerated population cases ("active")`,
             Residents.Recovered = `Total Resolved Cases`,
             Residents.Deaths = Deaths,
-            Residents.Tadmin = `Tests (incarcerated population, total)`,
+            Residents.Tadmin = `Tests (Incarcerated population, total)`,
             Residents.Pending = `Pending tests`,
             Residents.Population = `SRJ Population (total)`,
             Staff.Confirmed = `Staff cases (total)`
