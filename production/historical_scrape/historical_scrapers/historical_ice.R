@@ -7,7 +7,7 @@ historical_ice_str_word_detect <- function(string, pattern){
         str_ends(string, str_c(" ", pattern))
 }
 
-historical_ice_pull <- function(x, date = NULL){
+historical_ice_pull <- function(x, date = NULL, file = NULL){
     wide_df <- "https://raw.githubusercontent.com/ivnagpal/ICE-COVID19/" %>%
         # the specific commit we are pulling historical data from
         str_c("596de9a76c564ce48ab6aae39d5a9aa4b6566a94/imm_df.csv") %>%
@@ -95,15 +95,15 @@ historical_ice_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    historical_ice <- historical_ice_scraper$new(log=TRUE)
+    historical_ice <- historical_ice_scraper$new(log=FALSE)
     historical_ice$reset_date("SET_DATE_HERE")
     historical_ice$raw_data
-    historical_ice$pull_raw(date = scraper$date, .dated_pull = TRUE)
+    historical_ice$pull_raw(date = scraper$date, file = NULL, .dated_pull = TRUE)
     historical_ice$raw_data
     historical_ice$save_raw()
-    historical_ice$restruct_raw(date = scraper$date)
+    historical_ice$restruct_raw(date = historical_ice$date)
     historical_ice$restruct_data
-    historical_ice$extract_from_raw(date = scraper$date)
+    historical_ice$extract_from_raw(date = historical_ice$date)
     historical_ice$extract_data
     historical_ice$validate_extract()
     historical_ice$save_extract()

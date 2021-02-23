@@ -531,27 +531,27 @@ sum_na_rm <- function(x){
 }
 
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
-    
-    rowAny <- function(x) rowSums(x) > 0
-    
-    covid_vars <- c(
-        "Residents.Confirmed", "Staff.Confirmed", "Residents.Deaths", "Staff.Deaths", 
-        "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin", "Staff.Tested",  
-        "Residents.Negative", "Staff.Negative", "Residents.Pending", "Staff.Pending", 
-        "Residents.Quarantine", "Staff.Quarantine", "Residents.Active")
   
     out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
     
+    covid_suffixes <- c(
+      ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
+      ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
+    
     out_df %>%
-        select(all_of(covid_vars)) %>%
+        select(all_of(ends_with(covid_suffixes))) %>%
         summarize_all(sum_na_rm) %>%
         pivot_longer(
-            Residents.Confirmed:Residents.Active, names_to = "Variable",
+            cols = everything(), 
+            names_to = "Variable",
             values_to = "Count") %>%
         print()
     
-      out_df %>%
-        filter(rowAny(across(covid_vars, ~ !is.na(.x)))) %>% 
+    rowAny <- function(x) rowSums(x) > 0
+    
+    out_df %>%
+        # Drop rows missing COVID data (e.g. only with population data)
+        filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>% 
         select(
             Facility.ID, Jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
@@ -619,4 +619,18 @@ stop_defunct_scraper <- function(url){
     stop(paste0(
         "This scraper is not currently functional. Please occasionally check ",
         "the following URL to see if data may now be scraped: ", url))
+}
+
+hist_config_update <- function(df){
+    tf <- tempfile(fileext = ".csv")
+    old_records <- read_csv(
+        "http://104.131.72.50:3838/scraper_data/summary_data/hist_records.csv",
+        col_types = c(Scraper = "c", Date = "D", File = "c"))
+    old_records %>%
+        bind_rows(df) %>%
+        unique() %>%
+        write_csv(tf)
+    system(str_c(
+      "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
+      " ucla:/srv/shiny-server/scraper_data/summary_data/hist_records.csv"))
 }
