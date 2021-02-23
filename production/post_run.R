@@ -13,6 +13,3 @@ sync_diagnostic_files()
 
 # Write latest csv 
 write_latest_data()
-
-
-
