@@ -562,7 +562,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
             Population.Feb20, Residents.Population, Residents.Tested, 
             Residents.Initiated, Staff.Initiated, Residents.Completed, Staff.Completed, 
             Residents.Vadmin, Staff.Vadmin, Address, Zipcode, City, County, Latitude,
-            Longitude, County.FIPS, HIFLD.ID) %>% 
+            Longitude, County.FIPS, HIFLD.ID, ICE.Field.Office) %>% 
         write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
                   na="")
 }
