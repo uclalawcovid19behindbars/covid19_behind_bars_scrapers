@@ -27,15 +27,26 @@ new_mexico_extract <- function(x, exp_date = Sys.Date()){
         "Total Tests Conducted")
     )
     
-    x %>%
+    z <- x %>%
         select(
             Name = `Name`,
             Residents.Active = `Active Cases`, 
             Residents.Recovered = `Recoveries`, 
             Residents.Confirmed = `Total Positives to Date`, 
             Residents.Deaths = `Deaths`, 
-            Residents.Tadmin = `Total Tests Conducted`) %>% 
+            Residents.Tadmin = `Total Tests Conducted`) %>%
         clean_scraped_df()
+    
+    # no statewide values hsould be here for these columns
+    no_sw <- c(
+        "Residents.Active", "Residents.Recovered",
+        "Residents.Confirmed", "Residents.Deaths")
+    
+    for(c in no_sw) {
+        z[[c]][z[["Name"]] == "State-Wide"] <- NA
+    }
+
+    z
 }
 
 #' Scraper class for general new_mexico COVID data

@@ -53,7 +53,7 @@ lasd_restruct <- function(x){
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
     
-    else if(abs(1463 - h_) <= 2 & w_ == 1200){
+    else if(abs(1463 - h_) <= 8 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
             Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
@@ -97,6 +97,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+640", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+235", "(?i)jail pop"))
     }
+    
     else{
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+405", "(?i)total pos"),

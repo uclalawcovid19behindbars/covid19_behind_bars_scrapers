@@ -2,9 +2,11 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 oklahoma_manual_pull <- function(x){
-    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "OK", 
-                                  col_types = "Dcccccccc")
+    z <- "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "OK", col_types = "ccccccccc")
+    
+    z %>%
+        mutate(Date = lubridate::as_date(Date))
 }
 
 oklahoma_manual_restruct <- function(x){
