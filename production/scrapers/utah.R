@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 utah_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)update") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)screen_shot") %>%
         .[[1]] %>%
         magick::image_read()
 }
@@ -63,7 +63,7 @@ utah_extract <- function(x){
 #' @name utah_scraper
 #' @description UT has changed the way that they present data several times
 #' but the latest iteration is presented via an image hosted on the page. 
-#' Currently the image is grabbed by position which is not sustainable. The
+#' Currently the image is grabbed by position which is n ot sustainable. The
 #' test number appears to be residents tested rather than tests administered.
 #' \describe{
 #'   \item{Location}{The facility name.}

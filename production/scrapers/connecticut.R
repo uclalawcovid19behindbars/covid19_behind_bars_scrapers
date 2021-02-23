@@ -67,7 +67,9 @@ connecticut_extract <- function(x){
 #' 
 #' @name connecticut_scraper
 #' @description CT stores information within tables in images. The image
-#' information appears to be consistent making OCR possible.
+#' information appears to be consistent making OCR possible. Data should be
+#' redundant to to this cleaned source.
+#' https://data.ct.gov/Public-Safety/COVID-19-in-Correctional-Facilities/6t8i-du3u
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Total Positives}{Residents positives}
