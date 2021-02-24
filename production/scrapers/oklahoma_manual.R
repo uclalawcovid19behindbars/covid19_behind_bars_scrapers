@@ -6,7 +6,7 @@ oklahoma_manual_pull <- function(x){
         googlesheets4::read_sheet(sheet = "OK", col_types = "ccccccccc")
     
     z %>%
-        mutate(Date = lubridate::as_date(Date))
+        mutate(Date = lubridate::mdy(Date))
 }
 
 oklahoma_manual_restruct <- function(x){

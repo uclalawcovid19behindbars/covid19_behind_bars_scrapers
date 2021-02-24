@@ -177,7 +177,7 @@ colorado_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.colorado.gov/pacific/cdoc/covid-19-faq-and-updates",
+            url = "https://cdoc.colorado.gov/resources/covid-19-faq-and-updates",
             id = "colorado",
             type = "pdf",
             state = "CO",
