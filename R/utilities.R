@@ -634,3 +634,26 @@ hist_config_update <- function(df){
       "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
       " ucla:/srv/shiny-server/scraper_data/summary_data/hist_records.csv"))
 }
+
+write_agg_data <- function(...){
+    raw_agg <- calc_aggregate_counts(...)
+    
+    # the order and selection of cols corresponds to values in the Google sheet
+    # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
+    sel_vars <- c(
+        "Residents.Confirmed", "Staff.Confirmed",
+        "Residents.Deaths", "Staff.Deaths",
+        "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin",
+        "Residents.Initiated", "Staff.Initiated",
+        "Residents.Completed", "Staff.Completed",
+        "Residents.Vadmin", "Staff.Vadmin"
+        )
+
+    raw_agg %>%
+        filter(Measure %in% sel_vars) %>%
+        mutate(Measure = factor(Measure, sel_vars)) %>%
+        arrange(Measure) %>%
+        select(-Measure) %>%
+        mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
+        write_csv("~/Downloads/agg_vals.csv")
+}
