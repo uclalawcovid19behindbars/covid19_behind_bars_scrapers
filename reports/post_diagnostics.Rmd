@@ -51,30 +51,33 @@ kable(log_status %>%
 
 # Comparison to Previous Run
 
+## Aggregate 
+
 **How do the cumulative totals compare to the previous scraped data?** 
 
 We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. The table compares data from the latest scrape to what is currently on [the Google Sheet](https://docs.google.com/spreadsheets/u/2/d/1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk/edit#gid=1641553906). 
 
 ``` {r check_previous, echo = F, message = F, warning = F}
-# Read existing Google sheet data 
-old_df <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" %>%
-    read_sheet(sheet = 2, skip = 1) %>%
-    .[2:nrow(.),] %>% 
-    # select(-Notes) %>% 
-    setNames(names(new_df))
+# Read old data 
+old_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/latest-data/adult_facility_covid_counts.csv" %>% 
+  read_csv(n_max = 1000)
+
+covid_suffixes <- c(
+      ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
+      ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin") 
 
 # Get totals 
 new_total <- new_df %>% 
-    select(Residents.Confirmed:Residents.Active) %>% 
+    select(all_of(ends_with(covid_suffixes))) %>%  
     summarise_all(sum_na_rm) %>% 
-    pivot_longer(cols = Residents.Confirmed:Residents.Active, 
+    pivot_longer(cols = Residents.Confirmed:Staff.Vadmin, 
                  names_to = "Variable", 
                  values_to = "New Total")
 
 old_total <- old_df %>% 
-    select(Residents.Confirmed:Residents.Active) %>% 
+    select(all_of(ends_with(covid_suffixes))) %>% 
     summarise_all(sum_na_rm) %>% 
-    pivot_longer(cols = Residents.Confirmed:Residents.Active, 
+    pivot_longer(cols = Residents.Confirmed:Staff.Vadmin, 
                  names_to = "Variable", 
                  values_to = "Old Total")
 
@@ -91,7 +94,9 @@ kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %
     row_spec(which(joined$Difference < 0 & joined$cumulative_flag == 1), background = "#ffa07a") 
 ```
 
-## State by State: Metrics which are declining which shouldnt be
+## State by State
+
+**Which states have metrics that are declining that shouldn't be?**
 
 ```{r check_previous_state, echo = F, message = F, warning = F}
 measure_decline_df <- full_join(
@@ -99,7 +104,8 @@ measure_decline_df <- full_join(
     filter(Jurisdiction == "state") %>%
     select(
       State, Residents.Confirmed, Residents.Deaths, Residents.Tadmin,
-      Staff.Confirmed, Staff.Deaths) %>%
+      Staff.Confirmed, Staff.Deaths, Residents.Initiated, Residents.Completed, 
+      Residents.Vadmin, Staff.Initiated, Staff.Completed, Staff.Vadmin) %>%
     group_by(State) %>%
     summarise_all(sum_na_rm) %>%
     pivot_longer(-State, names_to = "Metric", values_to = "New"),
@@ -108,7 +114,8 @@ measure_decline_df <- full_join(
     filter(Jurisdiction == "state") %>%
     select(
       State, Residents.Confirmed, Residents.Deaths, Residents.Tadmin,
-      Staff.Confirmed, Staff.Deaths) %>%
+      Staff.Confirmed, Staff.Deaths, Residents.Initiated, Residents.Completed, 
+      Residents.Vadmin, Staff.Initiated, Staff.Completed, Staff.Vadmin) %>%
     group_by(State) %>%
     summarise_all(sum_na_rm) %>%
     pivot_longer(-State, names_to = "Metric", values_to = "Old")) %>%
