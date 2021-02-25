@@ -46,7 +46,14 @@ historical_ca_pop_extract <- function(x, date = NULL){
         filter(!str_detect(Name, "(?i)Total")) %>% 
         mutate_at(vars(-Name), string_to_clean_numeric) %>%
         select(-ends_with(".Drop")) %>% 
-        clean_scraped_df()
+        
+        # CA reports population for men and women separately for mixed facilities
+        # Sum these at the facility-level 
+        group_by(Name) %>% 
+        summarise(Residents.Population = sum(Residents.Population)) %>% 
+        ungroup() %>% 
+        
+        clean_scraped_df() 
 }
 
 #' Scraper class for California population data 
@@ -85,7 +92,7 @@ historical_ca_pop_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     historical_ca_pop <- historical_ca_pop_scraper$new(log=TRUE)
-    historical_ca_pop$reset_date("SET_DATE_HERE")
+    historical_ca_pop$reset_date("2021-02-17")
     historical_ca_pop$raw_data
     historical_ca_pop$pull_raw(date = historical_ca_pop$date, .dated_pull = TRUE)
     historical_ca_pop$raw_data

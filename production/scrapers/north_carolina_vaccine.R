@@ -4,7 +4,7 @@ source("./R/utilities.R")
 north_carolina_vaccine_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "NC Vaccine", 
-                                  col_types = "Dccc")
+                                  col_types = "Dccccc")
 }
 
 north_carolina_vaccine_restruct <- function(x){
@@ -20,15 +20,19 @@ north_carolina_vaccine_extract <- function(x, exp_date = Sys.Date()){
     check_names(x, c(
         "Date", 
         "Name", 
-        "Offenders", 
-        "Staff")
+        "Residents.Initiated", 
+        "Residents.Completed", 
+        "Staff.Initiated", 
+        "Staff.Completed")
     )
     
     x %>%
         select(
-            Name = `Name`,
-            Residents.Initiated = `Offenders`,
-            Staff.Initiated = `Staff`) %>% 
+            Name, 
+            Residents.Initiated,
+            Residents.Completed, 
+            Staff.Initiated, 
+            Staff.Completed) %>% 
         clean_scraped_df()
 }
 
@@ -36,8 +40,7 @@ north_carolina_vaccine_extract <- function(x, exp_date = Sys.Date()){
 #' 
 #' @name north_carolina_vaccine_scraper
 #' @description Grabs manually entered Google Sheet data for NC vaccines. Raw data
-#' is received via email from the NC DOC weekly. Only statewide totals for incarcerated 
-#' people and staff are shared.  
+#' is received via email from the NC DOC weekly. 
 #' 
 #' \describe{
 #'   \item{Offenders}{Number of incarcerated residents who received first doses}
