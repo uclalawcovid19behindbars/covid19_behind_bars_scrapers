@@ -637,7 +637,7 @@ hist_config_update <- function(df){
 
 write_agg_data <- function(...){
     raw_agg <- calc_aggregate_counts(...)
-    
+  
     # the order and selection of cols corresponds to values in the Google sheet
     # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
     sel_vars <- c(
@@ -649,11 +649,17 @@ write_agg_data <- function(...){
         "Residents.Vadmin", "Staff.Vadmin"
         )
 
+    tf <- tempfile(fileext = ".csv")
+
     raw_agg %>%
         filter(Measure %in% sel_vars) %>%
         mutate(Measure = factor(Measure, sel_vars)) %>%
         arrange(Measure) %>%
         select(-Measure) %>%
         mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
-        write_csv("~/Downloads/agg_vals.csv")
+        write_csv(tf)
+
+    system(str_c(
+      "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
+      " ucla:/srv/shiny-server/scraper_data/summary_data/national_aggregates.csv"))
 }
