@@ -9,7 +9,7 @@ santa_barbara_jails_restruct <- function(x){
     x %>% 
         rvest::html_nodes("table") %>%
         .[[1]] %>% 
-        html_table(header= FALSE) %>% 
+        rvest::html_table(header= FALSE) %>% 
         slice(-1) # Table had two headers (title and then colnames), removing the title header
 }
 
