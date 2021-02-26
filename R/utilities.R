@@ -615,7 +615,7 @@ sync_diagnostic_files <- function() {
 }
 
 generate_diagnostics <- function() {
-    if (!dir.exists("./r  esults/diagnostic_files/")) {
+    if (!dir.exists("./results/diagnostic_files/")) {
         dir.create("./results/diagnostic_files/")
     }
   
