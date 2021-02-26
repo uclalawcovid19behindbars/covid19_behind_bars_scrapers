@@ -569,7 +569,6 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     full_var_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
 
     full_var_df %>%
-        filter(str_ends(Measure, "Vadmin")) %>%
         filter(!is.na(Val)) %>%
         select(State, Measure, Val) %>%
         pivot_wider(names_from = "Measure", values_from = "Val") %>%
