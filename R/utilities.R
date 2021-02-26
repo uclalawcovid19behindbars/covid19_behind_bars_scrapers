@@ -573,7 +573,8 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         select(State, Measure, Val) %>%
         pivot_wider(names_from = "Measure", values_from = "Val") %>%
         arrange(State) %>%
-        write_csv("./data/latest-data/state_aggregate_counts.csv")
+        write_csv("./data/latest-data/state_aggregate_counts.csv", 
+                  na="")
 }
 
 get_latest_manual <- function(state){
