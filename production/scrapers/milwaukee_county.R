@@ -8,7 +8,7 @@ milwaukee_county_pull <- function(x){
 
 milwaukee_county_restruct <- function(x){
     x %>%
-        magick::image_crop("800x120+0+437") %>%
+        magick::image_crop("900x220+0+437") %>%
         ExtractTable()
 }
 
