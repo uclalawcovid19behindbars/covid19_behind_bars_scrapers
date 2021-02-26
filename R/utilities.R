@@ -565,6 +565,16 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
             Longitude, County.FIPS, HIFLD.ID, ICE.Field.Office) %>% 
         write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
                   na="")
+
+    full_var_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
+
+    full_var_df %>%
+        filter(!is.na(Val)) %>%
+        select(State, Measure, Val) %>%
+        pivot_wider(names_from = "Measure", values_from = "Val") %>%
+        arrange(State) %>%
+        write_csv("./data/latest-data/state_aggregate_counts.csv", 
+                  na="")
 }
 
 get_latest_manual <- function(state){
@@ -637,7 +647,7 @@ hist_config_update <- function(df){
 
 write_agg_data <- function(...){
     raw_agg <- calc_aggregate_counts(...)
-  
+
     # the order and selection of cols corresponds to values in the Google sheet
     # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
     sel_vars <- c(
