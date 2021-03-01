@@ -3,6 +3,12 @@ source("./R/utilities.R")
 
 historical_fed_pop_pull <- function(x, date, file = NULL){
     
+    if(date > lubridate::ymd("2021-01-02")){
+        stop(
+            "Historical federal pop scraper should not be run past 2021-01-02 as to ",
+            "not overlap with federal pop scraper.")
+    }
+    
     date <- as.Date(date, format = "%Y-%m-%d")
     year4 <- format.Date(date, "%Y")
     month <- format.Date(date, "%m")
@@ -53,11 +59,19 @@ historical_fed_pop_extract <- function(x, date = NULL){
 #' @name historical_federal_pop_scraper
 #' @description Data pulled from wayback archives and federal population API 
 #' \describe{
-#'   \item{}{}
+#'   \item{state}{US State not always provided}
+#'   \item{name}{Name of institution}
+#'   \item{popCount}{ Current Poulation}
+#'   \item{groupDescription}{Description of group type}
+#'   \item{sortKey}{}
+#'   \item{sortNameKey}{}
+#'   \item{sortpzapSequence}{}
+#'   \item{indentationIndicator}{}
+#'   \item{recordType}{}
 #' }
 
 historical_fed_pop_scraper <- R6Class(
-    "historical_fedeal_pop_scraper",
+    "historical_federal_pop_scraper",
     inherit = generic_scraper,
     public = list(
         log = NULL,
@@ -81,7 +95,7 @@ historical_fed_pop_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     historical_fed_pop <- historical_fed_pop_scraper$new(log=TRUE)
-    historical_fed_pop$reset_date("2020-02-15")
+    historical_fed_pop$reset_date("2021-01-09")
     historical_fed_pop$raw_data
     # API returns json closest to date queried  
     historical_fed_pop$pull_raw(date = historical_fed_pop$date, .dated_pull = TRUE)
