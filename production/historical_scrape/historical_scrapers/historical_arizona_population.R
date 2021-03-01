@@ -115,8 +115,19 @@ historical_az_pop_extract <- function(x, date = NULL){
 #' with that. 
 #' 
 #' \describe{
-#'   \item{Felon/Other}{Residents.Population}
-#'   
+#'   \item{Max rated beds operating capacity}{}
+#'   \item{Max temporary beds operating capacity}{}
+#'   \item{Close rated beds operating capacity}{}
+#'   \item{Close temporary beds operating capacity}{}
+#'   \item{Medium rated beds operating capacity}{}
+#'   \item{Medium temporary beds operating capacity}{}
+#'   \item{Minimum rated beds operating capacity}{}
+#'   \item{Minimum temporary beds operating capacity}{}
+#'   \item{Total operating capacity beds}{}
+#'   \item{Special use beds}{}
+#'   \item{Inmate population in operating beds}{}
+#'   \item{Inmate population in special beds}{}
+#'   \item{Total inside inmate population}{Residents.Population}
 #' }
 
 historical_az_pop_scraper <- R6Class(
