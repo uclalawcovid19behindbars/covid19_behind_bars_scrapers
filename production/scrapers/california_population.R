@@ -3,19 +3,19 @@ source("./R/utilities.R")
 
 california_population_pull <- function(x){
     
-    # Extract the URLs
+    # Extract all URLs
     url_ <- x %>% 
         xml2::read_html() %>%
         rvest::html_nodes("a") %>%
         rvest::html_attr("href")
     
-    # Extract the link text
+    # Extract all link texts
     link_ <- x %>%
         xml2::read_html() %>%
         rvest::html_nodes("a") %>%
         rvest::html_text()
     
-    # Return URL for latest population pdf  
+    # Return URL for latest population pdf 
     stringr::str_c(
         "https://www.cdcr.ca.gov/", 
         tibble(link = link_, url = url_) %>% 
