@@ -3,10 +3,6 @@ source("./R/utilities.R")
 
 colorado_pull <- function(x){
     
-    app_src <- xml2::read_html(x) %>%
-        rvest::xml_node("iframe") %>%
-        rvest::html_attr("src")
-    
     fprof <- RSelenium::makeFirefoxProfile(list(
         browser.startup.homepage = "about:blank",
         startup.homepage_override_url = "about:blank",
@@ -31,6 +27,15 @@ colorado_pull <- function(x){
     )
     
     del_ <- capture.output(remDr$open())
+    remDr$navigate(x)
+    Sys.sleep(6)
+    
+    base_html <- remDr$getPageSource()
+    
+    app_src <- xml2::read_html(base_html[[1]])%>%
+        rvest::xml_node("iframe") %>%
+        rvest::html_attr("src")
+
     remDr$navigate(app_src)
     Sys.sleep(6)
     

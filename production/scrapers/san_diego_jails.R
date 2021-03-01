@@ -19,26 +19,54 @@ san_diego_jails_restruct <- function(x) {
 
 san_diego_jails_extract <- function(x) {
     
-    col_name <- matrix(c(
-        "Residents.Tested", "0", "COVID-19 TESTS ADMINISTERED", 
-        "Residents.Confirmed", "1", "CUMULATIVE POSITIVE CASES",
-        "Residents.Active", "2", "ACTIVE CASES IN CUSTODY", 
-        "Residents.Recovered", "3", "RECOVERED/ RELEASED CASES", 
-        "Residents.Quarantine", "4", "INMATES IN ISOLATION FOR PRECAUTIONS"
-    ), ncol = 3, nrow = 5, byrow = TRUE)
+    if(str_detect(x[[1]][["0"]][1], "(?i)population")){
+        col_name <- matrix(c(
+            "Residents.Population", "0", "CURRENT INMATE POPULATION", 
+            "Residents.Confirmed", "1", "ACTIVE CASES IN CUSTODY",
+            "Drop.Residents.pact", "2", "% ACTIVE CASES IN CUSTODY", 
+            "Residents.Quarantine", "3", "INMATES IN ISOLATION FOR PRECAUTIONS", 
+            "Drop.Residents.pquar", "4", "% INMATES IN ISOLATION"
+        ), ncol = 3, nrow = 5, byrow = TRUE)
+        
+        colnames(col_name) <- c("clean", "raw", "check")
+        col_name_df <- as_tibble(col_name)
+        
+        df_ <- as.data.frame(x[[1]])
+        
+        check_names_extractable(df_, col_name_df)
+        
+        out_df <- rename_extractable(df_, col_name_df) %>% 
+            filter(!str_detect(Residents.Population, "(?i)population")) %>% 
+            mutate(Name = "San Diego County Jails") %>% 
+            clean_scraped_df() %>%
+            select(-starts_with("Drop")) %>%
+            as_tibble()
+    }
     
-    colnames(col_name) <- c("clean", "raw", "check")
-    col_name_df <- as_tibble(col_name)
+    else{
+        col_name <- matrix(c(
+            "Residents.Tested", "0", "COVID-19 TESTS ADMINISTERED", 
+            "Residents.Confirmed", "1", "CUMULATIVE POSITIVE CASES",
+            "Residents.Active", "2", "ACTIVE CASES IN CUSTODY", 
+            "Residents.Recovered", "3", "RECOVERED/ RELEASED CASES", 
+            "Residents.Quarantine", "4", "INMATES IN ISOLATION FOR PRECAUTIONS"
+        ), ncol = 3, nrow = 5, byrow = TRUE)
+        
+        colnames(col_name) <- c("clean", "raw", "check")
+        col_name_df <- as_tibble(col_name)
+        
+        df_ <- as.data.frame(x[[1]])
+        
+        check_names_extractable(df_, col_name_df)
+        
+        out_df <- rename_extractable(df_, col_name_df) %>% 
+            filter(!Residents.Tested == "COVID-19 TESTS ADMINISTERED") %>% 
+            mutate(Name = "San Diego County Jails") %>% 
+            clean_scraped_df() %>% 
+            as_tibble()
+    }
     
-    df_ <- as.data.frame(x[[1]])
-    
-    check_names_extractable(df_, col_name_df)
-    
-    rename_extractable(df_, col_name_df) %>% 
-        filter(!Residents.Tested == "COVID-19 TESTS ADMINISTERED") %>% 
-        mutate(Name = "San Diego County Jails") %>% 
-        clean_scraped_df() %>% 
-        as_tibble()
+    out_df
 }
 
 #' Scraper class for general San Diego County jails COVID data

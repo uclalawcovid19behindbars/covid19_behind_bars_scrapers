@@ -548,20 +548,25 @@ write_agg_data <- function(...){
     filter(Measure %in% sel_vars) %>%
     mutate(Measure = factor(Measure, sel_vars)) %>%
     arrange(Measure) %>%
-    select(-Measure) %>%
     mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
     write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
 }
 
-write_latest_data <- function(coalesce = TRUE, fill = FALSE){
+write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, agg_window = 60){
   
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
+    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = fac_window)
     
     covid_suffixes <- c(
       ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
       ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
     
     out_df %>%
+        # Drop rows missing COVID data (e.g. only with population data)
+        filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
+        # drop rows related to statewide counts
+        filter(Name != "STATEWIDE") %>%
+        filter(Name != "ALL BOP FACILITIES") %>%
+        filter(Name != "ALL ICE FACILITIES") %>%
         select(all_of(ends_with(covid_suffixes))) %>%
         summarize_all(sum_na_rm) %>%
         pivot_longer(
@@ -574,7 +579,11 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
     
     out_df %>%
         # Drop rows missing COVID data (e.g. only with population data)
-        filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>% 
+        filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
+        # drop rows related to statewide counts
+        filter(Name != "STATEWIDE") %>%
+        filter(Name != "ALL BOP FACILITIES") %>%
+        filter(Name != "ALL ICE FACILITIES") %>%
         select(
             Facility.ID, Jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
@@ -589,7 +598,8 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
                   na="")
 
-    full_var_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
+    full_var_df <- behindbarstools::calc_aggregate_counts(
+        state = TRUE, window = agg_window)
 
     full_var_df %>%
         filter(!is.na(Val)) %>%
@@ -598,7 +608,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
         arrange(State) %>%
         write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
     
-    write_agg_data()
+    write_agg_data(window = agg_window)
 }
 
 get_latest_manual <- function(state){
