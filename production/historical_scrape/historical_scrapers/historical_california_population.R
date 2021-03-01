@@ -65,6 +65,9 @@ historical_ca_pop_extract <- function(x, date = NULL){
 #' posted on Thursdays (with data as of midnight the previous night) and archived. 
 #' \describe{
 #'   \item{Felon/Other}{Residents.Population}
+#'   \item{Design Capacity}{}
+#'   \item{Percent Occupied}{}
+#'   \item{Staffed Capacity}{}
 #' }
 
 historical_ca_pop_scraper <- R6Class(
@@ -92,7 +95,7 @@ historical_ca_pop_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     historical_ca_pop <- historical_ca_pop_scraper$new(log=TRUE)
-    historical_ca_pop$reset_date("2021-02-17")
+    historical_ca_pop$reset_date("DATE")
     historical_ca_pop$raw_data
     historical_ca_pop$pull_raw(date = historical_ca_pop$date, .dated_pull = TRUE)
     historical_ca_pop$raw_data
