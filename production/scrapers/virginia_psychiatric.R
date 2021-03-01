@@ -16,14 +16,20 @@ virginia_psychiatric_extract <- function(x){
 #' Scraper class for general virginia_psychiatric COVID data
 #' 
 #' @name virginia_psychiatric_scraper
-#' @description There are multiple html tables on this page however we are
-#' interested in the table titled State Operated Psychiatric Hospitals. Row
-#' names here indicate state psychiatric facilities and we want the columns
-#' below
+#' @description Data is stored in a pdf with a graph on top and facility level
+#' data below. S indicates staff and P indicates patients and the names of the
+#' facility are represented by the acronyms on top of the table. The variables
+#' we would like corresponds to the following rows.
 #' \describe{
-#'   \item{Facility name}{The facility name.}
-#'   \item{Patients testing positive}{Residents.Confirmed}
-#'   \item{Staff testing positive}{Staff.Confirmed}
+#'   \item{Facility name}{The facility name}
+#'   \item{Positive P}{Residents.Confirmed}
+#'   \item{Positive S}{Staff.Confirmed}
+#'   \item{Negative P}{Residents.Negative}
+#'   \item{Negative S}{Staff.Negative}
+#'   \item{Recovered P}{Residents.Recovered}
+#'   \item{Recovered S}{Staff.Recovered}
+#'   \item{Deceased P}{Residents.Deaths}
+#'   \item{Deceased S}{Staff.Deaths}
 #' }
 
 virginia_psychiatric_scraper <- R6Class(

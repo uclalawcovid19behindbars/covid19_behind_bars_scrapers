@@ -38,11 +38,8 @@ california_psychiatric_staff_scraper <- R6Class(
             type = "img",
             state = "CA",
             jurisdiction = "psychiatric",
-            # pull the JSON data directly from the API
             pull_func = california_psychiatric_staff_pull,
-            # restructuring the data means pulling out the data portion of the json
             restruct_func = california_psychiatric_staff_restruct,
-            # Rename the columns to appropriate database names
             extract_func = california_psychiatric_staff_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
