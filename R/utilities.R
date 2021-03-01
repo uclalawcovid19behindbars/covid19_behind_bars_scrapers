@@ -530,6 +530,29 @@ sum_na_rm <- function(x){
     sum(x, na.rm = TRUE)
 }
 
+write_agg_data <- function(...){
+  raw_agg <- calc_aggregate_counts(...)
+  
+  # the order and selection of cols corresponds to values in the Google sheet
+  # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
+  sel_vars <- c(
+    "Residents.Confirmed", "Staff.Confirmed",
+    "Residents.Deaths", "Staff.Deaths",
+    "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin",
+    #"Residents.Initiated", "Staff.Initiated",
+    #"Residents.Completed", "Staff.Completed",
+    "Residents.Vadmin", "Staff.Vadmin"
+  )
+  
+  raw_agg %>%
+    filter(Measure %in% sel_vars) %>%
+    mutate(Measure = factor(Measure, sel_vars)) %>%
+    arrange(Measure) %>%
+    select(-Measure) %>%
+    mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
+    write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
+}
+
 write_latest_data <- function(coalesce = TRUE, fill = FALSE){
   
     out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE)
@@ -565,6 +588,17 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE){
             Longitude, County.FIPS, HIFLD.ID, ICE.Field.Office) %>% 
         write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
                   na="")
+
+    full_var_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
+
+    full_var_df %>%
+        filter(!is.na(Val)) %>%
+        select(State, Measure, Val) %>%
+        pivot_wider(names_from = "Measure", values_from = "Val") %>%
+        arrange(State) %>%
+        write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
+    
+    write_agg_data()
 }
 
 get_latest_manual <- function(state){
@@ -633,33 +667,4 @@ hist_config_update <- function(df){
     system(str_c(
       "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
       " ucla:/srv/shiny-server/scraper_data/summary_data/hist_records.csv"))
-}
-
-write_agg_data <- function(...){
-    raw_agg <- calc_aggregate_counts(...)
-  
-    # the order and selection of cols corresponds to values in the Google sheet
-    # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
-    sel_vars <- c(
-        "Residents.Confirmed", "Staff.Confirmed",
-        "Residents.Deaths", "Staff.Deaths",
-        "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin",
-        "Residents.Initiated", "Staff.Initiated",
-        "Residents.Completed", "Staff.Completed",
-        "Residents.Vadmin", "Staff.Vadmin"
-        )
-
-    tf <- tempfile(fileext = ".csv")
-
-    raw_agg %>%
-        filter(Measure %in% sel_vars) %>%
-        mutate(Measure = factor(Measure, sel_vars)) %>%
-        arrange(Measure) %>%
-        select(-Measure) %>%
-        mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
-        write_csv(tf)
-
-    system(str_c(
-      "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
-      " ucla:/srv/shiny-server/scraper_data/summary_data/national_aggregates.csv"))
 }
