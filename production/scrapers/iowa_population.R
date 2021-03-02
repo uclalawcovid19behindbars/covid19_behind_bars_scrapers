@@ -26,10 +26,11 @@ iowa_population_extract <- function(x){
         mutate(Name = case_when(
             # Report Live-Out separately, rename facility to denote this 
             Name == "Minimum Live-Out" & lag(Name) == "Mitchellville" ~ "Mitchellville Minimum Live-Out", 
-            # Report Psychiatric separately, rename facility to denote this 
-            Name == "Forensic Psychiatric Hospital" & lag(Name == "Oakdale") ~ "Oakdale Forensic Psychiatric Hospital", 
-            # Aggregate Newton medium and minimum  
-            Name == "Minimum" & lag(Name) == "Newton-Medium" ~ "Newton-Medium", 
+            # Aggregate Oakdale with psychiatric hospital (IMCC in COVID data)
+            Name == "Forensic Psychiatric Hospital" & lag(Name) == "Oakdale" ~ "Oakdale", 
+            # Aggregate Newton medium and minimum  into Newton 
+            Name == "Minimum" & lag(Name) == "Newton-Medium" ~ "Newton", 
+            Name == "Newton-Medium" ~ "Newton", 
             TRUE ~ Name)) %>% 
         clean_scraped_df() %>% 
         # Sum population across aggregated names 
