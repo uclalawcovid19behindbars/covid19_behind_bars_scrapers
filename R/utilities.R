@@ -560,13 +560,15 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, ag
       ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
       ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
     
+    rowAny <- function(x) rowSums(x) > 0
+    
     out_df %>%
         # Drop rows missing COVID data (e.g. only with population data)
         filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-        # drop rows related to statewide counts
-        filter(Name != "STATEWIDE") %>%
-        filter(Name != "ALL BOP FACILITIES") %>%
-        filter(Name != "ALL ICE FACILITIES") %>%
+        # drop rows related to statewide counts after notifying CDC and hobject
+        # filter(Name != "STATEWIDE") %>%
+        # filter(Name != "ALL BOP FACILITIES") %>%
+        # filter(Name != "ALL ICE FACILITIES") %>%
         select(all_of(ends_with(covid_suffixes))) %>%
         summarize_all(sum_na_rm) %>%
         pivot_longer(
@@ -575,15 +577,13 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, ag
             values_to = "Count") %>%
         print()
     
-    rowAny <- function(x) rowSums(x) > 0
-    
     out_df %>%
         # Drop rows missing COVID data (e.g. only with population data)
         filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-        # drop rows related to statewide counts
-        filter(Name != "STATEWIDE") %>%
-        filter(Name != "ALL BOP FACILITIES") %>%
-        filter(Name != "ALL ICE FACILITIES") %>%
+        # drop rows related to statewide counts after notifying CDC and hobject
+        # filter(Name != "STATEWIDE") %>%
+        # filter(Name != "ALL BOP FACILITIES") %>%
+        # filter(Name != "ALL ICE FACILITIES") %>%
         select(
             Facility.ID, Jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
