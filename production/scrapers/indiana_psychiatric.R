@@ -6,7 +6,7 @@ indiana_psychiatric_pull <- function(x){
 }
 
 indiana_psychiatric_restruct <- function(x){
-    NULL
+    stop_defunct_scraper("https://www.in.gov/fssa/dmha/state-psychiatric-hospitals/indiana-state-psychiatric-hospitals-covid-19-statistics/")
 }
 
 indiana_psychiatric_extract <- function(x){
