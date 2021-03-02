@@ -59,7 +59,7 @@ iowa_population_scraper <- R6Class(
         initialize = function(
             log,
             url = "https://doc.iowa.gov/daily-statistics",
-            id = "iowa",
+            id = "iowa_population",
             state = "IA",
             type = "html",
             jurisdiction = "state",
