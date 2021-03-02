@@ -6,7 +6,7 @@ illinois_psychiatric_pull <- function(x){
 }
 
 illinois_psychiatric_restruct <- function(x){
-    NULL
+    stop_defunct_scraper("https://www.dhs.state.il.us/page.aspx?item=123651")
 }
 
 illinois_psychiatric_extract <- function(x){
