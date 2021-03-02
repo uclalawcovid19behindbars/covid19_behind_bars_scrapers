@@ -7,7 +7,7 @@ california_psychiatric_staff_pull <- function(x){
 }
 
 california_psychiatric_staff_restruct <- function(x){
-    NULL
+    stop_defunct_scraper("https://www.dsh.ca.gov/COVID-19/Patient_and_Staff_COVID-19_Tracking.html")
 }
 
 california_psychiatric_staff_extract <- function(x){
