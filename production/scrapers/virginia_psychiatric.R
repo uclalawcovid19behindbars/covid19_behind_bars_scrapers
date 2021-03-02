@@ -6,7 +6,7 @@ virginia_psychiatric_pull <- function(x){
 }
 
 virginia_psychiatric_restruct <- function(x){
-    NULL
+    stop_defunct_scraper("https://dbhds.virginia.gov/covid19")
 }
 
 virginia_psychiatric_extract <- function(x){
