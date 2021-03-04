@@ -5,7 +5,7 @@ san_diego_jails_pull <- function(x) {
     html_obj <- xml2::read_html(x)
     html_obj %>%
         rvest::html_nodes("a") %>%
-        .[str_detect(rvest::html_text(.), "(?i)jail figures")] %>%
+        .[str_detect(rvest::html_text(.), "(?i)jail daily figures")] %>%
         rvest::html_attr("href") %>%
         xml2::url_absolute(x) %>%
         magick::image_read_pdf()
@@ -22,7 +22,7 @@ san_diego_jails_extract <- function(x) {
     if(str_detect(x[[1]][["0"]][1], "(?i)population")){
         col_name <- matrix(c(
             "Residents.Population", "0", "CURRENT INMATE POPULATION", 
-            "Residents.Confirmed", "1", "ACTIVE CASES IN CUSTODY",
+            "Residents.Active", "1", "ACTIVE CASES IN CUSTODY",
             "Drop.Residents.pact", "2", "% ACTIVE CASES IN CUSTODY", 
             "Residents.Quarantine", "3", "INMATES IN ISOLATION FOR PRECAUTIONS", 
             "Drop.Residents.pquar", "4", "% INMATES IN ISOLATION"

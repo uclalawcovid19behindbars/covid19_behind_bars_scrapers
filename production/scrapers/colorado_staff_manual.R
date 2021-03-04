@@ -29,6 +29,8 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
             Name = `Name`,
             Staff.Confirmed = `Staff Positive Cases`,
             Staff.Vadmin = `Staff Vaccinations`) %>% 
+        {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         clean_scraped_df()
 }
 
