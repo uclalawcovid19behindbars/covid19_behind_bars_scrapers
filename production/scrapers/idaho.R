@@ -36,7 +36,7 @@ idaho_extract <- function(x){
         mutate(Residents.Active = 
                    Drop.Residents.Asymp + Drop.Residents.Active) %>%
         bind_rows(
-            x[[6]] %>%
+            x[[7]] %>%
                 rename(Name = Location) %>%
                 clean_scraped_df() %>%
                 mutate(Positive = ifelse(is.na(Positive), 0, Positive)) %>%
