@@ -15,7 +15,7 @@ new_mexico_jails_restruct <- function(x){
 
 new_mexico_jails_extract <- function(x, exp_date = Sys.Date()){
     
-    error_on_date(first(x$Date), exp_date)
+    error_on_date(first(x$Date), exp_date, days = 10)
     
     check_names(x, c(
         "Date", 
