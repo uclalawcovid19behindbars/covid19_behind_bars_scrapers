@@ -46,7 +46,14 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
         "Resolved in Custody",
         "Percentage of total cases resolved in custody",
         "Deaths",
-        "Current staff cases"))
+        "Current staff cases",
+        "Offered Vaccine (Incarcerated Population, total)",
+        "Offered Vaccine (Incarcerated Population, 1-day diff)",
+        "1st Dose Accepted (Incarcerated Population, total)",
+        "1st Dose Accepted (Incarcerated Population, 1-day diff)",
+        "2nd Dose Accepted (Incarcerated Population)",
+        "Percent of Population Vaccinated",
+        "Percent of Vaccines Accepted"))
     
     x %>%
         select(
@@ -57,7 +64,9 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Tadmin = `Tests (Incarcerated population, total)`,
             Residents.Pending = `Pending tests`,
             Residents.Population = `SRJ Population (total)`,
-            Staff.Confirmed = `Staff cases (total)`
+            Staff.Confirmed = `Staff cases (total)`,
+            Residents.Initiated = `1st Dose Accepted (Incarcerated Population, total)`,
+            Residents.Completed = `2nd Dose Accepted (Incarcerated Population)`
             ) %>%
         mutate(Name = "SANTA RITA JAIL")
 }
