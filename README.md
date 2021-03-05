@@ -54,6 +54,9 @@ docker run -d -p 4445:4444 -p 5901:5900 -v /tmp/sel_dl:/home/seluser/Downloads \
     selenium/standalone-firefox-debug:2.53.1
 ```
 
+35. **STOP! DID YOU UPDATE THE MANUAL SCRAPER DATA YET?**: Visit the manual data google sheet and update the sad scrapers for which we must use our own eyes.
+
+
 4. **Run scraper**: Now we can run the scraper. Ensure that you are in the root directory where `covid19_behind_bars_scrapers.Rproj` lives, and run the following command.
 
 ```
