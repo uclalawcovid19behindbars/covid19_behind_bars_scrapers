@@ -30,7 +30,6 @@ args <- parser$parse_args()
 # read in configuration file to see what historical scrapers to run
 config_df <- read_csv(
     args$config, col_types = c(Scraper = "c", Date = "D", File = "c"))
-
 if(any(!(c("Date", "Scraper", "File") %in% names(config_df)))){
     stop("The config file must include the column names Date, Scraper, and File")
 }

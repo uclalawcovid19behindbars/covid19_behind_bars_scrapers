@@ -2,17 +2,19 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 historical_santa_rita_jail_pull <- function(x, date = NULL, file = NULL){
-    z <- "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
-        googlesheets4::read_sheet(
-            sheet = "Sheet1",
-            col_types = "cddddddddddddddddddddddddddddddddddd"
-            )
-    z %>%
-        mutate(Date = ifelse(Date == "9/26", "9/26/20", Date),
-               Date = ifelse(Date == "10/16", "10/16/20", Date),
-               Date = ifelse(Date == "11/25", "11/25/20", Date),
-               Date = ifelse(Date == "11/26", "11/26/20", Date),
-               Date = lubridate::mdy(Date))
+    ## ran this once and then downloaded it to avoid rate limiting
+    # z <- "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
+    #     googlesheets4::read_sheet(
+    #         sheet = "Sheet1",
+    #         col_types = "cddddddddddddddddddddddddddddddddddd"
+    #         )
+    # z %>%
+    #     mutate(Date = ifelse(Date == "9/26", "9/26/20", Date),
+    #            Date = ifelse(Date == "10/16", "10/16/20", Date),
+    #            Date = ifelse(Date == "11/25", "11/25/20", Date),
+    #            Date = ifelse(Date == "11/26", "11/26/20", Date),
+    #            Date = lubridate::mdy(Date))
+    z <- read_csv("./production/historical_scrape/historical_santa_rita_jail.csv")
 }
 
 historical_santa_rita_jail_restruct <- function(x, date = NULL){
@@ -116,7 +118,8 @@ historical_santa_rita_jail_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     historical_santa_rita_jail <- historical_santa_rita_jail_scraper$new(log = TRUE)
-    historical_santa_rita_jail$reset_date("2020-03-01")
+    # historical_santa_rita_jail$reset_date("DATE")
+    historical_santa_rita_jail$reset_date("2020-04-08")
     historical_santa_rita_jail$raw_data
     historical_santa_rita_jail$pull_raw(date = historical_santa_rita_jail$date, .dated_pull = TRUE)
     historical_santa_rita_jail$raw_data
