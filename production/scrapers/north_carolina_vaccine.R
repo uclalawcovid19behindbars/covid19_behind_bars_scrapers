@@ -2,49 +2,51 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 north_carolina_vaccine_pull <- function(x){
-    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "NC Vaccine", 
-                                  col_types = "Dccccc")
+    x %>%
+        xml2::read_html()
 }
 
 north_carolina_vaccine_restruct <- function(x){
-    x %>%
-        filter(!is.na(Date)) %>% 
-        filter(Date == max(Date))
+    txt <- x %>%
+        rvest::html_nodes("section") %>%
+        rvest::html_text() %>% 
+        .[which(str_detect(., "COVID-19 Vaccination Info"))] %>% 
+        str_squish() %>% 
+        str_split("\n") %>% 
+        unlist() 
+    
+    tibble(
+        Staff.Initiated = stringr::str_extract(
+            txt, pattern = "(?<=Info).*(?=Partially Vaccinated Staff)"), 
+        Staff.Completed = stringr::str_extract(
+            txt, pattern = "(?<=Partially Vaccinated Staff).*(?=Fully Vaccinated Staff)"), 
+        Residents.Initiated = stringr::str_extract(
+            txt, pattern = "(?<=Fully Vaccinated Staff).*(?=Partially Vaccinated Offenders)"), 
+        Residents.Completed = stringr::str_extract(
+            txt, pattern = "(?<=Partially Vaccinated Offenders).*(?=Fully Vaccinated Offenders)")
+    )
 }
 
-north_carolina_vaccine_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(first(x$Date), exp_date)
-    
-    check_names(x, c(
-        "Date", 
-        "Name", 
-        "Residents.Initiated", 
-        "Residents.Completed", 
-        "Staff.Initiated", 
-        "Staff.Completed")
-    )
-    
+north_carolina_vaccine_extract <- function(x){
     x %>%
-        select(
-            Name, 
-            Residents.Initiated,
-            Residents.Completed, 
-            Staff.Initiated, 
-            Staff.Completed) %>% 
+        mutate(Name = "STATEWIDE") %>% 
         clean_scraped_df()
 }
 
 #' Scraper class for North Carolina vaccine data 
 #' 
 #' @name north_carolina_vaccine_scraper
-#' @description Grabs manually entered Google Sheet data for NC vaccines. Raw data
-#' is received via email from the NC DOC weekly. 
+#' @description In early March, NC began reporting statewide totals for vaccine data 
+#' directly on their main COVID-19 dashboard. They also report vaccination data by 
+#' race/ethnicity, not scraped. They include the following note about staff vaccinations
+#' "Numbers represent Adult Correction staff who have been vaccinated by NCDPS and 
+#' who have self-reported if they were vaccinated by an outside provider. Staff 
+#' vaccination is voluntary. Vaccination information is protected through HIPAA." 
 #' 
 #' \describe{
-#'   \item{Offenders}{Number of incarcerated residents who received first doses}
-#'   \item{Staff}{Number of staff who received first doses}
+#'   \item{Partially Vaccinated}{Individuals who have received the initial shot and 
+#'   are waiting the required time before receiving the second dose.}
+#'   \item{Fully Vaccinated}{Individuals who have received all required doses of the vaccine.}
 #' }
 
 north_carolina_vaccine_scraper <- R6Class(
@@ -54,9 +56,9 @@ north_carolina_vaccine_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "North Carolina Department of Public Safety",
+            url = "https://www.ncdps.gov/our-organization/adult-correction/prisons/prisons-info-covid-19",
             id = "north_carolina_vaccine",
-            type = "manual",
+            type = "html",
             state = "NC",
             jurisdiction = "state",
             # pull the JSON data directly from the API
