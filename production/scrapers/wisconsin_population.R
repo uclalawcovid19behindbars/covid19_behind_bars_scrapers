@@ -124,10 +124,25 @@ wisconsin_population_extract <- function(x){
                 "COPPER LAKE SCHOOL LINCOLN HILLS SCHOOL", 
             TRUE ~ Name)) %>%
         group_by(Name) %>% 
-        summarise(Residents.Population = sum(Residents.Population)) %>% 
-        ungroup() %>% 
-        clean_scraped_df() 
+        summarise(Residents.Population = sum(Residents.Population), 
+                  n_facs = n())
     
+    # Check facilities being aggregated 
+    exp_dupes <- c(
+        "RACINE CORRECTIONAL INSTITUTION STURTEVANT TRANSITIONAL FACILITY", 
+        "COPPER LAKE SCHOOL LINCOLN HILLS SCHOOL", 
+        "ST CROIX")
+    
+    unexp_dupes <- out %>% 
+        filter(n_facs > 1) %>% 
+        filter(!Name %in% exp_dupes) 
+    
+    if (nrow(unexp_dupes) > 0){
+        warning(
+            stringr::str_c("The following duplicate facilies were not expected: ", 
+                           unexp_dupes$Name))
+    }
+
     # Check overall sum to ensure aggregated rows aren't added under new names 
     if (sum(out$Residents.Population) > 26000){
         warning(
@@ -141,7 +156,10 @@ wisconsin_population_extract <- function(x){
                            "Inspect for total rows that were not dropped."))
     }
     
-    out
+    out %>% 
+        select(-n_facs) %>% 
+        ungroup() %>% 
+        clean_scraped_df() 
 }
 
 #' Scraper class for Wisconsin population data 
