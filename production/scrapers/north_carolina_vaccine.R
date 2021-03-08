@@ -11,19 +11,20 @@ north_carolina_vaccine_restruct <- function(x){
         rvest::html_nodes("section") %>%
         rvest::html_text() %>% 
         .[which(str_detect(., "COVID-19 Vaccination Info"))] %>% 
-        str_squish() %>% 
-        str_split("\n") %>% 
+        stringr::str_squish() %>% 
+        stringr::str_split("\n") %>% 
+        stringr::str_to_lower() %>% 
         unlist() 
     
     tibble(
         Staff.Initiated = stringr::str_extract(
-            txt, pattern = "(?<=Info).*(?=Partially Vaccinated Staff)"), 
+            txt, pattern = "(?<=info).*(?=partially vaccinated staff)"), 
         Staff.Completed = stringr::str_extract(
-            txt, pattern = "(?<=Partially Vaccinated Staff).*(?=Fully Vaccinated Staff)"), 
+            txt, pattern = "(?<=partially vaccinated staff).*(?=fully vaccinated staff)"), 
         Residents.Initiated = stringr::str_extract(
-            txt, pattern = "(?<=Fully Vaccinated Staff).*(?=Partially Vaccinated Offenders)"), 
+            txt, pattern = "(?<=fully vaccinated staff).*(?=partially vaccinated offenders)"), 
         Residents.Completed = stringr::str_extract(
-            txt, pattern = "(?<=Partially Vaccinated Offenders).*(?=Fully Vaccinated Offenders)")
+            txt, pattern = "(?<=partially vaccinated offenders).*(?=fully vaccinated offenders)")
     )
 }
 
