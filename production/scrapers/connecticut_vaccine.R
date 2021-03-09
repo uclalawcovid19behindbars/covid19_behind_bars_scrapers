@@ -21,7 +21,7 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    st_txt <- magick::image_crop(x, "150x120+270+700") %>%
+    st_txt <- magick::image_crop(x, "150x110+270+740") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -30,11 +30,11 @@ connecticut_vaccine_restruct <- function(x){
     }
     
     tibble(
-        Res = magick::image_crop(x, "150x80+10+830") %>%
+        Res = magick::image_crop(x, "150x80+28+852") %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr(),
     
-        Staff = magick::image_crop(x, "150x80+270+830") %>%
+        Staff = magick::image_crop(x, "150x80+270+853") %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr()
     )

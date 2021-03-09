@@ -13,8 +13,8 @@ new_hampshire_restruct <- function(x){
         rvest::html_text() %>%
         clean_fac_col_txt()
     
-    staff_idx <- which(stringr::str_detect(captions, "(?i)staff"))
-    rez_idx <- which(stringr::str_detect(captions, "(?i)resident"))
+    staff_idx <- which(stringr::str_detect(captions, "(?i)staff testing"))
+    rez_idx <- which(stringr::str_detect(captions, "(?i)residents testing"))
     
     list(
         staff = tab_set[[staff_idx]] %>%
