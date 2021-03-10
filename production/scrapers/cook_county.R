@@ -154,5 +154,6 @@ if(sys.nframe() == 0){
     cook_county$restruct_data
     cook_county$extract_from_raw()
     cook_county$extract_data
+    cook_county$validate_extract()
+    cook_county$save_extract()
 }
-
