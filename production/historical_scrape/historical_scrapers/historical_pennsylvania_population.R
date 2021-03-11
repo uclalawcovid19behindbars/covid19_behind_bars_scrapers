@@ -65,6 +65,25 @@ historical_pa_pop_extract <- function(x, date = NULL){
         clean_scraped_df()
 }
 
+#' Scraper class for Pennsylvania historical population data 
+#' 
+#' @name historical_pa_pop_scraper
+#' @description This scraper uses the wayback archives to pull population data 
+#' reported on Pennsylvania's COVID dashboard since April 2020. Pennsylvania's DOC
+#' also posts and archives monthly population reports in PDF form 
+#' https://www.cor.pa.gov/About%20Us/Statistics/Pages/Monthly-Population-Reports.aspx
+#' but the wayback archives provide more coverage. 
+#' 
+#' \describe{
+#'   \item{INSTITUTION}{The facility name.}
+#'   \item{TODAY'S POPULATION}{Residnet population}
+#'   \item{REPRIEVE RELEASES}{Residents released}
+#'   \item{TODAY'S POPULATION AFTER REPRIEVE RELEASES}{New res population}
+#'   \item{INCREASE/DECREASE FROM YESTERDAY}{Resident change from yesterday}
+#'   \item{INCREASE/DECREASE FROM LAST WEEK}{Resident change from last week}
+#'   \item{INCREASE/DECREASE FROM LAST MONTH}{Resident change from last month}
+#' }
+
 historical_pa_pop_scraper <- R6Class(
     "historical_pa_pop_scraper",
     inherit = generic_scraper,
