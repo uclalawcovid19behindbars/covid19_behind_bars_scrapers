@@ -40,11 +40,10 @@ ohio_extract <- function(x){
         "# of Inmates in Quarantine", "6", "Residents.Quarantine",
         "# of Inmates in Isolation", "7", "Residents.Isolation",
         "# of inmates currently Positive for COVID-19", "8", "Residents.Active",
-        "# of Probable COVID-19 Related Inmate Deaths", "9", "Resident.Probable.Deaths",
-        "# of Confirmed COVID-19 Related Inmate Deaths", "10", "Residents.Confirmed.Deaths",
-        "# of Inmates who have Pending Results",  "11", "Residents.Pending",
-        "# of current Inmates who have Recovered", "12", "Residents.Recovered"
-    ), ncol = 3, nrow = 13, byrow = TRUE)
+        "# of Confirmed COVID-19 Related Inmate Deaths", "9", "Residents.Confirmed.Deaths",
+        "# of Inmates who have Pending Results",  "10", "Residents.Pending",
+        "# of current Inmates who have Recovered", "11", "Residents.Recovered"
+    ), ncol = 3, nrow = 12, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
@@ -57,12 +56,12 @@ ohio_extract <- function(x){
             filter(Name != "Institution" & Name != "Totals") %>%
             filter(!str_detect(Name, "(?i)total"))})) %>%
         clean_scraped_df() %>% 
-        mutate(Residents.Deaths = Residents.Confirmed.Deaths + Resident.Probable.Deaths, 
+        mutate(Residents.Deaths = Residents.Confirmed.Deaths , 
                Residents.Confirmed = Residents.Active + Residents.Confirmed.Deaths + Residents.Recovered, 
                Residents.Quarantine = Residents.Quarantine + Residents.Isolation) %>% 
         select(
             -Staff.Active, -Residents.Pending, -Residents.Isolation,
-            -Resident.Probable.Deaths, -Residents.Confirmed.Deaths)
+            -Residents.Confirmed.Deaths)
 }
 
 #' Scraper class for general Ohio COVID data
