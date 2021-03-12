@@ -25,6 +25,9 @@ library(behindbarstools)
 The table below summarizes the scrapers that yielded errors and warnings. Highlighted rows yielded errors, meaning no data was extracted.
 
 ``` {r echo = F, warning = F}
+# Read latest facility data 
+new_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = 60)
+
 # Get all log files from the latest run 
 latest_date <- max(new_df$Date) %>% 
     as.character()
@@ -56,9 +59,6 @@ kable(log_status %>%
 We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. 
 
 ``` {r check_previous, echo = F, message = F, warning = F}
-# Read latest facility data 
-new_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = 60)
-
 # Read old facility data 
 old_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/latest-data/adult_facility_covid_counts.csv" %>% 
   read_csv()
