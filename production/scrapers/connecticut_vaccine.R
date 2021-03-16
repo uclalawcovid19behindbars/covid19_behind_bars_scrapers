@@ -13,7 +13,7 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    in_txt <- magick::image_crop(x, "150x120+10+700") %>%
+    in_txt <- magick::image_crop(x, "150x120+10+750") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -42,6 +42,7 @@ connecticut_vaccine_restruct <- function(x){
 
 connecticut_vaccine_extract <- function(x){
     x %>%
+        mutate_all(function(x) str_replace_all(x, "\\.", ",")) %>%
         mutate(Name = "STATEWIDE") %>%
         rename(Residents.Initiated = Res, Staff.Initiated = Staff) %>%
         clean_scraped_df()

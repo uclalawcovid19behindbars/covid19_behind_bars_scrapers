@@ -2,6 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 maryland_pull <- function(x){
+    stop_defunct_scraper(x)
     md_img <- get_src_by_attr(
         x, "img", attr = "src", attr_regex = "(?i)public") %>%
         str_remove_all("-\\d{3,4}x\\d*")
