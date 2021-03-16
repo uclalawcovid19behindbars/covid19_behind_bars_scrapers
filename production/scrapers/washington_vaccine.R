@@ -51,7 +51,7 @@ washington_vaccine_scraper <- R6Class(
         initialize = function(
             log,
             url = "https://www.doc.wa.gov/corrections/covid-19/data-vaccines.htm",
-            id = "washington",
+            id = "washington_vaccine",
             type = "html",
             state = "WA",
             jurisdiction = "state",
