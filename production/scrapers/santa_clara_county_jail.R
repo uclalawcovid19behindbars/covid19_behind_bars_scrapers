@@ -25,8 +25,10 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
         "Total Tests Completed", 
         "Positive Test Results", 
         "Negative Test Results", 
+        "Cases confirmed at booking", 
         "Cumulative Cases", 
         "New Cases", 
+        "Staff Testing Cumulative", 
         "Notes"))
     
     x %>%

@@ -29,6 +29,7 @@ minnesota_restruct <- function(x){
         rvest::html_table(fill=T) %>%
         .[,5:ncol(.)] %>%
         filter(!is.na(.[,1])) %>%
+        as.data.frame() %>% 
         filter(!str_detect(.[,1], "(?i)total"))
     
     names(df_res) <- x %>%
@@ -72,6 +73,7 @@ minnesota_restruct <- function(x){
         rvest::html_table(fill=T) %>%
         .[,2:ncol(.)] %>%
         filter(!is.na(.[,1])) %>%
+        as.data.frame() %>% 
         filter(!str_detect(.[,1], "(?i)total"))
     
     names(df_pop) <- x %>%
@@ -91,6 +93,7 @@ minnesota_restruct <- function(x){
         rvest::html_table(fill=T) %>%
         .[,5:ncol(.)] %>%
         filter(!is.na(.[,1])) %>%
+        as.data.frame() %>% 
         filter(!str_detect(.[,1], "(?i)total"))
     
     names(df_staff) <- x %>%
@@ -186,6 +189,7 @@ if(sys.nframe() == 0){
     minnesota$raw_data
     minnesota$pull_raw()
     minnesota$raw_data
+    minnesota$save_raw()
     minnesota$restruct_raw()
     minnesota$restruct_data
     minnesota$extract_from_raw()
