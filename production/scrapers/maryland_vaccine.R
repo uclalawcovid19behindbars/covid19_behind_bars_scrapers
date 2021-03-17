@@ -34,57 +34,65 @@ maryland_vaccine_pull <- function(x){
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(src_url)
-    Sys.sleep(6)
+    Sys.sleep(15)
     
     base_html <- remDr$getPageSource()
     
     xml2::read_html(base_html[[1]])
 }
 
-maryland_vaccine_restruct <- function(x){
-        
+get_maryland_vaccine_table <- function(x, str){
     tab <- x %>% 
-        rvest::html_node(xpath = "//*[contains(@title,'Staff Vaccinations')]/parent::*") %>% 
-        # Help :(
+        rvest::html_node(xpath = stringr::str_c(
+            "//*[contains(@title,", str, ")]/parent::*")
+        ) %>% 
         rvest::html_node(".tableEx") %>%
         rvest::html_node(".innerContainer")
-        
-        col_dat <- tab %>%
-            rvest::html_node(".bodyCells") %>%
-            rvest::html_node("div") %>%
-            rvest::html_children()
-        
-        dat_df <- do.call(rbind, lapply(col_dat, function(p){
-            sapply(rvest::html_children(p), function(z){
-                z %>% 
-                    rvest::html_nodes("div") %>%
-                    rvest::html_attr("title")})})) %>%
-            as.data.frame()
     
-        names(dat_df) <- tab %>%
-            rvest::html_node(".columnHeaders") %>%
-            rvest::html_node("div") %>%
-            rvest::html_nodes("div") %>% 
-            rvest::html_attr("title") %>%
-            na.omit() %>%
-            as.vector()
+    col_dat <- tab %>%
+        rvest::html_node(".bodyCells") %>%
+        rvest::html_node("div") %>%
+        rvest::html_children()
+    
+    dat_df <- do.call(rbind, lapply(col_dat, function(p){
+        sapply(rvest::html_children(p), function(z){
+            z %>% 
+                rvest::html_nodes("div") %>%
+                rvest::html_attr("title")})})) %>%
+        as.data.frame()
+    
+    names(dat_df) <- tab %>%
+        rvest::html_node(".columnHeaders") %>%
+        rvest::html_node("div") %>%
+        rvest::html_nodes("div") %>% 
+        rvest::html_attr("title") %>%
+        na.omit() %>%
+        as.vector()
     
     dat_df 
 }
 
-maryland_vaccine_extract <- function(x){
-    x %>%
-        rename(
-            Residents.Recovered = "Inmate Recoveries",
-            Residents.Confirmed = "Inmate Cases",
-            Residents.Deaths = "Inmate Deaths",
-            Staff.Recovered = "Staff Recoveries",
-            Staff.Confirmed = "Staff Cases",
-            Staff.Deaths = "Staff Deaths"
-        )
+maryland_vaccine_restruct <- function(x){
+        
+    # Need single quotes for the xpath 
+    staff <- get_maryland_vaccine_table(x, "'Staff Vaccinations'") %>% 
+        rename("Staff.Initiated" = "First Shot", 
+               "Staff.Completed" = "Second Shot")
+    
+    res <- get_maryland_vaccine_table(x, "'Inmate Vaccinations'") %>% 
+        rename("Residents.Initiated" = "First Shot", 
+               "Residents.Completed" = "Second Shot")
+    
+    cbind(staff, res)
 }
 
-#' Scraper class for general Maryland COVID data
+maryland_vaccine_extract <- function(x){
+    x %>%
+        mutate(Name = "STATEWIDE") %>% 
+        clean_scraped_df() 
+}
+
+#' Scraper class for Maryland vaccine data
 #' 
 #' @name maryland_vaccine_scraper
 #' @description Vaccine data from MD is pulled from the fourth table on their Power BI 
