@@ -5,6 +5,7 @@ georgia_psychiatric_pull <- function(x){
     xml2::read_html(x)
 }
 
+
 georgia_psychiatric_restruct <- function(x){
 
     table1 <- x %>% 
@@ -13,19 +14,25 @@ georgia_psychiatric_restruct <- function(x){
         rvest::html_table(header= FALSE) %>% 
         slice(-1)
     
-    table1 <- table1[-c(1), -c(4, 7)]  # Removing second header & "total" columns (which combines staff and resident numbers)
-    # check names
+    colnames(table1) <- table1[1, ]
     
+    table1_expected_names <- c("", "Individuals", "Staff", "Total", "Individuals", "Staff", "Total")
+    check_names(table1, table1_expected_names)
+    
+    table1 <- table1[-c(1), -c(4, 7)]  # Removing second header & "total" columns (which combines staff and resident numbers)
     colnames(table1) <- c("Name", "Residents.Confirmed", "Staff.Confirmed", "Residents.Recovered", "Staff.Recovered")
      
+    
     table2 <- x %>% 
         rvest::html_nodes("table") %>%
         .[[2]] %>% rvest::html_table(header= TRUE)
     
+    table2_expected_names <- c("DBHDD Facilities", "Individuals", "Individuals", "Individuals", "Staff", "Staff", "Staff", "Total")
+    check_names(table2, table2_expected_names)
+    
     table2 <- table2[ , -c(1, 3, 4, 6, 7, 8)] # Removing extra columns 
-     # check names
-
     colnames(table2) <- c("Residents.Deaths", "Staff.Deaths")
+    
     
     x <- cbind(table1, table2)
     
