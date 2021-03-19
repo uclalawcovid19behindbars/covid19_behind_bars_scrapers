@@ -33,7 +33,7 @@ colorado_pull <- function(x){
     base_html <- remDr$getPageSource()
     
     app_src <- xml2::read_html(base_html[[1]])%>%
-        rvest::xml_node("iframe") %>%
+        rvest::html_element("iframe") %>%
         rvest::html_attr("src")
 
     remDr$navigate(app_src)

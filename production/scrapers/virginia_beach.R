@@ -18,23 +18,23 @@ virginia_beach_restruct <- function(x){
 
 virginia_beach_extract <- function(x){
     exp_names_rez <- c(
-        Residents.Tested = "INMATES TESTED",
+        Residents.Tadmin = "INMATE TESTS",
         Residents.Negative = "INMATE NEGATIVE RESULTS",
         Residents.Confirmed = "INMATE POSITIVE RESULTS",
         Residents.Pending = "INMATE RESULTS PENDING",
         Drop.Res.Active = "ACTIVE INMATE CASES",
-        Residents.Recovered = "INMATES CLEARED OR RELEASED",
+        Residents.Recovered = "INMATES CLEARED OR RELEASED**",
         Residents.Deaths = "INMATE DEATHS DUE TO COVID-19",
         Residents.Population = "TOTAL INMATES (CURRENT JAIL POPULATION)"
     )
 
     exp_names_staff <- c(
-        Staff.Tested = "DEPUTIES TESTED",
+        Staff.Tested = "DEPUTY TESTS",
         Staff.Negative = "DEPUTY NEGATIVE RESULTS",
         Staff.Confirmed = "DEPUTY POSITIVE RESULTS",
         Drop.Staff.Pending = "DEPUTY RESULTS PENDING",
         Drop.Staff.Active ="ACTIVE DEPUTY CASES",
-        Staff.Recovered = "DEPUTIES CLEARED",
+        Staff.Recovered = "DEPUTIES CLEARED*",
         Drop.Staff.Population = "TOTAL DEPUTIES"
     )
     

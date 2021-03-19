@@ -28,7 +28,9 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
         "Cases confirmed at booking", 
         "Cumulative Cases", 
         "New Cases", 
-        "Staff Testing Cumulative", 
+        "Total Staff Tests", 
+        "Vaccinations for Incarcerated Population",
+        "Vaccinations for Staff",
         "Notes"))
     
     x %>%
@@ -36,7 +38,10 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Confirmed = `Cumulative Cases`,
             Residents.Active = `Active Cases In Custody`,
             Residents.Tadmin = `Total Tests Completed`,
-            Residents.Population = `Incarcerated People In Custody`
+            Residents.Population = `Incarcerated People In Custody`,
+            Staff.Tested = `Total Staff Tests`,
+            Residents.Vadmin = `Vaccinations for Incarcerated Population`,
+            Staff.Vadmin = `Vaccinations for Staff`
             ) %>%
         mutate(Name = "SANTA CLARA COUNTY JAIL")
 }

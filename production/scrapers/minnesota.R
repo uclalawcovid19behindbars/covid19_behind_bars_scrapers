@@ -5,7 +5,7 @@ minnesota_pull <- function(x, wait = 5){
     
     app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
         # xml2::read_html(x) %>%
-        # rvest::xml_nodes("iframe") %>%
+        # rvest::html_elements("iframe") %>%
         # rvest::html_attr("src")
     
     remDr <- RSelenium::remoteDriver(
@@ -24,7 +24,7 @@ minnesota_pull <- function(x, wait = 5){
 minnesota_restruct <- function(x){
     
     df_res <- x %>%
-        rvest::xml_nodes("table") %>%
+        rvest::html_elements("table") %>%
         .[[4]] %>%
         rvest::html_table(fill=T) %>%
         .[,5:ncol(.)] %>%
@@ -33,7 +33,7 @@ minnesota_restruct <- function(x){
         filter(!str_detect(.[,1], "(?i)total"))
     
     names(df_res) <- x %>%
-        rvest::xml_nodes("table") %>%
+        rvest::html_elements("table") %>%
         .[[3]] %>%
         rvest::html_table() %>%
         .[,2:ncol(.)] %>%
@@ -68,7 +68,7 @@ minnesota_restruct <- function(x){
     )
     
     df_pop <- x %>%
-        rvest::xml_nodes("table") %>%
+        rvest::html_elements("table") %>%
         .[[2]] %>%
         rvest::html_table(fill=T) %>%
         .[,2:ncol(.)] %>%
@@ -77,7 +77,7 @@ minnesota_restruct <- function(x){
         filter(!str_detect(.[,1], "(?i)total"))
     
     names(df_pop) <- x %>%
-        rvest::xml_nodes("table") %>%
+        rvest::html_elements("table") %>%
         .[[1]] %>%
         rvest::html_table() %>%
         .[,2:ncol(.)] %>%
@@ -88,7 +88,7 @@ minnesota_restruct <- function(x){
         str_squish()
     
     df_staff <- x %>%
-        rvest::xml_nodes("table") %>%
+        rvest::html_elements("table") %>%
         .[[18]] %>%
         rvest::html_table(fill=T) %>%
         .[,5:ncol(.)] %>%
@@ -97,7 +97,7 @@ minnesota_restruct <- function(x){
         filter(!str_detect(.[,1], "(?i)total"))
     
     names(df_staff) <- x %>%
-        rvest::xml_nodes("table") %>%
+        rvest::html_elements("table") %>%
         .[[17]] %>%
         rvest::html_table() %>%
         .[,2:ncol(.)] %>%

@@ -9,9 +9,8 @@ wisconsin_staff_restruct <- function(x){
     df_ <- x %>%
         rvest::html_node("table") %>%
         rvest::html_table() %>%
-        unname()
-    
-    names(df_) <- df_[1,]
+        unname() %>%
+        janitor::row_to_names(row_number = 1)
     
     df_[,1:2]
 }

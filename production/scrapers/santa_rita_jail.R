@@ -49,11 +49,13 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
         "Current staff cases",
         "Offered Vaccine (Incarcerated Population, total)",
         "Offered Vaccine (Incarcerated Population, 1-day diff)",
-        "1st Dose Accepted (Incarcerated Population, total)",
-        "1st Dose Accepted (Incarcerated Population, 1-day diff)",
-        "2nd Dose Accepted (Incarcerated Population)",
-        "Percent of Population Vaccinated",
-        "Percent of Vaccines Accepted"))
+        "1st Dose Janssen Vaccine Accepted (Incarcerated Population)",
+        "1st Dose Janssen Vaccine Accepted (Incarcerated Population, 1-day diff)",
+        "1st Dose Moderna Accepted (Incarcerated Population, total)",
+        "1st Dose Moderna Accepted (Incarcerated Population, 1-day diff)",
+        "2nd Dose Moderna Accepted (Incarcerated Population)",
+        "Percent of Population Vaccinated w/ First Dose",
+        "Percent of First Dose Vaccines Accepted"))
     
     x %>%
         select(
@@ -65,10 +67,15 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Pending = `Pending tests`,
             Residents.Population = `SRJ Population (total)`,
             Staff.Confirmed = `Staff cases (total)`,
-            Residents.Initiated = `1st Dose Accepted (Incarcerated Population, total)`,
-            Residents.Completed = `2nd Dose Accepted (Incarcerated Population)`
+            Residents.Initiated.Janssen = `1st Dose Janssen Vaccine Accepted (Incarcerated Population)`,
+            Residnets.Initiated.Moderna = `1st Dose Moderna Accepted (Incarcerated Population, total)`,
+            Residents.Completed.Moderna = `2nd Dose Moderna Accepted (Incarcerated Population)`
             ) %>%
-        mutate(Name = "SANTA RITA JAIL")
+        mutate(Name = "SANTA RITA JAIL",
+               Residents.Initiated = Residents.Initiated.Janssen + Residents.Initiated.Moderna,
+               Residents.Completed = Residents.Initiated.Janssen + Residents.Completed.Moderna,
+               Residents.Vadmin = Residents.Initiated.Janssen + 
+                                    Residents.Initiated.Moderna + Residents.Completed.Moderna)
 }
 
 #' Scraper class for general santa_rita_jail COVID data

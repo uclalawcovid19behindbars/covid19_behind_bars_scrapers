@@ -7,7 +7,7 @@ michigan_pull <- function(x){
     img1 <- mi_html %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>%
-        .[16] %>%
+        .[8] %>%
         magick::image_read()
     
     img1

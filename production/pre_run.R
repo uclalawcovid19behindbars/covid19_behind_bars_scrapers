@@ -6,7 +6,7 @@ required_packages <- c(
     "rgl", "tidyverse", "rvest", "httr", "xml2", "magick", "pdftools",
     "jsonlite", "lubridate", "R6", "futile.logger", "tryCatchLog", "argparse",
     "tesseract", "splashr", "tabulizer", "RSelenium", "remotes", "ggrepel",
-    "googlesheets4", "rmarkdown", "kableExtra"
+    "googlesheets4", "rmarkdown", "kableExtra", "janitor"
 )
 
 your_packages <- row.names(installed.packages())
