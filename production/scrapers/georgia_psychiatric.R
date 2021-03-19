@@ -6,11 +6,35 @@ georgia_psychiatric_pull <- function(x){
 }
 
 georgia_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://dbhdd.georgia.gov/confirmed-covid-19-cases")
+
+    table1 <- x %>% 
+        rvest::html_nodes("table") %>%
+        .[[1]] %>% 
+        rvest::html_table(header= FALSE) %>% 
+        slice(-1)
+    
+    table1 <- table1[-c(1), -c(4, 7)]  # Removing second header & "total" columns (which combines staff and resident numbers)
+    # check names
+    
+    colnames(table1) <- c("Name", "Residents.Confirmed", "Staff.Confirmed", "Residents.Recovered", "Staff.Recovered")
+     
+    table2 <- x %>% 
+        rvest::html_nodes("table") %>%
+        .[[2]] %>% rvest::html_table(header= TRUE)
+    
+    table2 <- table2[ , -c(1, 3, 4, 6, 7, 8)] # Removing extra columns 
+     # check names
+
+    colnames(table2) <- c("Residents.Deaths", "Staff.Deaths")
+    
+    x <- cbind(table1, table2)
+    
 }
 
+
 georgia_psychiatric_extract <- function(x){
-    NULL
+    x <- x[-6, ] # Removing the "total" row (which adds the results for all faculties)
+    x %>% clean_scraped_df() 
 }
 
 #' Scraper class for general georgia_psychiatric COVID data
