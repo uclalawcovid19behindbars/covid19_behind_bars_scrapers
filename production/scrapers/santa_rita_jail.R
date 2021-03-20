@@ -67,15 +67,15 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Pending = `Pending tests`,
             Residents.Population = `SRJ Population (total)`,
             Staff.Confirmed = `Staff cases (total)`,
-            Residents.Initiated.Janssen = `1st Dose Janssen Vaccine Accepted (Incarcerated Population)`,
-            Residnets.Initiated.Moderna = `1st Dose Moderna Accepted (Incarcerated Population, total)`,
-            Residents.Completed.Moderna = `2nd Dose Moderna Accepted (Incarcerated Population)`
+            Residents.Initiated_Janssen = `1st Dose Janssen Vaccine Accepted (Incarcerated Population)`,
+            Residents.Initiated_Moderna = `1st Dose Moderna Accepted (Incarcerated Population, total)`,
+            Residents.Completed_Moderna = `2nd Dose Moderna Accepted (Incarcerated Population)`
             ) %>%
         mutate(Name = "SANTA RITA JAIL",
-               Residents.Initiated = Residents.Initiated.Janssen + Residents.Initiated.Moderna,
-               Residents.Completed = Residents.Initiated.Janssen + Residents.Completed.Moderna,
-               Residents.Vadmin = Residents.Initiated.Janssen + 
-                                    Residents.Initiated.Moderna + Residents.Completed.Moderna)
+               Residents.Initiated = Residents.Initiated_Janssen + Residents.Initiated_Moderna,
+               Residents.Completed = Residents.Initiated_Janssen + Residents.Completed_Moderna,
+               Residents.Vadmin = Residents.Initiated_Janssen + 
+                                    Residents.Initiated_Moderna + Residents.Completed_Moderna) 
 }
 
 #' Scraper class for general santa_rita_jail COVID data
