@@ -3,6 +3,10 @@ source("./R/utilities.R")
 
 historical_ky_pop_pull <- function(x, date, file = NULL){
     
+    if(date > lubridate::ymd("2021-03-21")){
+        stop("Historical scraper should not be run past 2021-03-21 to not overlap with regular scraper.")
+    }
+    
     date_mmddyy <- format(date, "%m-%d-%y")
     year4 <- format.Date(date, "%Y")
     month2 <- format.Date(date, "%m")
