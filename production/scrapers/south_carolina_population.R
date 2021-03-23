@@ -74,7 +74,7 @@ south_carolina_population_extract <- function(x){
                Name = ifelse(str_detect(Name, "GRAHAM"), "GRAHAM", Name)) %>% 
         clean_scraped_df() %>% 
         group_by(Name) %>% 
-        summarise(Residents.Population = sum(Residents.Population)) %>% 
+        summarise(Residents.Population = sum_na_rm(Residents.Population)) %>% 
         ungroup()
 }
 
