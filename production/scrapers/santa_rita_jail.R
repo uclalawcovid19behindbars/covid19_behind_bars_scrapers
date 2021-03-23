@@ -75,7 +75,8 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
                Residents.Initiated = Residents.Initiated_Janssen + Residents.Initiated_Moderna,
                Residents.Completed = Residents.Initiated_Janssen + Residents.Completed_Moderna,
                Residents.Vadmin = Residents.Initiated_Janssen + 
-                                    Residents.Initiated_Moderna + Residents.Completed_Moderna) 
+                                    Residents.Initiated_Moderna + Residents.Completed_Moderna) %>%
+        select(-ends_with("Janssen"), -ends_with("Moderna"))
 }
 
 #' Scraper class for general santa_rita_jail COVID data
