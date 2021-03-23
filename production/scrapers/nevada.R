@@ -31,6 +31,11 @@ nevada_pull <- function(x){
     remDr$findElement(
         "xpath", 
         str_c("//div[@class='slicerItemContainer']",
+              "/span[@title='Select all']"))$clickElement()
+    Sys.sleep(10)
+    remDr$findElement(
+        "xpath", 
+        str_c("//div[@class='slicerItemContainer']",
               "/span[@title='Correctional']"))$clickElement()
     Sys.sleep(10)
     remDr$findElement(
