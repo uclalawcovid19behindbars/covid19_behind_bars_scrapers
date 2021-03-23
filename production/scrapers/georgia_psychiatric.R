@@ -7,7 +7,6 @@ georgia_psychiatric_pull <- function(x){
 
 
 georgia_psychiatric_restruct <- function(x){
-    
     table1 <- x %>% 
         rvest::html_nodes("table") %>%
         .[[1]] %>% 
