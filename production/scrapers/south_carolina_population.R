@@ -3,6 +3,7 @@ source("./R/utilities.R")
 
 south_carolina_population_restruct <- function(x, exp_date = Sys.Date()){
     
+    # Check date 
     pdf_date <- x %>% 
         magick::image_read_pdf() %>% 
         magick::image_crop("340x150+1900+100") %>% 
@@ -11,6 +12,23 @@ south_carolina_population_restruct <- function(x, exp_date = Sys.Date()){
     
     error_on_date(pdf_date, exp_date)
     
+    # Check header (first row)
+    exp_header <- c("Institution or Center", "General Housing", 
+                    "Restrictive Housing", "Programs", "Total")
+    
+    header <- x %>% 
+        magick::image_read_pdf() %>% 
+        magick::image_crop("2100x100+100+230") %>% 
+        magick::image_ocr() %>% 
+        stringr::str_split("\\|") %>% 
+        .[[1]] %>% 
+        matrix(nrow = 1, ncol = 5) %>% 
+        as.data.frame() %>% 
+        janitor::row_to_names(row_number = 1) 
+    
+    check_names(header, exp_header)
+    
+    # Check column names (row below header)
     x_ <- x %>% 
         magick::image_read_pdf() %>% 
         magick::image_crop("3000x2200+0+300") %>% 
