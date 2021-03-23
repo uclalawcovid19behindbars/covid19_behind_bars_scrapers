@@ -7,7 +7,7 @@ georgia_psychiatric_pull <- function(x){
 
 
 georgia_psychiatric_restruct <- function(x){
-
+    
     table1 <- x %>% 
         rvest::html_nodes("table") %>%
         .[[1]] %>% 
@@ -19,29 +19,40 @@ georgia_psychiatric_restruct <- function(x){
     table1_expected_names <- c("", "Individuals", "Staff", "Total", "Individuals", "Staff", "Total")
     check_names(table1, table1_expected_names)
     
-    table1 <- table1[-c(1), -c(4, 7)]  # Removing second header & "total" columns (which combines staff and resident numbers)
-    colnames(table1) <- c("Name", "Residents.Confirmed", "Staff.Confirmed", "Residents.Recovered", "Staff.Recovered")
-     
+    colnames(table1) <- c(
+        "Name", "Residents.Confirmed", "Staff.Confirmed", "Drop.Total.1",
+        "Residents.Recovered", "Staff.Recovered", "Drop.Total.2")
+    
+    table1 <- table1 %>%
+        select(-starts_with("Drop")) %>%
+        filter(Name != "")
+    
     
     table2 <- x %>% 
         rvest::html_nodes("table") %>%
         .[[2]] %>% rvest::html_table(header= TRUE)
     
-    table2_expected_names <- c("DBHDD Facilities", "Individuals", "Individuals", "Individuals", "Staff", "Staff", "Staff", "Total")
+    table2_expected_names <- c(
+        "DBHDD Facilities", "Individuals", "Individuals", "Individuals", "Staff", "Staff", "Staff", "Total")
     check_names(table2, table2_expected_names)
     
-    table2 <- table2[ , -c(1, 3, 4, 6, 7, 8)] # Removing extra columns 
-    colnames(table2) <- c("Residents.Deaths", "Staff.Deaths")
+    colnames(table2) <- c(
+        "Drop.Name", "Residents.Deaths", "Drop.ResDeathDuplicate.1", "Drop.ResDeathDuplicate.2", 
+        "Staff.Deaths", "Drop.StaffDeathDuplicate.1", "Drop.StaffDeathDuplicate.2", "Drop.Total")
+    
+    table2 <- table2 %>%
+        select(-starts_with("Drop")) 
     
     
-    x <- cbind(table1, table2)
+    cbind(table1, table2)
     
 }
 
 
 georgia_psychiatric_extract <- function(x){
-    x <- x[-6, ] # Removing the "total" row (which adds the results for all faculties)
-    x %>% clean_scraped_df() 
+    x %>% 
+        filter(!str_detect(Name, "(?i)total")) %>%
+        clean_scraped_df() 
 }
 
 #' Scraper class for general georgia_psychiatric COVID data
