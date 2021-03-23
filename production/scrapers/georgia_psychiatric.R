@@ -44,8 +44,7 @@ georgia_psychiatric_restruct <- function(x){
         select(-starts_with("Drop")) 
     
     
-    cbind(table1, table2)
-    
+    cbind(table1, table2)  
 }
 
 
