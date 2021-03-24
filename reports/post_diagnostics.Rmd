@@ -52,20 +52,22 @@ kable(log_status %>%
 
 # Comparison to Previous Run
 
-## Aggregate 
+## Aggregate Totals 
 
 **How do the cumulative totals compare to the previous scraped data?** 
 
-We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. 
+We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. This is based on totals from our scraped data in `adult_facility_covid_counts.csv`. 
 
 ``` {r check_previous, echo = F, message = F, warning = F}
 # Read old facility data 
-old_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/latest-data/adult_facility_covid_counts.csv" %>% 
-  read_csv()
+old_df <- stringr::str_c(
+    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "latest-data/adult_facility_covid_counts.csv") %>% 
+    read_csv()
 
 covid_suffixes <- c(
-  ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
-  ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
+    ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
+    ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
 
 # Get totals 
 rowAny <- function(x) rowSums(x) > 0
@@ -95,36 +97,80 @@ joined <- full_join(old_total, new_total, by = "Variable") %>%
 kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     column_spec(1, border_right = "1px solid #d2d2d2") %>% 
-    row_spec(which(joined$Difference < 0 & joined$cumulative_flag == 1), background = "#ffa07a") %>% 
+    row_spec(which(joined$Difference < 0 & joined$cumulative_flag == 1), 
+             background = "#ffa07a") %>% 
     scroll_box(height = "300px")
 ```
 
-## State by State
+## By Facility
 
-**Which states have metrics that are declining that shouldn't be?**
+**Which facilities have metrics that are declining that shouldn't be?**
+
+This is also based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted. 
+
+``` {r check_previous_facility, echo = F, message = F, warning = F}
+old_facility <- old_df %>% 
+    filter(!is.na(Facility.ID)) %>% 
+    filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
+    select(Facility.ID, State, Jurisdiction, Name, all_of(ends_with(covid_suffixes))) %>%  
+    pivot_longer(cols = ends_with(covid_suffixes), 
+                 names_to = "Variable", 
+                 values_to = "Old Value")
+
+new_facility <- new_df %>% 
+    filter(!is.na(Facility.ID)) %>% 
+    filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
+    select(Facility.ID, all_of(ends_with(covid_suffixes))) %>%  
+    pivot_longer(cols = ends_with(covid_suffixes), 
+                 names_to = "Variable", 
+                 values_to = "New Value")
+
+joined_facility <- full_join(old_facility, new_facility, 
+                             by = c("Facility.ID", "Variable")) %>% 
+    mutate(Difference = `New Value` - `Old Value`) %>% 
+    filter(!str_detect(Variable, ".Active|.Pending|.Quarantine")) %>% 
+    filter(Difference < 0) %>% 
+    arrange(Difference) %>% 
+    select(-Facility.ID) 
+
+kable(joined_facility, format.args = list(big.mark = ",")) %>% 
+    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
+    row_spec(which(joined_facility$Variable %in% c("Residents.Confirmed", "Residents.Deaths")), 
+             background = "#ffa07a") %>% 
+    scroll_box(height = "300px")
+```
+
+## By State 
+
+**Which states have metrics that are declining that shouldn't be in aggregate?**
+
+This compares to the state-aggregated totals in `state_aggregate_counts.csv` which excludes county jails and treats federal and immigration facilities as separate rows. 
 
 ```{r check_previous_state, echo = F, message = F, warning = F}
 # Read latest statewide data 
 new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE, window = 60)
 
 # Read old data 
-old_state_df <- "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/latest-data/state_aggregate_counts.csv" %>% 
-  read_csv()
+old_state_df <- stringr::str_c(
+    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "latest-data/state_aggregate_counts.csv") %>% 
+    read_csv()
 
 measure_decline_df <- full_join(
     new_state_df %>%   
        filter(!is.na(Val)) %>%
         select(State, Measure, Val) %>% 
-        rename("New" = "Val"), 
+        rename("New Total" = "Val"), 
     
     old_state_df %>% 
-        pivot_longer(-State, names_to = "Measure", values_to = "Old"), 
+        pivot_longer(-State, names_to = "Measure", values_to = "Old Total"), 
     
     by = c("State", "Measure")
     ) %>% 
-    filter((New - Old) < 0) %>% 
+    mutate(Difference = `New Total` - `Old Total`) %>% 
+    filter(Difference < 0) %>% 
     filter(stringr::str_ends(
-      Measure, ".Confirmed|.Deaths|.Tadmin|.Recovered|.Tested|.Initiated|.Completed|.Vadmin"))
+        Measure, ".Confirmed|.Deaths|.Tadmin|.Recovered|.Tested|.Initiated|.Completed|.Vadmin"))
 
 kable(measure_decline_df, format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
@@ -145,6 +191,7 @@ new_state_df %>%
     filter(!is.na(UCLA) & !is.na(MP)) %>% 
     mutate(pct_diff = scales::percent(abs((MP - UCLA) / UCLA))) %>% 
     filter(pct_diff > 20) %>%
+    arrange(desc(pct_diff)) %>% 
     select(State, Measure, UCLA, MP) %>%
     kable(format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
@@ -225,49 +272,3 @@ check %>%
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     scroll_box(height = "300px")
 ```
-
----
-
-# Decreasing Cumulative Counts 
-
-## Cumulative Cases 
-
-**Did any facilities see a decrease in cumulative cases?**
-
-``` {r echo = F}
-# Calculate change in cumulative cases from previous date scraped
-check <- scrape_df %>%
-    filter(Date == date_last_scraped | Date == date_before_last_scrape) %>%
-    group_by(Name, State, Jurisdiction) %>%
-    mutate(deaths_previous = dplyr::lag(Residents.Deaths, order_by = Date), 
-           cases_previous = dplyr::lag(Residents.Confirmed, order_by = Date)) %>%
-    ungroup() %>%
-    mutate(deaths_diff = Residents.Deaths - deaths_previous,
-           cases_diff = Residents.Confirmed - cases_previous, 
-           deaths_neg_flag = ifelse(deaths_diff < 0, 1, 0), 
-           cases_neg_flag = ifelse(cases_diff < 0, 1, 0))  
-
-check %>% 
-    filter(cases_neg_flag == 1) %>% 
-    select(State, Name, Residents.Confirmed, cases_previous, cases_diff) %>% 
-    arrange(cases_diff, State, Name) %>% 
-    kable(col.names = c("State", "Name", "Current Cases", "Previous Cases", "Change")) %>% 
-    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    scroll_box(height = "300px")
-```
-
-## Cumulative Deaths 
-
-**Did any facilities see a decrease in cumulative deaths?**
-
-``` {r echo = F}
-check %>% 
-    filter(deaths_neg_flag == 1) %>% 
-    select(State, Name, Residents.Deaths, deaths_previous, deaths_diff) %>% 
-    arrange(deaths_diff, State, Name) %>% 
-    kable(col.names = c("State", "Name", "Current Deaths", "Previous Deaths", "Change")) %>% 
-    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    scroll_box(height = "300px")
-```
-
----
