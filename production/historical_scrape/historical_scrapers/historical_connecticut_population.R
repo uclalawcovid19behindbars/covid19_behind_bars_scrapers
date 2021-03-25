@@ -42,7 +42,7 @@ out <- raw %>%
     
     # Add scraper columns 
     mutate(
-        State = "CA", 
+        State = "CT", 
         id = "historical_ct_pop", 
         jurisdiction = "state", 
         source = stringr::str_c("https://data.ct.gov/Public-Safety/", 
