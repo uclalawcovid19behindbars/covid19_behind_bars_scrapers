@@ -9,7 +9,7 @@ yolo_county_jail_pull <- function(x){
 yolo_county_jail_restruct <- function(x){
     x %>%
         mutate(Date = lubridate::mdy(`As of Date`)) %>%
-        filter(Date == max(Date))
+        filter(Date == max(Date, na.rm = TRUE))
 }
 
 yolo_county_jail_extract <- function(x, exp_date = Sys.Date()){

@@ -5,12 +5,52 @@ georgia_psychiatric_pull <- function(x){
     xml2::read_html(x)
 }
 
+
 georgia_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://dbhdd.georgia.gov/confirmed-covid-19-cases")
+    table1 <- x %>% 
+        rvest::html_nodes("table") %>%
+        .[[1]] %>% 
+        rvest::html_table(header= FALSE) %>% 
+        slice(-1)
+    
+    colnames(table1) <- table1[1, ]
+    
+    table1_expected_names <- c("", "Individuals", "Staff", "Total", "Individuals", "Staff", "Total")
+    check_names(table1, table1_expected_names)
+    
+    colnames(table1) <- c(
+        "Name", "Residents.Confirmed", "Staff.Confirmed", "Drop.Total.1",
+        "Residents.Recovered", "Staff.Recovered", "Drop.Total.2")
+    
+    table1 <- table1 %>%
+        select(-starts_with("Drop")) %>%
+        filter(Name != "")
+    
+    
+    table2 <- x %>% 
+        rvest::html_nodes("table") %>%
+        .[[2]] %>% rvest::html_table(header= TRUE)
+    
+    table2_expected_names <- c(
+        "DBHDD Facilities", "Individuals", "Individuals", "Individuals", "Staff", "Staff", "Staff", "Total")
+    check_names(table2, table2_expected_names)
+    
+    colnames(table2) <- c(
+        "Drop.Name", "Residents.Deaths", "Drop.ResDeathDuplicate.1", "Drop.ResDeathDuplicate.2", 
+        "Staff.Deaths", "Drop.StaffDeathDuplicate.1", "Drop.StaffDeathDuplicate.2", "Drop.Total")
+    
+    table2 <- table2 %>%
+        select(-starts_with("Drop")) 
+    
+    
+    cbind(table1, table2)  
 }
 
+
 georgia_psychiatric_extract <- function(x){
-    NULL
+    x %>% 
+        filter(!str_detect(Name, "(?i)total")) %>%
+        clean_scraped_df() 
 }
 
 #' Scraper class for general georgia_psychiatric COVID data
