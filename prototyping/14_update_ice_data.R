@@ -4,9 +4,14 @@ library(behindbarstools)
 library(googlesheets4)
 gs4_auth("ucla.law.covid.staff@gmail.com")
 
-sheet_ <- "1QGaFRQwppmZJoAc7QdgH9pY5cKOyv6gd_Q6lFMgwc4k"
 
-imm_df <- read_scrape_data(TRUE) %>%
+fac_sheet <- "17hHakJXVooK_9OTW0Uk5ftqOSjLZTt_moq1iumi_J7M"
+fac_sheet_df <- read_sheet(fac_sheet, sheet = "Facility TAB") %>%
+    filter(!is.na(`Facility ID`)) %>%
+    select(-starts_with("...") , -ends_with("(Detainees)")) %>%
+    select(-ends_with("Staff)"), -Address, -State)
+
+imm_df <- read_scrape_data(all_dates = FALSE) %>%
     filter(Jurisdiction == "immigration")
 
 new_df <- imm_df %>%
@@ -17,27 +22,19 @@ new_df <- imm_df %>%
     filter(Date == max(Date)) %>%
     ungroup() %>%
     select(
-        `Facility ID` = Facility.ID, Address, State, Name, County, Date, City,
-        `ICE Field Office` = ICE.Field.Office,
+        `Facility ID` = Facility.ID, Name, Address, City, State,
         `TOTAL Confirmed Cases - ICE DATA (Detainees)` = Residents.Confirmed,
         `ACTIVE Confirmed Cases - ICE DATA\n(Detainees)` = Residents.Active,
-        `Confirmed Deaths - ICE DATA (Detainees)` = Residents.Deaths
-        )
+        `Confirmed Deaths - ICE DATA (Detainees)` = Residents.Deaths,
+        Date
+        ) %>%
+    left_join(fac_sheet_df, by = "Facility ID") %>%
+    select(-`Facility ID`)
 
-update_cols <- names(new_df)[names(new_df) != "Facility ID"]
-
-old_sheet <- read_sheet(sheet_)
-old_order <- names(old_sheet)
-
-new_facilities <- new_df$`Facility ID`[!(
-    new_df$`Facility ID` %in% old_sheet$`Facility ID`)] %>%
-    {tibble(`Facility ID` = .)}
-
-update_sheet <- old_sheet %>%
-    bind_rows(new_facilities) %>%
-    select(-!!update_cols) %>%
-    left_join(new_df, by = "Facility ID") %>%
-    select(!!old_order)
+update_sheet <- bind_rows(
+    data.frame(V1 = c("", ""), Name = c("", "")),
+    as.data.frame(new_df)
+)
 
 sum_cols <- c(
     "TOTAL Confirmed Cases - ICE DATA (Detainees)",
@@ -51,4 +48,8 @@ for(sc in sum_cols){
     update_sheet[[sc]][2] <- sum_na_rm(update_sheet[[sc]])
 }
 
-range_write(data = update_sheet, ss = sheet_, sheet = 1, reformat = FALSE)
+names(update_sheet)[1] <- ""
+
+range_write(
+    data = update_sheet, ss = fac_sheet, 
+    sheet = "MAIN PAGE [Linked to UCLA Database]", reformat = FALSE)
