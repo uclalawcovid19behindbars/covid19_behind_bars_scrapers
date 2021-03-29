@@ -1,6 +1,39 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+california_check_date <- function(x, date = Sys.Date()){
+    # scrape from the power bi iframe directly
+    y <- "https://app.powerbigov.us/view?r=" %>%
+        str_c(
+            "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI",
+            "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
+            "pageName=ReportSection90204f76f18a02b19c96")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(y)
+    
+    Sys.sleep(10)
+    
+    base_page <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    site_date <- base_page %>%
+        rvest::html_nodes("title") %>%
+        rvest::html_text() %>%
+        {.[str_starts(., "(?i)data last updated")]} %>%
+        str_remove("(?i)data last updated: ") %>%
+        lubridate::mdy_hm() %>%
+        lubridate::floor_date(unit="day") %>%
+        as.Date()
+    
+    error_on_date(site_date, date)
+}
+
 california_pull <- function(x, wait = 10){
     # scrape from the power bi iframe directly
     y <- "https://app.powerbigov.us/view?r=" %>%
@@ -23,7 +56,8 @@ california_pull <- function(x, wait = 10){
     xml2::read_html(remDr$getPageSource()[[1]])
 }
 
-california_restruct <- function(x){
+california_restruct <- function(x, date = Sys.Date()){
+
     tab <- x %>%
         rvest::html_node(".tableEx") %>%
         rvest::html_node(".innerContainer")
@@ -100,6 +134,7 @@ california_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "state",
+            check_date = california_check_date,
             # pull the JSON data directly from the API
             pull_func = california_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -109,7 +144,8 @@ california_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

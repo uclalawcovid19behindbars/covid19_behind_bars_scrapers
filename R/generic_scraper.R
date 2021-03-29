@@ -42,6 +42,7 @@ generic_scraper <- R6Class(
         raw_data = NULL,
         restruct_data = NULL,
         extract_data = NULL,
+        check_date = NULL,
         state = NULL,
         err_log = NULL,
         raw_dest = NULL,
@@ -50,7 +51,7 @@ generic_scraper <- R6Class(
         jurisdiction = NULL,
         initialize = function(
             url, id, pull_func, type, restruct_func, extract_func, log,
-            state, jurisdiction){
+            state, jurisdiction, check_date){
             
             valid_types <- c(
                 html = ".html", img = ".png", json = ".json", pdf = ".pdf",
@@ -74,6 +75,7 @@ generic_scraper <- R6Class(
             self$restruct_func = restruct_func
             self$extract_func = extract_func
             self$jurisdiction = jurisdiction
+            self$check_date = check_date
             self$err_log = paste0(
                 "./results/log_files/", self$date, "_", id, ".log")
             
@@ -137,6 +139,19 @@ generic_scraper <- R6Class(
             invisible(self)
         },
         
+        run_check_date = function(url = self$url){
+            if(is.null(self$check_date)){
+                return()
+            }
+            
+            if(self$log){
+                tryLog(self$check_date(url))
+            }
+            else{
+                self$check_date(url)
+            }
+        },
+        
         pull_raw = function(url = self$url, ..., .dated_pull = FALSE){
             
             if(self$date != Sys.Date() & !.dated_pull){
@@ -162,6 +177,16 @@ generic_scraper <- R6Class(
             )
             
             if(self$log){
+
+                if(file.exists(self$err_log)){
+                    if(str_detect(read_file(self$err_log), "ERROR ")){
+                        tryLog(warning(
+                            "Log file with errors exists.",
+                            "Not going to pull data."))
+                        return()
+                    }
+                }
+                
                 if(self$date != Sys.Date() & !.dated_pull){
                     tryLog(self$raw_data <- valid_types[[self$type]](url))
                 }
@@ -424,6 +449,7 @@ generic_scraper <- R6Class(
             self$perma_save()
             self$pull_raw()
             self$save_raw()
+            self$run_check_date()
             self$restruct_raw()
             self$extract_from_raw()
             self$validate_extract()

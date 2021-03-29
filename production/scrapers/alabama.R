@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+alabama_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    headers <- rvest::html_nodes(base_html, "h3") %>%
+        rvest::html_text()
+    
+    headers %>%
+        {.[str_detect(., "(?i)update ")]} %>%
+        str_split("\\(Update ") %>%
+        unlist() %>%
+        .[2] %>%
+        str_remove("\\)") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 alabama_pull <- function(x){
     # direct api pull
     "https://services7.arcgis.com/jF2q3LPxL7PETdYk/arcgis/rest/" %>%
@@ -76,12 +91,14 @@ alabama_scraper <- R6Class(
             pull_func = alabama_pull,
             # restructuring the data means pulling out the data portion of the json
             restruct_func = alabama_restruct,
+            check_date = alabama_date_check, 
             # Rename the columns to appropriate database names
             extract_func = alabama_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

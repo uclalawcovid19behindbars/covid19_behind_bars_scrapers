@@ -1,6 +1,49 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+alaska_vaccine_check_date <- function(x){
+    fprof <- RSelenium::makeFirefoxProfile(list(
+        browser.startup.homepage = "about:blank",
+        startup.homepage_override_url = "about:blank",
+        startup.homepage_welcome_url = "about:blank",
+        startup.homepage_welcome_url.additional = "about:blank",
+        browser.download.dir = "/home/seluser/Downloads",
+        browser.download.folderList = 2L,
+        browser.download.manager.showWhenStarting = FALSE,
+        browser.download.manager.focusWhenStarting = FALSE,
+        browser.download.manager.closeWhenDone = TRUE,
+        browser.helperApps.neverAsk.saveToDisk = 
+            "application/pdf, application/octet-stream",
+        pdfjs.disabled = TRUE,
+        plugin.scan.plid.all = FALSE,
+        plugin.scan.Acrobat = 99L))
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox",
+        extraCapabilities=fprof
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(x)
+    Sys.sleep(6)
+    
+    base_html <- remDr$getPageSource()
+    
+    base_page <- xml2::read_html(base_html[[1]])
+    
+    vacc_tab <- base_page %>%
+        rvest::html_node("#vaccine_tracker") %>%
+        rvest::html_table()
+    
+    site_date <- names(vacc_tab)[1] %>%
+        str_remove("(?i)as of ") %>%
+        lubridate::mdy()
+    
+    error_on_date(site_date, date)
+}
+
 alaska_vaccine_pull <- function(x){
     fprof <- RSelenium::makeFirefoxProfile(list(
         browser.startup.homepage = "about:blank",
@@ -82,6 +125,7 @@ alaska_vaccine_scraper <- R6Class(
             type = "html",
             state = "AK",
             jurisdiction = "state",
+            check_date = alaska_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = alaska_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -91,7 +135,8 @@ alaska_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
