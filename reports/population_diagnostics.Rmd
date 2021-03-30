@@ -1,0 +1,121 @@
+---
+title: "Historical Population Diagnostics"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(behindbarstools)
+library(tidyverse)
+library(kableExtra)
+library(plotly)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r params, echo = F, message = F, warning = F}
+STATE <- "Alabama"
+```
+
+```{r load, echo = F, message = F, warning = F}
+scrape <- read_scrape_data(all_dates = TRUE, coalesce = TRUE, 
+                           coalesce_pop = FALSE, drop_noncovid_obs = FALSE,  
+                           state = STATE)
+```
+
+### Population facility names that need IDs 
+```{r, echo = F, message = F, warning = F}
+pop_names <- scrape %>% 
+    filter(Jurisdiction == "state") %>% 
+    filter(!is.na(Residents.Population)) %>% 
+    select(Facility.ID, Name) %>% 
+    distinct()
+
+pop_names %>% 
+    filter(is.na(Facility.ID)) %>% 
+    kable() %>% 
+    kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE)
+```
+
+### Facilities that don't have population data 
+```{r, echo = F, message = F, warning = F}
+covid_names <- scrape %>% 
+    filter(Jurisdiction == "state") %>% 
+    filter(!is.na(Residents.Confirmed) | !is.na(Residents.Deaths)) %>% 
+    select(Name, Facility.ID) %>% 
+    distinct()
+
+covid_names %>% 
+    left_join(pop_names %>% 
+                  select(Name) %>%
+                  distinct() %>%
+                  mutate(Pop = 1), 
+              by = "Name") %>% 
+    filter(is.na(Pop)) %>% 
+    select(Facility.ID, Name) %>% 
+    kable() %>% 
+    kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE) 
+```
+
+### Facility time-series plots 
+```{r, echo = F, message = F, warning = F, fig.width = 10, fig.height = 16}
+plt <- scrape %>% 
+    filter(!is.na(Residents.Population)) %>% 
+    filter(Jurisdiction == "state") %>%  
+    ggplot(aes(x = Date, y = Residents.Population)) + 
+    geom_line() + 
+    geom_point(size = 1.0) + 
+    facet_wrap(~Name, ncol = 3, scales = "free", labeller = labeller(Name = label_wrap_gen(28))) + 
+    theme_minimal(base_size = 12) + 
+    theme(axis.title.x = element_blank(), 
+          axis.title.y = element_blank())
+
+font <- list(
+    family = "Helvetica",
+    size = 15,
+    color = "#555526"
+)
+
+label <- list(
+    bgcolor = "#EFEEEC",
+    bordercolor = "transparent",
+    font = font
+)
+
+ggplotly(plt) %>% 
+    style(hoverlabel = label) %>%
+    layout(font = font)
+```
+
+### Statewide total comparison to Vera  
+```{r, echo = F, message = F, warning = F}
+vera <- "https://raw.githubusercontent.com/vera-institute/temp-data/master/tmp/prison_population.csv" %>% 
+    read_csv() %>% 
+    left_join(tigris::fips_codes %>% 
+                  select(state_code, state_name) %>% 
+                  mutate(fips = as.numeric(state_code)) %>% 
+                  distinct(), 
+              by = "fips")
+
+vera_limited <- vera %>% 
+    filter(state_name == STATE)
+
+scrape_limited <- scrape %>% 
+    filter(!is.na(Residents.Population)) %>% 
+    filter(Jurisdiction == "state") %>%  
+    group_by(Date) %>% 
+    summarise(Residents.Population = sum_na_rm(Residents.Population))
+
+plt2 <- ggplot() + 
+    geom_line(data = scrape_limited, aes(x = Date, y = Residents.Population)) + 
+    geom_point(data = scrape_limited, aes(x = Date, y = Residents.Population)) + 
+    geom_line(data = vera_limited, aes(x = date, y = count), color = "#e25552") + 
+    scale_y_continuous(label = scales::comma) + 
+    theme_minimal(base_size = 12) + 
+    theme(axis.title.x = element_blank(), 
+          axis.title.y = element_blank()) + 
+    labs(title = stringr::str_c("Statewide Population Totals: ", STATE))
+
+ggplotly(plt2) %>% 
+    style(hoverlabel = label) %>%
+    layout(font = font)
+```
+
