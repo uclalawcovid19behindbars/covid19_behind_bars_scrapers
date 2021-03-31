@@ -57,7 +57,7 @@ historical_co_pop_extract <- function(x, date = NULL){
     exp_fac <- ifelse(
         date > as.Date("2020-07-01"), 23, 22)
     
-    if (!nrow(out) != exp_fac){
+    if (nrow(out) != exp_fac){
         stop(stringr::str_c("Total number of facilities ", nrow(out), 
                             " does not match expected ", exp_fac))
     }
