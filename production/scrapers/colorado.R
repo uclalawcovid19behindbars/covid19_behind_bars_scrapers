@@ -1,6 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+colorado_check_date <- function(x, date = Sys.Date()){
+    base_page <- xml2::read_html(x)
+    
+    base_page %>%
+        rvest::html_node("article") %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>%
+        {.[str_detect(., "(?i)last updated") & str_detect(., "(?i)covid")]} %>%
+        str_split("(?i)updated") %>%
+        unlist() %>%
+        last() %>%
+        str_squish() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 colorado_pull <- function(x){
     
     fprof <- RSelenium::makeFirefoxProfile(list(
@@ -187,6 +203,7 @@ colorado_scraper <- R6Class(
             type = "pdf",
             state = "CO",
             jurisdiction = "state",
+            check_date = colorado_check_date,
             # pull the JSON data directly from the API
             pull_func = colorado_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -196,7 +213,8 @@ colorado_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

@@ -1,5 +1,21 @@
 source("./R/generic_scraper.R")
 
+cook_county_check_date <- function(x, date = Sys.Date()){
+    base_page <- xml2::read_html(x)
+    
+    covid_section <- base_page %>%
+        rvest::html_nodes(xpath="//*[text()='COVID-19 Cases at CCDOC']/..") %>%
+        .[[which(rvest::html_name(.) == "div")]]
+    
+    covid_section %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>%
+        {.[str_starts(., "(?i)as of")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 cook_county_restruct <- function(x){
     
     # grab the main div which has covid related data
@@ -130,6 +146,7 @@ cook_county_scraper <- R6Class(
             type = "html",
             state = "IL",
             jurisdiction = "county",
+            check_date = cook_county_check_date,
             # pull the JSON data directly from the API
             pull_func = xml2::read_html,
             # restructuring the data
@@ -139,7 +156,8 @@ cook_county_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

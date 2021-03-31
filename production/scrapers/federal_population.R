@@ -1,9 +1,17 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+federal_population_check_date <- function(x, date = Sys.Date()) {
+    "https://www.bop.gov/PublicInfo/execute/popreport?todo=query&output=json" %>% 
+        jsonlite::read_json(simplifyVector = TRUE) %>%
+        {.$DATEMODIFIED} %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 federal_population_pull <- function(x) {
     "https://www.bop.gov/PublicInfo/execute/popreport?todo=query&output=json" %>% 
-    jsonlite::read_json(simplifyVector = TRUE)
+        jsonlite::read_json(simplifyVector = TRUE)
 }
 
 federal_population_restruct <- function(x) {

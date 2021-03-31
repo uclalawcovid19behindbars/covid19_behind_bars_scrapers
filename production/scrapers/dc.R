@@ -1,5 +1,30 @@
 source("./R/generic_scraper.R")
 
+dc_check_date <- function(x, date = Sysy){
+    stringr::str_c(
+        "https://em.dcgis.dc.gov/dcgis/rest/services/COVID_19/",
+        "OpenData_COVID19/FeatureServer/10/query?where=1%3D1&",
+        "objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&",
+        "inSR=&spatialRel=esriSpatialRelIntersects&distance=&",
+        "units=esriSRUnit_Foot&relationParam=&outFields=*&",
+        "returnGeometry=true&maxAllowableOffset=&geometryPrecision=&",
+        "outSR=&having=&gdbVersion=&historicMoment=&",
+        "returnDistinctValues=false&returnIdsOnly=false&",
+        "returnCountOnly=false&returnExtentOnly=false&orderByFields=&",
+        "groupByFieldsForStatistics=&outStatistics=&returnZ=false&",
+        "returnM=false&multipatchOption=xyFootprint&",
+        "returnTrueCurves=false&returnCentroid=false&sqlFormat=none&",
+        "resultType=&featureEncoding=esriDefault&f=pjson") %>%
+        jsonlite::read_json(simplifyVector = TRUE) %>%
+        {.$features$attributes} %>%
+        filter(!is.na(TOTAL_POSITIVE_PSDP)) %>%
+        pull(DATE_REPORTED) %>%
+        {lubridate::as_datetime(./1000)} %>%
+        lubridate::as_date() %>%
+        max(na.rm=TRUE) %>% 
+        error_on_date(date)
+}
+
 dc_pull <- function(x){
     stringr::str_c(
         "https://em.dcgis.dc.gov/dcgis/rest/services/COVID_19/",
@@ -78,6 +103,7 @@ dc_scraper <- R6Class(
             type = "json",
             state = "DC",
             jurisdiction = "county",
+            check_date = dc_check_date,
             # pull the JSON data directly from the API
             pull_func = dc_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -87,7 +113,8 @@ dc_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

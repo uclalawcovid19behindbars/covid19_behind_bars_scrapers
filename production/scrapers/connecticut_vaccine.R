@@ -1,6 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+connecticut_vaccine_check_date <- function(x, date = Sys.Date()){
+    ct_img2 <- xml2::read_html(x) %>%
+        rvest::html_nodes("img") %>%
+        rvest::html_attr("src") %>%
+        .[3] %>%
+        {str_c(x, .)} %>%
+        magick::image_read()
+    
+    ct_img2 %>%
+        magick::image_ocr() %>%
+        str_split("\n") %>%
+        unlist() %>%
+        {.[str_detect(., "(?i)posted")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 connecticut_vaccine_pull <- function(x){
     ct_img2 <- xml2::read_html(x) %>%
         rvest::html_nodes("img") %>%
@@ -72,6 +90,7 @@ connecticut_vaccine_scraper <- R6Class(
             type = "img",
             state = "CT",
             jurisdiction = "state",
+            check_date = connecticut_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = connecticut_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -81,7 +100,8 @@ connecticut_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

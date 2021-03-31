@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+california_staff_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_node(".page-standard__content") %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>%
+        {.[str_starts(., "(?i)updated")]} %>%
+        str_remove("\\([^)]*\\)") %>%
+        str_remove("(?i)updated") %>%
+        str_squish() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 california_staff_pull <- function(x, wait = 10){
     xml2::read_html(x)
 }
@@ -57,6 +72,7 @@ california_staff_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "state",
+            check_date = california_staff_check_date,
             # pull the JSON data directly from the API
             pull_func = california_staff_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -66,7 +82,8 @@ california_staff_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

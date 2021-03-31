@@ -1,6 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+delaware_check_date <- function(x, date = Sys.Date()){
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "DE", col_types = "Dcccccccccccc") %>%
+        pull(Date) %>%
+        max(na.rm=TRUE) %>%
+        error_on_date(date)
+}
+
 delaware_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "DE", 
@@ -13,9 +21,7 @@ delaware_restruct <- function(x){
         filter(Date == max(Date))
 }
 
-delaware_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(first(x$Date), exp_date)
+delaware_extract <- function(x){
     
     x %>% 
         filter(!is.na(Name)) %>% 
@@ -48,6 +54,7 @@ delaware_scraper <- R6Class(
             type = "manual",
             state = "DE",
             jurisdiction = "state",
+            check_date = delaware_check_date,
             # pull the JSON data directly from the API
             pull_func = delaware_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -57,7 +64,8 @@ delaware_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

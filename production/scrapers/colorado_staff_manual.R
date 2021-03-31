@@ -1,6 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+colorado_staff_check_date <- function(x, date = Sys.Date()){
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "CO Staff", col_types = "Dccc") %>%
+        pull(Date) %>%
+        max(na.rm = TRUE) %>%
+        error_on_date(date)
+}
+
 colorado_staff_manual_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "CO Staff", 
@@ -57,6 +65,7 @@ colorado_staff_manual_scraper <- R6Class(
             type = "manual",
             state = "CO",
             jurisdiction = "state",
+            check_date = colorado_staff_check_date,
             # pull the JSON data directly from the API
             pull_func = colorado_staff_manual_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -66,7 +75,8 @@ colorado_staff_manual_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
