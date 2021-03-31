@@ -4,7 +4,7 @@ source("./R/utilities.R")
 delaware_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "DE", 
-                                  col_types = "Dcccccccccccc")
+                                  col_types = "Dcccccccccccccc")
 }
 
 delaware_restruct <- function(x){
@@ -23,7 +23,8 @@ delaware_extract <- function(x, exp_date = Sys.Date()){
             Name, Staff.Confirmed, Residents.Confirmed, Residents.Active, 
             Staff.Deaths, Staff.Recovered, Residents.Recovered, 
             Residents.Deaths = Resident.Deaths, Residents.Initiated,
-            Staff.Initiated, Residents.Completed, Staff.Completed) %>% 
+            Staff.Initiated, Residents.Completed, Staff.Completed,
+            Residents.Vadmin, Staff.Vadmin) %>% 
         clean_scraped_df()
 }
 
