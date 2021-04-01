@@ -282,6 +282,7 @@ generic_scraper <- R6Class(
                 # sometimes this wont work on the first try so give it a
                 # couple goes
                 attempts <- 0
+                pcc <- NULL 
                 while(attempts < tries){
                     tryLog(pcc <- save_perma_cc(
                         arc_url = self$url, scraper_id = self$id,
