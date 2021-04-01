@@ -76,7 +76,7 @@ north_dakota_extract <- function(x){
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
-            Staff.Tested = Staff.Total.Tests.Administered, 
+            Staff.Tested = Staff.Total.Individials.Tested, 
             Residents.Initiated = Residents.First.Dose, 
             Residents.Completed = Residents.Second.Dose
         ) %>% 
