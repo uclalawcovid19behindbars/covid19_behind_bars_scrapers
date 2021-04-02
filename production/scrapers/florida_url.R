@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+florida_url_check_date <- function(x, date = Sys.Date()){
+
+    base_page <- xml2::read_html(x)
+
+    base_page %>%
+        rvest::html_nodes("strong") %>%
+        rvest::html_text() %>%
+        {.[str_starts(., "(?i)update")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 florida_url_pull <- function(x){
     html_page <- xml2::read_html(x)
     
@@ -120,6 +133,7 @@ florida_url_scraper <- R6Class(
             type = "img",
             state = "FL",
             jurisdiction = "state",
+            check_date = florida_url_check_date,
             # pull the JSON data directly from the API
             pull_func = florida_url_pull,
             restruct_func = florida_url_restruct,
@@ -128,7 +142,8 @@ florida_url_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
