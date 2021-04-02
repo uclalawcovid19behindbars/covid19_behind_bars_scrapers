@@ -2,6 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 oregon_testing_pull <- function(x){
+    stop_defunct_scraper(x)
     
     app_url <- "https://public.tableau.com/views/ODOCCovid-19TestResultDates" %>%
         str_c(
