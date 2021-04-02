@@ -36,8 +36,9 @@ oregon_extract <- function(x){
                Residents.Recovered = "Total AICs Recovered",
                Residents.Negative = "AIC Negatives to Date",
                Residents.Active = "Current AIC Active Cases",
-               Residents.Deaths = "AIC Deaths",
-               Residents.Tested = Residents.Confirmed + Residents.Negative
+               Residents.Deaths = "AIC Deaths") %>%
+        mutate(
+               Residents.Tadmin = Residents.Confirmed + Residents.Negative
                ) %>%
         clean_scraped_df() %>%
         mutate(Staff.Confirmed =
