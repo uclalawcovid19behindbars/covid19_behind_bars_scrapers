@@ -138,7 +138,7 @@ california_vaccine_bi_restruct <- function(x){
             if(j == 2){
                 s_tab <- get_california_vaccine_bi_table(z, 2) %>%
                     rename("Name" = "Institution", 
-                           "Drop.Staff.Population" = "Current Population", 
+                           "Staff.Population" = "Current Population", 
                            "Staff.Initiated" = "Partially Vaccinated", 
                            "Staff.Completed" = "Fully Vaccinated") %>%
                     select(Name, starts_with("Staff"))
@@ -216,8 +216,8 @@ if(sys.nframe() == 0){
     california_bi_vaccine <- california_vaccine_bi_scraper$new(log=TRUE)
     california_bi_vaccine$raw_data
     california_bi_vaccine$pull_raw()
-    california_bi_vaccine$save_raw()
     california_bi_vaccine$raw_data
+    california_bi_vaccine$save_raw()
     california_bi_vaccine$restruct_raw()
     california_bi_vaccine$restruct_data
     california_bi_vaccine$extract_from_raw()
