@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 california_vaccine_bi_pull <- function(x, wait = 10){
     # scrape from the power bi iframe directly
-    y <- "https://app.powerbigov.us/view?r=" %>% 
+    y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(
             "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI", 
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&", 
@@ -15,19 +15,68 @@ california_vaccine_bi_pull <- function(x, wait = 10){
         browserName = "firefox"
     )
     
+    sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_california_vaccine")
+    dir.create(sub_dir, showWarnings = FALSE)
+    html_list <- list()
+    
     del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     
     Sys.sleep(wait)
     
-    xml2::read_html(remDr$getPageSource()[[1]])
+    # only 20 rows appear in each table at a time in order to get all rows we
+    # have to first sort by facility name ascending and grab the first 20 rows
+    
+    webEls <- remDr$findElements(value="//div[@title='Institution']")
+    
+    webEls[[1]]$clickElement()
+    webEls[[2]]$clickElement()
+    
+    Sys.sleep(wait)
+    
+    html_list[["first"]] <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    # then we sort by descending and grab the first 20 rows
+    # this strategy only works if there is less than or equal to 40 facilities
+    # and right now there is 39 :/. Hopefully CDCR doesnt add more but there
+    # is a warning below to check this.
+    
+    webEls <- remDr$findElements(value="//div[@title='Institution']")
+    webEls[[1]]$clickElement()
+    webEls[[2]]$clickElement()
+    
+    Sys.sleep(wait)
+
+    html_list[["last"]] <- xml2::read_html(remDr$getPageSource()[[1]])
+
+    fns <- str_c(sub_dir, "/", names(html_list), ".html")
+
+    Map(xml2::write_html, html_list, fns)
+    
+    iframes <- lapply(str_remove(fns, "/results/raw_files"), function(fn)
+        htmltools::tags$iframe(
+            src = fn, 
+            style="display:block", 
+            height="500", width="1200"
+        )  
+    )
+    
+    x <- htmltools::tags$html(
+        htmltools::tags$body(
+            iframes
+        )
+    )
+    
+    tf <- tempfile(fileext = ".html")
+    
+    htmltools::save_html(x, file = tf)
+    
+    xml2::read_html(tf)
 }
 
 get_california_vaccine_bi_table <- function(x, idx){
     tab <- x %>%
         rvest::html_nodes(".tableEx") %>%
-        # Assumes first table is incarcerated people, second is staff 
-        # Should check this in a better way 
         .[idx] %>% 
         rvest::html_node(".innerContainer")
     
@@ -35,8 +84,7 @@ get_california_vaccine_bi_table <- function(x, idx){
         rvest::html_node(".bodyCells") %>%
         rvest::html_node("div") %>%
         rvest::html_children()
-    
-    # This is only returning the first 20 rows for some reason??  
+ 
     dat_df <- do.call(rbind, lapply(col_dat, function(p){
         sapply(rvest::html_children(p), function(z){
             z %>% 
@@ -56,21 +104,58 @@ get_california_vaccine_bi_table <- function(x, idx){
 }
 
 california_vaccine_bi_restruct <- function(x){
-    res_tab <- get_california_vaccine_bi_table(x, 1) %>%
-        rename("Name" = "Institution", 
-               "Residents.Population" = "Current Population", 
-               "Residents.Initiated" = "Partially Vaccinated", 
-               "Residents.Completed" = "Fully Vaccinated") %>%
-        select(Name, starts_with("Res"))
+    sub_files <- x %>%
+        rvest::html_nodes("iframe") %>%
+        rvest::html_attr("src") %>%
+        str_replace("\\./", "./results/raw_files/")
     
-    staff_tab <- get_california_vaccine_bi_table(x, 2) %>%
-        rename("Name" = "Institution", 
-               "Drop.Staff.Population" = "Current Population", 
-               "Staff.Initiated" = "Partially Vaccinated", 
-               "Staff.Completed" = "Fully Vaccinated") %>%
-        select(Name, starts_with("Staff"))
+    lhtml <- lapply(sub_files, xml2::read_html)
     
-    full_join(res_tab, staff_tab, by = "Name") 
+    span_text <- lhtml[[1]] %>%
+        rvest::html_nodes("span") %>%
+        rvest::html_text() %>%
+        str_remove_all(" ") %>%
+        str_to_lower()
+    
+    staff_idx <- which(str_detect(span_text, "staffvaccination"))
+    rez_idx <- which(str_detect(span_text, "patientvaccination"))
+    
+    # make sure the tables are talking about who we think they are talking about
+    if(staff_idx < rez_idx){
+        warning("Staff table may appear before prisoner table. Please inspect.")
+    }
+    
+    vac_list <- lapply(1:2, function(j){
+        unique(bind_rows(lapply(lhtml, function(z){
+            if(j == 1){
+                s_tab <- get_california_vaccine_bi_table(z, 1) %>%
+                    rename("Name" = "Institution", 
+                           "Residents.Population" = "Current Population", 
+                           "Residents.Initiated" = "Partially Vaccinated", 
+                           "Residents.Completed" = "Fully Vaccinated") %>%
+                    select(Name, starts_with("Res"))
+            }
+            if(j == 2){
+                s_tab <- get_california_vaccine_bi_table(z, 2) %>%
+                    rename("Name" = "Institution", 
+                           "Drop.Staff.Population" = "Current Population", 
+                           "Staff.Initiated" = "Partially Vaccinated", 
+                           "Staff.Completed" = "Fully Vaccinated") %>%
+                    select(Name, starts_with("Staff"))
+            }
+            s_tab
+        })))
+    })
+    
+    # if we have 40 or more observations odds are good we are not catching
+    # everything
+    if(any(lapply(vac_list, nrow) >= 40)){
+        warning(
+            "The hacky strategy we are using of sorting by facility may no ",
+            "longer work. Please inspect.")
+    }
+    
+    as_tibble(full_join(vac_list[[1]], vac_list[[2]], by = "Name"))
 }
 
 
@@ -131,6 +216,7 @@ if(sys.nframe() == 0){
     california_bi_vaccine <- california_vaccine_bi_scraper$new(log=TRUE)
     california_bi_vaccine$raw_data
     california_bi_vaccine$pull_raw()
+    california_bi_vaccine$save_raw()
     california_bi_vaccine$raw_data
     california_bi_vaccine$restruct_raw()
     california_bi_vaccine$restruct_data
