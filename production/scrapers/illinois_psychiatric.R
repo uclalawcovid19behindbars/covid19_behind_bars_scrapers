@@ -108,7 +108,3 @@ if(sys.nframe() == 0){
     illinois_psychiatric$save_extract()
 }
 
-format(illinois_psychiatric$restruct_data, justify = "right")
-
-
-mode(illinois_psychiatric$extract_data[2])
