@@ -13,8 +13,8 @@ montana_restruct <- function(x){
         death_text = x %>%
             rvest::html_node(
                 xpath=str_c(
-                    "//span[contains(text(), 'Death')]/parent::span/",
-                    "parent::strong/following::p")) %>%
+                    "//strong[contains(text(), 'Death')]/",
+                    "parent::span/following::p")) %>%
             rvest::html_text()
     )
 }
