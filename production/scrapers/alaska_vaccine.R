@@ -49,7 +49,7 @@ alaska_vaccine_extract <- function(x){
     x %>%
         rename(
             Name = Facility,
-            Residents.Vadmin = `Vax given`,
+            Residents.Vadmin = `Vaccinations given`,
             Residents.Initiated = `# individual inmates`,
             Residents.Completed = `# completed series`) %>%
         filter(!str_detect(Name, "(?i)total")) %>%

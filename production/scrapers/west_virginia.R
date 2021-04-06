@@ -3,7 +3,8 @@ source("./R/utilities.R")
 
 west_virginia_pull <- function(x){
     tsv_src <- get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "txt$")
+        x, "a", attr = "href", attr_regex = "txt$") %>%
+        {.[!str_detect(., "vaccine")]}
     
     dev_null <- suppressWarnings(out <- read_tsv(
         tsv_src, skip = 1, col_types = cols()))
