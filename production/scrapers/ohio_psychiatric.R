@@ -18,7 +18,7 @@ ohio_psychiatric_extract <- function(x){
 #' @name ohio_psychiatric_scraper
 #' @description NC has data for many congregate settings is compiled by DHHS.
 #' \describe{
-#'   \item{Facility name}{The facility name.}
+#'   \item{Facility name}{Name}
 #'   \item{Residents Cases}{Residents.Confirmed}
 #'   \item{Staff Cases}{Staff.Confirmed}
 #'   \item{Residents Deaths}{Residents.Deaths}

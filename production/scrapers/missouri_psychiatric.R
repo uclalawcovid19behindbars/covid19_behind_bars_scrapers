@@ -19,7 +19,7 @@ missouri_psychiatric_extract <- function(x){
 #' @description data is in a loosely structured format and will require some
 #' serious checks to ensure the data is correctly being pulled.
 #' \describe{
-#'   \item{Facility name}{The facility name.}
+#'   \item{Facility name}{Name}
 #'   \item{Patients testing positive}{Residents.Confirmed}
 #'   \item{Staff testing positive}{Staff.Confirmed}
 #'   \item{Patients Deaths}{Residents.Deaths}

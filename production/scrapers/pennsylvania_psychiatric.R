@@ -17,12 +17,17 @@ pennsylvania_psychiatric_extract <- function(x){
 #' 
 #' @name pennsylvania_psychiatric_scraper
 #' @description There are multiple html tables on this page however we are
-#' interested in the table titled State Operated Psychiatric Hospitals. Row
+#' interested in the table under the title State Hospitals. Row
 #' names here indicate state psychiatric facilities and we want the columns
-#' below
+#' below. Note whenever we see "less than 5" we want to convert the value to NA
+#' and make sure those columns are numeric.
 #' \describe{
-#'   \item{Facility name}{The facility name.}
-#'   \item{Patients testing positive}{Residents.Confirmed}
+#'   \item{State Hospital}{Name}
+#'   \item{Current Census of Clients}{Residents.Population}
+#'   \item{Current Positive Cases Among Clients}{Residents.Active}
+#'   \item{Cumulative Positive Cases Among Clients}{Residents.Confirmed}
+#'   \item{Deaths of Clients}{Residents.Deaths}
+#'   \item{Current Census of Staff}{Staff.Population}
 #'   \item{Staff testing positive}{Staff.Confirmed}
 #' }
 
