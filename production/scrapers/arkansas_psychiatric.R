@@ -14,16 +14,14 @@ arkansas_psychiatric_extract <- function(x){
     x
 }
 
-#' Scraper class for general North Carolina COVID data
+#' Scraper class for Arkansas Psychiatric COVID data
 #' 
 #' @name arkansas_psychiatric_scraper
-#' @description NC has data for many congregate settings is compiled by DHHS.
+#' @description AR has data for many congregate settings is compiled by DHHS.
+#' Here we need to filter down to just hospital psychiatric facilities. Note this
+#' is a low priority scraper as the facilities posted are inconsistent.
 #' \describe{
 #'   \item{Facility name}{Name}
-#'   \item{Residents Cases}{Residents.Confirmed}
-#'   \item{Staff Cases}{Staff.Confirmed}
-#'   \item{Residents Deaths}{Residents.Deaths}
-#'   \item{Staff Deaths}{Staff.Deaths}
 #' }
 
 arkansas_psychiatric_scraper <- R6Class(

@@ -20,6 +20,7 @@ north_carolina_jails_extract <- function(x){
 #' 
 #' @name north_carolina_jails_scraper
 #' @description NC has data for many congregate settings is compiled by DHHS.
+#' Here we need to filter down to just jails
 #' \describe{
 #'   \item{Facility name}{The facility name.}
 #'   \item{Residents Cases}{Residents.Confirmed}

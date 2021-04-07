@@ -17,6 +17,7 @@ north_carolina_psychiatric_extract <- function(x){
 #' 
 #' @name north_carolina_psychiatric_scraper
 #' @description NC has data for many congregate settings is compiled by DHHS.
+#' Here we need to filter down to just psychiatric wards.
 #' \describe{
 #'   \item{Facility name}{Name}
 #'   \item{Residents Cases}{Residents.Confirmed}

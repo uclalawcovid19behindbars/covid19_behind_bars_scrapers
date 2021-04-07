@@ -13,16 +13,15 @@ ohio_psychiatric_extract <- function(x){
     x
 }
 
-#' Scraper class for general North Carolina COVID data
+#' Scraper class for general Ohio psychiatric COVID data
 #' 
 #' @name ohio_psychiatric_scraper
-#' @description NC has data for many congregate settings is compiled by DHHS.
+#' Ohio psychiatric wards post minimal data on seemingly active cases
+#' 
+#' @description 
 #' \describe{
-#'   \item{Facility name}{Name}
-#'   \item{Residents Cases}{Residents.Confirmed}
-#'   \item{Staff Cases}{Staff.Confirmed}
-#'   \item{Residents Deaths}{Residents.Deaths}
-#'   \item{Staff Deaths}{Staff.Deaths}
+#'   \item{Hsopital}{Name}
+#'   \item{Patients Positive Covid-19 Test}{Residents.Active}
 #' }
 
 ohio_psychiatric_scraper <- R6Class(
@@ -35,7 +34,7 @@ ohio_psychiatric_scraper <- R6Class(
             url = "https://coronavirus.ohio.gov/wps/portal/gov/covid-19/home",
             id = "ohio_psychiatric",
             type = "pdf",
-            state = "NC",
+            state = "OH",
             jurisdiction = "psychiatric",
             # pull the JSON data directly from the API
             pull_func = ohio_psychiatric_pull,
