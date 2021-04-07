@@ -49,13 +49,14 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
         "Current staff cases",
         "Offered Vaccine (Incarcerated Population, total)",
         "Offered Vaccine (Incarcerated Population, 1-day diff)",
-        "1st Dose Janssen Vaccine Accepted (Incarcerated Population)",
-        "1st Dose Janssen Vaccine Accepted (Incarcerated Population, 1-day diff)",
-        "1st Dose Moderna Accepted (Incarcerated Population, total)",
-        "1st Dose Moderna Accepted (Incarcerated Population, 1-day diff)",
-        "2nd Dose Moderna Accepted (Incarcerated Population)",
-        "Percent of Population Vaccinated w/ First Dose",
-        "Percent of First Dose Vaccines Accepted"))
+        "Janssen Vaccine Accepted (Incarcerated Population)", 
+        "Janssen Vaccine Accepted (Incarcerated Population, 1-day diff)", 
+        "1st Dose Moderna Accepted (Incarcerated Population, total)", 
+        "1st Dose Moderna Accepted (Incarcerated Population, 1-day diff)", 
+        "2nd Dose Moderna Accepted (Incarcerated Population)", 
+        "Percent of Population Vaccinated w/ Moderna First Dose", 
+        "Percent of Population Fully Vaccinated", 
+        "Percent of Vaccines Accepted"))
     
     x %>%
         select(
@@ -67,7 +68,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Pending = `Pending tests`,
             Residents.Population = `SRJ Population (total)`,
             Staff.Confirmed = `Staff cases (total)`,
-            Residents.Initiated_Janssen = `1st Dose Janssen Vaccine Accepted (Incarcerated Population)`,
+            Residents.Initiated_Janssen = `Janssen Vaccine Accepted (Incarcerated Population)`,
             Residents.Initiated_Moderna = `1st Dose Moderna Accepted (Incarcerated Population, total)`,
             Residents.Completed_Moderna = `2nd Dose Moderna Accepted (Incarcerated Population)`
             ) %>%

@@ -47,7 +47,8 @@ new_hampshire_vaccine_extract <- function(x){
         clean_scraped_df() %>%
         group_by(Name) %>%
         summarize_all(sum_na_rm) %>%
-        mutate(Residents.Vadmin = Residents.Initiated + Residents.Completed)
+        mutate(Residents.Vadmin = Residents.Initiated + Residents.Completed) %>% 
+        filter(!Name == "")
 }
 
 #' Scraper class for general New Hampshire COVID data
