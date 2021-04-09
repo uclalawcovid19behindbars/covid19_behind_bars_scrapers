@@ -4,6 +4,8 @@ source("./R/utilities.R")
 # Tableau downloads from Firefox aren't working  
 # Download the csv file manually in Chrome and save it in this location 
 wisconsin_vaccine_pull <- function(x){
+    # if this is giving you trouble, try save-as'ing it in 
+    # excel with UTF-8 .csv file encoding
     read.csv("/tmp/sel_dl/Vaccines.csv")
 }
 
