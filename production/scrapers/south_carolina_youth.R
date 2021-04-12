@@ -14,20 +14,20 @@ south_carolina_youth_restruct <- function(x){
 
 south_carolina_youth_extract <- function(x){
     check_names(x, 
-                c("IYC Facility", 
-                  "Confirmed COVID-19 Cases *", 
-                  "Confirmed COVID-19 Cases *"))
+                c("Location", 
+                  "Youth", 
+                  "Staff"))
     
     clean <- x %>%
-        janitor::row_to_names(row_number = 1) %>%
-        select(Name = "", 
+        select(Name = "Location", 
                Residents.Confirmed = `Youth`,
                Staff.Confirmed = `Staff`) %>%
         mutate(Name = toupper(Name))
     
     out <- clean %>%
         clean_scraped_df() %>%
-        as_tibble()
+        as_tibble() %>%
+        filter(Name != "TOTAL")
     
     return(out)
 }
@@ -52,7 +52,7 @@ south_carolina_youth_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www2.south_carolina.gov/idjj/Pages/COVID19.aspx",
+            url = "https://djj.sc.gov/Confirmed_COVID-19_Cases",
             id = "south_carolina_youth",
             type = "html",
             state = "IL",
