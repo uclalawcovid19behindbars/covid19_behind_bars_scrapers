@@ -163,7 +163,11 @@ california_vaccine_bi_extract <- function(x){
     x %>% 
         mutate_at(vars(-Name), string_to_clean_numeric) %>% 
         as_tibble() %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        # inititaited needs to include completed to match our definition
+        mutate(Staff.Initiated = Staff.Initiated + Staff.Completed) %>%
+        mutate(Residents.Initiated = Residents.Initiated + Residents.Completed)
+        
 }
 
 #' Scraper class for general California vaccine COVID data from dashboard
