@@ -7,7 +7,7 @@ west_virginia_vaccine_pull <- function(x){
         {.[str_detect(., "vaccine")]}
     
     dev_null <- suppressWarnings(out <- read_tsv(
-        tsv_src, skip = 1, col_types = cols()))
+        tsv_src[1], skip = 1, col_types = cols()))
     
     out
 }
