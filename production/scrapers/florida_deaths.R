@@ -39,7 +39,7 @@ florida_deaths_extract <- function(x){
         clean_scraped_df() %>%
         mutate(Name = str_squish(str_replace(Name, "-", " - "))) %>%
         mutate(Name = str_squish(str_replace(
-            Name, "(?i)re - entry", "Rentry"))) %>%
+            Name, "(?i)re - entry", "reentry"))) %>%
         mutate(Name = str_squish(str_split_fixed(test$Name, "-", 2)[,1])) %>%
         select(-starts_with("lDrop"))
 }
