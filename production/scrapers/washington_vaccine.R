@@ -11,16 +11,19 @@ washington_vaccine_restruct <- function(x){
 }
 
 washington_vaccine_extract <- function(x){
-    rvest::html_table(x[1], fill = TRUE) %>% 
-        as.data.frame() %>% 
-        rename(
-            "Name" = "Vaccine.Facility", 
-            "Residents.Initiated" = "Initiating.Vaccination.Administered", 
-            "Residents.Completed" = "Second.Vaccination.Administered", 
-            "Total.Drop" = "Total"
-        ) %>% 
-        filter(!Name %in% c("All Vaccine Facilities")) %>% 
-        select(-ends_with("Drop")) %>% 
+    
+    ind_idx <- x %>%
+        sapply(function(z) rvest::html_text(rvest::html_node(z, "caption"))) %>%
+        str_detect("(?i)individuals")
+    
+    x[[which(ind_idx)]] %>%
+        rvest::html_table() %>%
+        mutate(Type = case_when(
+            str_detect(Type, "(?i)custody") ~ "Residents.Initiated",
+            str_detect(Type, "(?i)staff") ~ "Staff.Initiated"
+            )) %>%
+        pivot_wider(names_from = Type, values_from = Total) %>%
+        mutate(Name = "StateWide") %>%
         clean_scraped_df()
 }
 
