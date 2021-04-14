@@ -22,12 +22,12 @@ south_carolina_youth_extract <- function(x){
         select(Name = "Location", 
                Residents.Confirmed = `Youth`,
                Staff.Confirmed = `Staff`) %>%
-        mutate(Name = toupper(Name))
+        filter(Name != "TOTAL") %>%
+        mutate(Name = str_c(toupper(Name), " YOUTH"))
     
     out <- clean %>%
         clean_scraped_df() %>%
-        as_tibble() %>%
-        filter(Name != "TOTAL")
+        as_tibble() 
     
     return(out)
 }

@@ -23,7 +23,7 @@ illinois_youth_extract <- function(x){
         select(Name = "", 
                Residents.Confirmed = `Youth`,
                Staff.Confirmed = `Staff`) %>%
-        mutate(Name = toupper(Name))
+        mutate(Name = str_c(toupper(Name), " YOUTH"))
     
     out <- clean %>%
         clean_scraped_df() %>%

@@ -24,12 +24,12 @@ louisiana_youth_extract <- function(x){
         select(Name = `Secure Care Facility`, 
                Residents.Confirmed = `# of Youth Positive`,
                Residents.Recovered = `# of Youth Recovered`) %>%
-        mutate(Name = toupper(Name)) %>%
-        filter(Name != "TOTAL")
+        mutate(Name = str_c(toupper(Name), " YOUTH"))
     
     out <- la_cln %>%
         clean_scraped_df() %>%
-        as_tibble()
+        as_tibble() %>%
+        filter(Name != "TOTAL YOUTH") %>%
     
     return(out)
 }
