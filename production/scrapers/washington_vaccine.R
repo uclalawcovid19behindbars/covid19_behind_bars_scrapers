@@ -18,8 +18,11 @@ washington_vaccine_extract <- function(x){
     
     x[[which(ind_idx)]] %>%
         rvest::html_table() %>%
-        filter(str_detect(Type, "(?i)custody")) %>%
-        select(Residents.Initiated = Total) %>%
+        mutate(Type = case_when(
+            str_detect(Type, "(?i)custody") ~ "Residents.Initiated",
+            str_detect(Type, "(?i)staff") ~ "Staff.Initiated"
+            )) %>%
+        pivot_wider(names_from = Type, values_from = Total) %>%
         mutate(Name = "StateWide") %>%
         clean_scraped_df()
 }
