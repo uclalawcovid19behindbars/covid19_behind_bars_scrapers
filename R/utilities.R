@@ -539,9 +539,7 @@ write_agg_data <- function(...){
     "Residents.Confirmed", "Staff.Confirmed",
     "Residents.Deaths", "Staff.Deaths",
     "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin",
-    #"Residents.Initiated", "Staff.Initiated",
-    #"Residents.Completed", "Staff.Completed",
-    "Residents.Vadmin", "Staff.Vadmin"
+    "Residents.Initiated", "Staff.Initiated"
   )
   
   raw_agg %>%
