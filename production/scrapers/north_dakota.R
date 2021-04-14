@@ -71,14 +71,15 @@ north_dakota_extract <- function(x){
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
-                   Staff.Positive) %>%
+                   Staff.Positive, 
+               Residents.Initiated = Residents.First.Dose + Residents.Single.Dose, 
+               Residents.Completed = Residents.Second.Dose + Residents.Single.Dose) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
             Staff.Tested = Staff.Total.Individials.Tested, 
-            Residents.Initiated = Residents.First.Dose, 
-            Residents.Completed = Residents.Second.Dose
+            Residents.Initiated, Residents.Completed
         ) %>% 
         clean_scraped_df()
 }
@@ -105,6 +106,7 @@ north_dakota_extract <- function(x){
 #'   \item{Staff.Total.Individuals.Tested.Twice}{}
 #'   \item{Residents.First.Dose}{}
 #'   \item{Residents.Second.Dose}{}
+#'   \item{Residents.Single.Dose}{}
 #' }
 
 north_dakota_scraper <- R6Class(
