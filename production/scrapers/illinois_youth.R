@@ -32,7 +32,7 @@ illinois_youth_extract <- function(x){
     return(out)
 }
 
-#' Scraper class for general Illinois COVID data
+#' Scraper class for general Illinois Youth COVID data
 #' 
 #' @name illinois_youth_scraper
 #' @description IL data self contained within html table. Death data may have
@@ -40,9 +40,7 @@ illinois_youth_extract <- function(x){
 #' \describe{
 #'   \item{Location}{The facilty name}
 #'   \item{Staff.Confirmed}{Staff Confirmed}
-#'   \item{Staff.Recovered}{Staff Recovered}
 #'   \item{Residents.Confirmed}{Residents Confirmed}
-#'   \item{Residents.Recovered}{Residents Recovered}
 #' }
 
 illinois_youth_scraper <- R6Class(

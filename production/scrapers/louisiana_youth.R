@@ -34,15 +34,12 @@ louisiana_youth_extract <- function(x){
     return(out)
 }
 
-#' Scraper class for general Illinois COVID data
+#' Scraper class for general Louisiana youth COVID data
 #' 
 #' @name louisiana_youth_scraper
-#' @description IL data self contained within html table. Death data may have
-#' have been reported in the past.
+#' @description LA data self contained within html table. 
 #' \describe{
 #'   \item{Location}{The facilty name}
-#'   \item{Staff.Confirmed}{Staff Confirmed}
-#'   \item{Staff.Recovered}{Staff Recovered}
 #'   \item{Residents.Confirmed}{Residents Confirmed}
 #'   \item{Residents.Recovered}{Residents Recovered}
 #' }
@@ -57,7 +54,7 @@ louisiana_youth_scraper <- R6Class(
             url = "https://ojj.la.gov/ojj-covid-19-information/",
             id = "louisiana_youth",
             type = "html",
-            state = "IL",
+            state = "LA",
             jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = louisiana_youth_pull,

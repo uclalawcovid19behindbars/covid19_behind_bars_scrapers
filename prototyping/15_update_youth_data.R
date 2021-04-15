@@ -4,6 +4,11 @@ library(behindbarstools)
 library(googlesheets4)
 gs4_auth("ucla.law.covid.staff@gmail.com")
 
+## QUESTIONS: 
+# - which sheet to use? --> formal sheet 
+# - all dates, or just latest scrape? ---> most recent confirmed case number 
+# - date last updated? or date last scraped? 
+# historical data --> also create a sheet of historical sheets 
 
 youth_sheet <- "1AfqaEPZTMy1hMdnZC8UYMP_JTJrnDlLi_6uh8sxmQWM"
 
@@ -21,7 +26,8 @@ youth_df <- all_dat %>%
 
 # check for any other youth facilities 
 other_youth <- all_dat %>% 
-    filter((str_detect(Name, "(?i)juvenile|youth")) & Age != "Juvenile")
+    filter((str_detect(Name, "(?i)juvenile|youth"))) %>%
+    filter(Age != "Juvenile" | is.na(Age))
 
 # bind together age-classified and name-searched
 all_youth <- youth_df %>%
@@ -59,3 +65,5 @@ range_write(
     ss = youth_sheet, 
     sheet = "main", 
     reformat = FALSE)
+
+

@@ -32,17 +32,14 @@ south_carolina_youth_extract <- function(x){
     return(out)
 }
 
-#' Scraper class for general Illinois COVID data
+#' Scraper class for general South Carolina Youth COVID data
 #' 
 #' @name south_carolina_youth_scraper
-#' @description IL data self contained within html table. Death data may have
-#' have been reported in the past.
+#' @description SC data self contained within html table.
 #' \describe{
 #'   \item{Location}{The facilty name}
 #'   \item{Staff.Confirmed}{Staff Confirmed}
-#'   \item{Staff.Recovered}{Staff Recovered}
 #'   \item{Residents.Confirmed}{Residents Confirmed}
-#'   \item{Residents.Recovered}{Residents Recovered}
 #' }
 
 south_carolina_youth_scraper <- R6Class(
@@ -55,7 +52,7 @@ south_carolina_youth_scraper <- R6Class(
             url = "https://djj.sc.gov/Confirmed_COVID-19_Cases",
             id = "south_carolina_youth",
             type = "html",
-            state = "IL",
+            state = "SC",
             jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = south_carolina_youth_pull,
