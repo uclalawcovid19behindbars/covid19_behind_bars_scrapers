@@ -21,7 +21,12 @@ maricopa_county_restruct <- function(x){
         "Positive Results" = "Residents.Confirmed",
         "Active Cases In Custody" = "Residents.Active",
         "Hospitalizations" = "Drop3",
-        "Deaths" = "Residents.Deaths"
+        "Deaths" = "Residents.Deaths", 
+        "Total Number of Vaccines Administered" = "Residents.Vadmin", 
+        "Total Number of Vaccine Refusals" = "Drop.Refusals", 
+        "Johnson & Johnson Vaccines Administered" = "Drop.Johnson.Vadmin", 
+        "Moderna Vaccines Administered" = "Drop.Moderna.Vadmin", 
+        "Pfizer Vaccines Administered" = "Drop.Pfizer.Vadmin"
     )
     
     check_names(df_, names(expect_names))
