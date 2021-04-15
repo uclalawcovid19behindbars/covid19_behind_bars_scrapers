@@ -40,8 +40,8 @@ florida_deaths_extract <- function(x){
         mutate(Name = str_squish(str_replace(Name, "-", " - "))) %>%
         mutate(Name = str_squish(str_replace(
             Name, "(?i)re - entry", "reentry"))) %>%
-        mutate(Name = str_squish(str_split_fixed(test$Name, "-", 2)[,1])) %>%
-        select(-starts_with("lDrop"))
+        mutate(Name = str_squish(str_split_fixed(Name, "-", 2)[,1])) %>%
+        select(-starts_with("Drop"))
 }
 
 #' Scraper class for general florida_deaths COVID death data
