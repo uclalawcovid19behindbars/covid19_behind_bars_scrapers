@@ -8,11 +8,8 @@ output:
 ---
 
 ```{r setup, include = F}
-library(devtools)
 library(tidyverse)
-library(googlesheets4)
 library(kableExtra)
-devtools::install_github("uclalawcovid19behindbars/behindbarstools")
 library(behindbarstools)
 ```
 
@@ -26,7 +23,7 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 
 ``` {r echo = F, warning = F}
 # Read latest facility data 
-new_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = 60)
+new_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = 31)
 
 # Get all log files from the latest run 
 latest_date <- max(new_df$Date) %>% 
@@ -148,7 +145,7 @@ This compares to the state-aggregated totals in `state_aggregate_counts.csv` whi
 
 ```{r check_previous_state, echo = F, message = F, warning = F}
 # Read latest statewide data 
-new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE, window = 60)
+new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE, window = 31)
 
 # Read old data 
 old_state_df <- stringr::str_c(
@@ -183,14 +180,14 @@ kable(measure_decline_df, format.args = list(big.mark = ",")) %>%
 
 **How does our aggregated data compare to data from AP and the Marshall Project?** 
 
-AP and the Marshall Project report [data on COVID in prisons at the state-level](https://www.themarshallproject.org/2020/05/01/a-state-by-state-look-at-coronavirus-in-prisons) each week. Because of differences in our methodology (e.g. data sources, update frequency, etc.), we do NOT expect our statewide totals to perfectly align with data from AP/TMP. The table below highlights states where our totals differ by more than 20%. 
+AP and the Marshall Project report [data on COVID in prisons at the state-level](https://www.themarshallproject.org/2020/05/01/a-state-by-state-look-at-coronavirus-in-prisons) each week. Because of differences in our methodology (e.g. data sources, update frequency, etc.), we do NOT expect our statewide totals to perfectly align with data from AP/TMP. The table below includes states where our totals differ by more than 20% OR where TMP is reporting values higher than we are. 
 
 ``` {r, echo = F}
 # Read Marshall Project data 
 new_state_df %>% 
     filter(!is.na(UCLA) & !is.na(MP)) %>% 
-    mutate(pct_diff = scales::percent(abs((MP - UCLA) / UCLA))) %>% 
-    filter(pct_diff > 20) %>%
+    mutate(pct_diff = abs((MP - UCLA) / UCLA)) %>% 
+    filter(pct_diff > 0.2 | MP > UCLA) %>%
     arrange(desc(pct_diff)) %>% 
     select(State, Measure, UCLA, MP) %>%
     kable(format.args = list(big.mark = ",")) %>% 
