@@ -40,11 +40,11 @@ pennsylvania_bi_deaths_restruct  <- function(x){
     lab_sr_str <- "//text[@class='setFocusRing']//title"
 
     tibble(
-        Name = raw_html %>%
+        Name = x %>%
             rvest::html_nodes(xpath=lab_sr_str) %>%
             rvest::html_text(),
         
-        Residents.Deaths = raw_html %>%
+        Residents.Deaths = x %>%
             rvest::html_nodes(xpath=val_sr_str) %>%
             rvest::html_text())
 }
