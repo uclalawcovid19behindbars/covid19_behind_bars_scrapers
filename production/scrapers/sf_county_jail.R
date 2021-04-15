@@ -33,7 +33,7 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
         select(
             Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
             Residents.Active = `Active Cases (Incarcerated population, current)`,
-            Residents.Tadmin = `Tests (Incarcerated Population, cumulative )`, 
+            Residents.Tadmin = `Tests (Incarcerated Population, cumulative)`, 
             Staff.Population = `Total SFSO Employees`, 
             Staff.Confirmed = `SFSO Employees Total Positive Results`, 
             Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
@@ -84,7 +84,7 @@ sf_county_jail_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    sf_county_jail <- sf_county_jail_scraper$new(log=TRUE)
+    sf_county_jail <- sf_county_jail_scraper$new(log=F)
     sf_county_jail$raw_data
     sf_county_jail$pull_raw()
     sf_county_jail$raw_data
