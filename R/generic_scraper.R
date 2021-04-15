@@ -366,6 +366,10 @@ generic_scraper <- R6Class(
             less_check("Residents.Tested", "Residents.Confirmed")
             less_check("Staff.Tested", "Staff.Negative")
             less_check("Residents.Tested", "Residents.Negative")
+            less_check("Residents.Initiated", "Residents.Completed")
+            less_check("Staff.Initiated", "Staff.Completed")
+            less_check("Residents.Vadmin", "Residents.Initiated")
+            less_check("Staff.Vadmin", "Staff.Initiated")
         },
         
         validate_extract = function(){
