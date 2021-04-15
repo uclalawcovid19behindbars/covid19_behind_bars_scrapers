@@ -100,12 +100,13 @@ pennsylvania_bi_cases_extract <- function(x){
 #' 
 #' @name pennsylvania_bi_cases_scraper
 #' @description One page in PAs power BI tool which is dedicated to inmate
-#' deaths. We scrape each page with relevant data from the PA bi tool with
+#' cases. We scrape each page with relevant data from the PA bi tool with
 #' separate scrapers.
 #' 
 #' \describe{
 #'   \item{Facility}{Facility abbreviation}
-#'   \item{Active}{COVID related death among inmates}
+#'   \item{Active}{COVID active cases among inmates}
+#'   \item{Confirmed}{COVID confirmed cases among inmates}
 #' }
 
 pennsylvania_bi_cases_scraper <- R6Class(
