@@ -31,13 +31,18 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         select(
-            Residents.Confirmed = `Confirmed Cases`,
-            Residents.Active = `Active in Custody`,
-            Residents.Recovered = `Resolved`,
-            Residents.Deaths = Deaths,
-            Residents.Quarantine = `Quarantined Cases`,
-            Residents.Population = `Incarcerated Population`
-            ) %>%
+            Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
+            Residents.Active = `Active Cases (Incarcerated population, current)`,
+            Residents.Tadmin = `Tests (Incarcerated Population, cumulative)`, 
+            Staff.Population = `Total SFSO Employees`, 
+            Staff.Confirmed = `SFSO Employees Total Positive Results`, 
+            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
+            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
+            Residents.Deaths = `Deaths (Incarcerated population, cumulative)`
+            ) %>% 
+        mutate(
+            Residents.Initiated = Residents.Initiated + Residents.Completed
+        ) %>%
         mutate_all(unlist) %>%
         mutate_all(as.numeric) %>%
         mutate(Name = "SF COUNTY JAIL")
@@ -79,7 +84,7 @@ sf_county_jail_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    sf_county_jail <- sf_county_jail_scraper$new(log=TRUE)
+    sf_county_jail <- sf_county_jail_scraper$new(log=F)
     sf_county_jail$raw_data
     sf_county_jail$pull_raw()
     sf_county_jail$raw_data
