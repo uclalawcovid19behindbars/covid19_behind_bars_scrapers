@@ -76,7 +76,7 @@ pennsylvania_bi_deaths_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.cdcr.ca.gov/covid19/updates/",
+            url = "https://www.cor.pa.gov/Pages/COVID-19.aspx",
             id = "pennsylvania_bi_deaths",
             type = "html",
             state = "PA",
