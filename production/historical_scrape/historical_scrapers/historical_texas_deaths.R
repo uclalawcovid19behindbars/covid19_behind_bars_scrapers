@@ -2,7 +2,6 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 historical_texas_deaths_pull <- function(x, date = NULL, file = NULL){
-    ## ran this once and then downloaded it to avoid rate limiting
     z <- "1qnea3D6S18H2tKz0Q1STnJ47qkXxNE8u-axPA1p81Zc" %>%
         googlesheets4::read_sheet(
             sheet = "Sheet1",
@@ -26,17 +25,26 @@ historical_texas_deaths_restruct <- function(z){
         ungroup() %>%
         select(-New.Residents.Deaths)
     
-    cbb <- out %>%
-        group_by(month_yr = glue('{month(Date)}_{year(Date)}')) %>% 
-        summarise(Residents.Deaths_cbb = sum(Residents.Deaths)) 
+    ## compare our data to marshall project, our historical data 
+    # cbb <- out %>%
+    #     group_by(month_yr = glue('{month(Date)}_{year(Date)}'), Name) %>% 
+    #     summarise(Residents.Deaths_max_fac_month = max(Residents.Deaths)) %>% # get max cumulative count from each facility in each month 
+    #     group_by(month_yr) %>% 
+    #     ## need to arrange by correct date order and take the cumulative sum 
+    #     summarize(Residents.Deaths_cbb_manual = sum(Residents.Deaths_max_fac_month),
+    #               n = n()) 
     
-    mpap <- tx_dat %>%
-        group_by(month_yr = glue('{month(Date)}_{year(Date)}')) %>% 
-        summarise(Residents.Deaths_mpap = sum(Residents.Deaths)) 
+    # mpap <- tx_dat %>%
+    #     group_by(month_yr = glue('{month(Date)}_{year(Date)}')) %>% 
+    #     summarise(Residents.Deaths_mpap = max(Residents.Deaths)) 
+    
+    # historical_deaths <- read_csv("~/Desktop/historical_tx_deaths.csv")
     
     ## some strange things going on here
-    compare <- cbb %>%
-        left_join(mpap, by = "month_yr")
+    # compare <- cbb %>%
+    #     left_join(mpap, by = "month_yr") %>%
+    #     # left_join(historical_deaths, by = "month_yr") %>%
+    #     relocate(month_yr, "Residents.Deaths_mpap", starts_with("Residents.Deaths_cbb"))
 }
 
 historical_texas_deaths_extract <- function(x){
@@ -60,11 +68,11 @@ historical_texas_deaths_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.davisvanguard.org/tag/covid-19/",
+            url = "https://www.tdcj.texas.gov/covid-19/presumed.html",
             id = "historical_texas_deaths",
             type = "csv",
-            state = "CA",
-            jurisdiction = "county",
+            state = "TX",
+            jurisdiction = "state",
             # pull the JSON data directly from the API
             pull_func = historical_texas_deaths_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -79,17 +87,19 @@ historical_texas_deaths_scraper <- R6Class(
     )
 )
 
-if(sys.nframe() == 0){
-    historical_texas_deaths <- historical_texas_deaths_scraper$new(log = TRUE)
-    historical_texas_deaths$raw_data
-    historical_texas_deaths$pull_raw()
-    historical_texas_deaths$raw_data
-    historical_texas_deaths$save_raw()
-    historical_texas_deaths$restruct_raw()
-    historical_texas_deaths$restruct_data
-    historical_texas_deaths$extract_from_raw()
-    historical_texas_deaths$extract_data
-    historical_texas_deaths$validate_extract()
-    historical_texas_deaths$save_extract()
-}
+## DO NOT RUN 
+## NB: CANNOT INTEGRATE THIS DATA WITH OUR HISTORICAL DATA AT THIS POINT IN TIME 
+# if(sys.nframe() == 0){
+#     historical_texas_deaths <- historical_texas_deaths_scraper$new(log = TRUE)
+#     historical_texas_deaths$raw_data
+#     historical_texas_deaths$pull_raw()
+#     historical_texas_deaths$raw_data
+#     historical_texas_deaths$save_raw()
+#     historical_texas_deaths$restruct_raw()
+#     historical_texas_deaths$restruct_data
+#     historical_texas_deaths$extract_from_raw()
+#     historical_texas_deaths$extract_data
+#     historical_texas_deaths$validate_extract()
+#     historical_texas_deaths$save_extract()
+# }
 
