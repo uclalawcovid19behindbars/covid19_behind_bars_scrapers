@@ -94,7 +94,7 @@ pennsylvania_bi_staff_cases_extract <- function(x){
         
 }
 
-#' Scraper class for general PA death data from dashboard
+#' Scraper class for general PA death staff cases from dashboard
 #' 
 #' @name pennsylvania_bi_staff_cases_scraper
 #' @description One page in PAs power BI tool which is dedicated to staff
