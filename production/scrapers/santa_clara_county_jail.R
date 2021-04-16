@@ -8,7 +8,7 @@ santa_clara_county_jail_pull <- function(x){
 
 santa_clara_county_jail_restruct <- function(x){
     x %>%
-        mutate(Date = lubridate::round_date(`Date`, unit = "day")) %>%
+        mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>%
         filter(Date == max(Date))
 }
@@ -18,30 +18,46 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(x$Date, exp_date)
     
     check_names(x, c(
-        "Date", 
-        "Active Cases In Custody", 
-        "Incarcerated People In Custody", 
-        "Population Change", 
-        "Total Tests Completed", 
-        "Positive Test Results", 
-        "Negative Test Results", 
-        "Cases confirmed at booking", 
-        "Cumulative Cases", 
-        "New Cases", 
-        "Total Staff Tests", 
-        "Vaccinations for Incarcerated Population",
-        "Vaccinations for Staff",
-        "Notes"))
+        "As of Date", 
+        "Facility Name", 
+        "County", 
+        "Active Cases (Incarcerated population, current)", 
+        "Population (Incarcerated population, current)", 
+        "Population (Incarcerated population, 1-day diff)", 
+        "Tests (Incarcerated population, cumulative)", 
+        "New Tests (Incarcerated population, 1-day diff)", 
+        "New Tests (Incarcerated population, 7-day diff)", 
+        "Tests (Incarcerated population, current, positives)", 
+        "Tests (Incarcerated population, current, negatives)", 
+        "Cases Confirmed at Intake (Incarcerated population, cumulative)", 
+        "Cases Confirmed at Intake (Incarcerated population, 1-day diff)", 
+        "Cases Confirmed in Custody (Incarcerated population, cumulative)", 
+        "Cases Confirmed in Custody (Incarcerated population, 1-day diff)", 
+        "Confirmed Cases (Incarcerated population, cumulative)", 
+        "Confirmed Cases (Incarcerated population, 1-day diff)", 
+        "Tests (Custody Staff, cumulative)", 
+        "Population (Custody Staff, current)", 
+        "Offered Vaccines (Incarcerated population, cumulative)", 
+        "Fully Vaccinated (Incarcerated population, cumulative)", 
+        "Partially Vaccinated (Incarcerated population, current)", 
+        "Fully Vaccinated (Custody Staff, cumulative)", 
+        "Notes", 
+        "Date"
+    ))
     
     x %>%
+        mutate(Residents.Initiated = `Partially Vaccinated (Incarcerated population, current)` + 
+                   `Fully Vaccinated (Incarcerated population, cumulative)`) %>% 
         select(
-            Residents.Confirmed = `Cumulative Cases`,
-            Residents.Active = `Active Cases In Custody`,
-            Residents.Tadmin = `Total Tests Completed`,
-            Residents.Population = `Incarcerated People In Custody`,
-            Staff.Tested = `Total Staff Tests`,
-            Residents.Vadmin = `Vaccinations for Incarcerated Population`,
-            Staff.Vadmin = `Vaccinations for Staff`
+            Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
+            Residents.Active = `Active Cases (Incarcerated population, current)`,
+            Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
+            Residents.Population = `Tests (Incarcerated population, cumulative)`,
+            Staff.Tested = `Tests (Custody Staff, cumulative)`,
+            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
+            Residents.Initiated, 
+            Staff.Completed = `Fully Vaccinated (Custody Staff, cumulative)`, 
+            Staff.Population = `Population (Custody Staff, current)`
             ) %>%
         mutate(Name = "SANTA CLARA COUNTY JAIL")
 }
@@ -94,4 +110,3 @@ if(sys.nframe() == 0){
     santa_clara_county_jail$validate_extract()
     santa_clara_county_jail$save_extract()
 }
-

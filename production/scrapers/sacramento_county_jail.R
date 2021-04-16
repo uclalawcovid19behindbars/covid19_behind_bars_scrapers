@@ -19,32 +19,34 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     check_names(x, c(
         "As of Date", 
-        "Cumulative Confirmed Cases - Both Jails", 
-        "Cumulative Confirmed Cases - Intake/Quarantine Period - Both Jails", 
-        "Active in Custody - Main Jail", 
-        "Active in Custody - RCCC", 
-        "New Active Cases - Main Jail", 
-        "New Active Cases - RCCC", 
-        "Released while Active", 
-        "Resolved", 
-        "Deaths", 
-        "Cumulative Tested - Both Jails", 
-        "New Tests Administered - Both Jails", 
-        "Total Population - Both Jails", 
-        "Population Change - Both Jails", 
-        "% Population Newly Tested - Both Jails", 
+        "Facility Name", 
+        "County", 
+        "Confirmed Cases (Incarcerated population, cumulative)", 
+        "Cases Confirmed at Intake or Quarantine Period (Incarcerated population, cumulative)", 
+        "Active Cases (Incarcerated population, current, ONLY Main Jail)", 
+        "Active Cases (Incarcerated population, current, ONLY RCCC)", 
+        "Active Cases (Incarcerated population, current)", 
+        "Active Cases (Incarcerated population, 7-day diff, ONLY Main Jail)", 
+        "Active Cases (Incarcerated population, 7-day diff, ONLY RCCC)", 
+        "Active Cases (Incarcerated population, 7-day diff)", 
+        "Cases Released while Active (Incarcerated population)", 
+        "Deaths (Incarcerated population, cumulative)", 
+        "Tests (Incarcerated population, cumulative)", 
+        "New Tests (Incarcerated population, 7-day diff)", 
+        "Population (Incarcerated population, current)", 
+        "Population (Incarcerated population, 7-day diff)", 
+        "Percent of Population Tested (Incarcerated population, 7-day period)", 
         "Notes", 
-        "Date"))
+        "Date"
+    ))
     
     x %>%
-        mutate(Residents.Active = 
-                   `Active in Custody - Main Jail` + `Active in Custody - RCCC`) %>% 
         select(
-            Residents.Confirmed = `Cumulative Confirmed Cases - Both Jails`,
-            Residents.Active = Residents.Active,
-            Residents.Deaths = Deaths,
-            Residents.Tadmin = `Cumulative Tested - Both Jails`,
-            Residents.Population = `Total Population - Both Jails`
+            Residents.Active = `Active Cases (Incarcerated population, current)`, 
+            Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
+            Residents.Deaths = `Deaths (Incarcerated population, cumulative)`,
+            Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
+            Residents.Population = `Population (Incarcerated population, current)`
         ) %>%
         mutate(Name = "SACRAMENTO COUNTY JAIL")
 }
@@ -65,7 +67,7 @@ sacramento_county_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "hhttps://www.davisvanguard.org/tag/covid-19/",
+            url = "https://www.davisvanguard.org/tag/covid-19/",
             id = "sacramento_county_jail",
             type = "csv",
             state = "CA",
