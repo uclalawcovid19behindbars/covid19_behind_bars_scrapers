@@ -2,6 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 historical_texas_deaths_pull <- function(x, date = NULL, file = NULL){
+    stop_defunct_scraper(x)
     z <- "1qnea3D6S18H2tKz0Q1STnJ47qkXxNE8u-axPA1p81Zc" %>%
         googlesheets4::read_sheet(
             sheet = "Sheet1",
