@@ -16,12 +16,12 @@ idaho_vaccine_extract <- function(x){
     
     exp_names <- c(
         Name = "Facility",
-        Residents.Initiated = "# of individuals that have received first dose of vaccine",
-        Residents.Completed = "# of individuals that have received second dose of vaccine",
+        Residents.FirstDose = "1st dose only",
+        Residents.Full = "Fully vaccinated*",
         Drop_ = "", 
         CRC_ = "Community Reentry Center",
-        CRC.Residents.Initiated_ = "# of individuals that have received first dose of vaccine",
-        CRC.Residents.Completed_ = "# of individuals that have received second dose of vaccine"
+        CRC.Residents.FirstDose_ = "1st dose only",
+        CRC.Residents.Full_ = "Fully vaccinated*"
     )
     
     check_names(sw, exp_names)
@@ -29,13 +29,16 @@ idaho_vaccine_extract <- function(x){
     
     bind_rows(
         sw %>% 
-            select(Name, Residents.Initiated, Residents.Completed), 
+            select(Name, Residents.FirstDose, Residents.Full), 
         sw %>% 
             select(
                 Name = CRC_, 
-                Residents.Initiated = CRC.Residents.Initiated_, 
-                Residents.Completed = CRC.Residents.Completed_)
+                Residents.FirstDose = CRC.Residents.FirstDose_, 
+                Residents.Full = CRC.Residents.Full_)
         ) %>% 
+        mutate(Residents.Initiated = Residents.FirstDose + Residents.Full,
+               Residents.Completed = Residents.Full) %>%
+        select(Name, Residents.Initiated, Residents.Completed) %>%
         filter(Name != "") %>% 
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         clean_scraped_df() %>%
