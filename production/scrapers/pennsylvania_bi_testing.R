@@ -36,7 +36,7 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
 }
 
 pennsylvania_bi_testing_restruct  <- function(x){
-    
+  
     labs <- x %>%
         rvest::html_nodes("text.setFocusRing") %>%
         sapply(function(z){
@@ -61,14 +61,12 @@ pennsylvania_bi_testing_restruct  <- function(x){
     tibble(
         Name = labs,
         Residents.Tadmin = possible_values[[idx]]
-    )
-    
+    )    
 }
 
 pennsylvania_bi_testing_extract <- function(x){
     x %>%
         clean_scraped_df()
-    
 }
 
 #' Scraper class for general PA testing data from dashboard
@@ -81,6 +79,7 @@ pennsylvania_bi_testing_extract <- function(x){
 #' \describe{
 #'   \item{Facility}{Facility abbreviation}
 #'   \item{Tests}{Residents.Tadmin}
+
 #' }
 
 pennsylvania_bi_testing_scraper <- R6Class(
