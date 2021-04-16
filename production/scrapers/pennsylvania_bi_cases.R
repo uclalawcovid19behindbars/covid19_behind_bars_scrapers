@@ -96,7 +96,7 @@ pennsylvania_bi_cases_extract <- function(x){
         
 }
 
-#' Scraper class for general PA death data from dashboard
+#' Scraper class for general PA case data from dashboard
 #' 
 #' @name pennsylvania_bi_cases_scraper
 #' @description One page in PAs power BI tool which is dedicated to inmate
