@@ -4,7 +4,7 @@ There are instances where we have raw data files on our database sserver for whi
 
 ## 1. Re-do the scrape
 ```
-production/redo_scrape/main_redo.R --scraper nyc_jails --start 2020-11-01 --end 2020-12-31
+Rscript production/redo_scrape/main_redo.R --scraper nyc_jails --start 2020-11-01 --end 2020-12-31
 ```
 
 This specification tells the redo scraper pipeline to run the `nyc_jails` scraper for any dates which we have raw files on the server in Nov and Dec 2020. To see more details on how to run this file see:

@@ -550,7 +550,7 @@ write_agg_data <- function(...){
     write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
 }
 
-write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 60, agg_window = 60){
+write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, agg_window = 31){
   
     out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = fac_window)
     
