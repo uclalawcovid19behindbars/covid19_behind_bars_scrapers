@@ -57,7 +57,7 @@ pennsylvania_bi_population_extract <- function(x){
         clean_scraped_df()
 }
 
-#' Scraper class for general PA death data from dashboard
+#' Scraper class for general PA population data from dashboard
 #' 
 #' @name pennsylvania_bi_population_scraper
 #' @description One page in PAs power BI tool which is dedicated to inmate
