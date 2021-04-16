@@ -10,7 +10,7 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
             "pageName=ReportSection2804d81ebd8989abad15")
     
     remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost", 
+        remoteServerAddr = "localhost", 
         port = 4445,
         browserName = "firefox"
     )
@@ -23,7 +23,7 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
     is_covid_testing <- raw_html %>%
-        rvest::html_node("div.preTextWithEllipsis") %>%
+        rvest::html_nodes("div.preTextWithEllipsis") %>%
         rvest::html_text() %>%
         str_detect("(?=.*Inmate)(?=.*Tests)(?=.*Facility)") %>%
         any()
@@ -36,67 +36,40 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
 }
 
 pennsylvania_bi_testing_restruct  <- function(x){
+  
+    labs <- x %>%
+        rvest::html_nodes("text.setFocusRing") %>%
+        sapply(function(z){
+            rvest::html_text(rvest::html_node(z, "title"))})
     
     windows <- x %>%
-        rvest::html_nodes(xpath="//transform[@class='bringToFront']")
-    
-    df_list <- bind_rows(lapply(1:length(windows), function(i){
-        
-        wtitle <- windows[[i]] %>%
-            rvest::html_nodes(".preTextWithEllipsis") %>%
-            rvest::html_text() %>%
-            {ifelse(length(.) < 1, "", .)}
-        
-        if(str_detect(wtitle, "(?i)facility")){
-            if(str_detect(wtitle, "(?i)active")){
-                sub_df <- tibble(
-                    measure = "Residents.Active",
-                    
-                    Value = windows[[i]] %>%
-                        rvest::html_nodes(".label") %>%
-                        rvest::html_text(),
-                    
-                    Name = windows[[i]] %>%
-                        rvest::html_nodes("text.setFocusRing") %>%
-                        sapply(function(z){
-                            rvest::html_text(rvest::html_node(z, "title"))})
-                )
-            }
-            else if(str_detect(wtitle, "(?i)cumulative")){
-                sub_df <- tibble(
-                    measure = "Residents.Confirmed",
-                    
-                    Value = windows[[i]] %>%
-                        rvest::html_nodes(".label") %>%
-                        rvest::html_text(),
-                    
-                    Name = windows[[i]] %>%
-                        rvest::html_nodes("text.setFocusRing") %>%
-                        sapply(function(z){
-                            rvest::html_text(rvest::html_node(z, "title"))})
-                )
-            }
-        }
-        else{
-            sub_df <- tibble(Name = vector(mode = "character"))
-        }
-        sub_df
-    })) %>%
-        pivot_wider(names_from = measure, values_from = Value)
+        rvest::html_nodes(".labelGraphicsContext")
     
     
+    possible_values <- lapply(windows, function(z){
+        z %>%
+            rvest::html_nodes(".label") %>%
+            rvest::html_text()
+    })
+    
+    idx <- which(lapply(possible_values, length) == length(labs))
+    
+    if(length(idx) != 1){
+        stop("Page is not as expected please inspect.")
+    }
+    
+    tibble(
+        Name = labs,
+        Residents.Tadmin = possible_values[[idx]]
+    )    
 }
 
 pennsylvania_bi_testing_extract <- function(x){
     x %>%
-        clean_scraped_df() %>%
-        # i think we can assume not being present in the active table means zero
-        mutate(Residents.Active = ifelse(
-            is.na(Residents.Active), 0, Residents.Active))
-    
+        clean_scraped_df()
 }
 
-#' Scraper class for general PA death data from dashboard
+#' Scraper class for general PA testing data from dashboard
 #' 
 #' @name pennsylvania_bi_testing_scraper
 #' @description One page in PAs power BI tool which is dedicated to inmate
@@ -105,8 +78,8 @@ pennsylvania_bi_testing_extract <- function(x){
 #' 
 #' \describe{
 #'   \item{Facility}{Facility abbreviation}
-#'   \item{Active}{COVID active testing among inmates}
-#'   \item{Confirmed}{COVID confirmed testing among inmates}
+#'   \item{Tests}{Residents.Tadmin}
+
 #' }
 
 pennsylvania_bi_testing_scraper <- R6Class(

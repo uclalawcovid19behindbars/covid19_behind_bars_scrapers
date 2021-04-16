@@ -7,6 +7,7 @@ pennsylvania_population_pull <- function(x){
 }
 
 pennsylvania_population_restruct <- function(x){
+    stop_defunct_scraper("https://www.cor.pa.gov/Pages/COVID-19.aspx")
     x %>%
         rvest::html_node("table") %>%
         rvest::html_table(header = TRUE) %>%
