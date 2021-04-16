@@ -83,7 +83,7 @@ pennsylvania_bi_vaccination_extract <- function(x){
             Residents.Completed = Residents.Full, Staff.Completed = Staff.Full)
 }
 
-#' Scraper class for general PA death data from dashboard
+#' Scraper class for general PA vaccination data from dashboard
 #' 
 #' @name pennsylvania_bi_vaccination_scraper
 #' @description One page in PAs power BI tool which is dedicated to inmate
