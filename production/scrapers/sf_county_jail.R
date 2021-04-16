@@ -30,13 +30,15 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(x$Date, exp_date)
     
     x %>%
+        #literally no idea why this needs to happen but it fixed the issue
+        rename(Residents.Initiated = `Partially Vaccinated (Incarcerated population, current)`) %>%
         select(
             Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
             Residents.Active = `Active Cases (Incarcerated population, current)`,
             Residents.Tadmin = `Tests (Incarcerated Population, cumulative)`, 
             Staff.Population = `Total SFSO Employees`, 
             Staff.Confirmed = `SFSO Employees Total Positive Results`, 
-            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
+            Residents.Initiated,
             Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
             Residents.Deaths = `Deaths (Incarcerated population, cumulative)`
             ) %>% 

@@ -36,8 +36,9 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
         "Population (Incarcerated population, current)", 
         "Population (Incarcerated population, 7-day diff)", 
         "Percent of Population Tested (Incarcerated population, 7-day period)", 
-        "Notes", 
-        "Date"
+        "Fully Vaccinated (Incarcerated population, cumulative)",
+        "Fully Vaccinated (Staff, cumulative)",
+        "Notes"
     ))
     
     x %>%
@@ -46,7 +47,9 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
             Residents.Deaths = `Deaths (Incarcerated population, cumulative)`,
             Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
-            Residents.Population = `Population (Incarcerated population, current)`
+            Residents.Population = `Population (Incarcerated population, current)`,
+            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`,
+            Staff.Completed = `Fully Vaccinated (Staff, cumulative)`
         ) %>%
         mutate(Name = "SACRAMENTO COUNTY JAIL")
 }
