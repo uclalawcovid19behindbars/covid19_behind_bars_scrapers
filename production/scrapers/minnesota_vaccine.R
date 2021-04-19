@@ -32,6 +32,7 @@ minnesota_vaccine_extract <- function(x, exp_date = Sys.Date()){
     x %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Client")), as.numeric))} %>%
+        mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>%
         mutate(
             Residents.Initiated = `Client Received 1st Dose` + `Client Received J&J Vaccine`, 
             Residents.Completed = `Client Received 2nd Dose` + `Client Received J&J Vaccine`, 
