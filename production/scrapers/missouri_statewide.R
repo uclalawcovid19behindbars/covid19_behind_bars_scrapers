@@ -12,12 +12,18 @@ missouri_statewide_restruct <- function(x){
         rvest::html_text() %>%
         string_to_clean_numeric()
     
+    Residents.Initiated <- x %>% 
+        rvest::html_node(
+            xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
+        rvest::html_text() %>%
+        string_to_clean_numeric()
+    
     all_deaths <- x %>%
         rvest::html_node(
             xpath="//h3[contains(text(),'Deaths')]/following::ul") %>%
         rvest::html_nodes("li") %>%
         rvest::html_text()
-    
+        
     if(!(grepl("Offender", all_deaths[1]) & grepl("Staff", all_deaths[2]))){
         warning("Web data for residents and staff not formatted as expected")
     }
@@ -29,8 +35,9 @@ missouri_statewide_restruct <- function(x){
     Residents.Deaths <- str_split(all_deaths[1], ":")[[1]] %>%
         last() %>%
         string_to_clean_numeric()
+
     Name <- "State-wide"
-    MOSW <- data.frame(Name, Staff.Deaths, Residents.Deaths, Residents.Tadmin)
+    MOSW <- data.frame(Name, Staff.Deaths, Residents.Deaths, Residents.Tadmin, Residents.Initiated)
     
     # Non Facility Row
     # NameNF <- "Non-Facility"
