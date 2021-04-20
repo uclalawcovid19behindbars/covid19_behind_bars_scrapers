@@ -46,10 +46,6 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
     ))
     
     x %>%
-        mutate(across(c(
-            `Partially Vaccinated (Incarcerated population, current)`, 
-            `Fully Vaccinated (Incarcerated population, cumulative)`
-        ), ~ ifelse(is.na(.), 0, .))) %>%
         mutate(Residents.Initiated = `Partially Vaccinated (Incarcerated population, current)` + 
                    `Fully Vaccinated (Incarcerated population, cumulative)`) %>% 
         select(
