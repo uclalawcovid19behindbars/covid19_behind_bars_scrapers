@@ -16,7 +16,7 @@ UCLABB_MAIN_VARIABLES <- c(
     "Staff.Vadmin", "Residents.Vadmin",
     "Staff.Initiated", "Residents.Initiated",
     "Staff.Completed", "Residents.Completed", 
-    "Staff.Population"
+    "Staff.Population", "Staff.Active"
 )
 
 generic_scraper <- R6Class(

@@ -86,6 +86,7 @@ federal_extract <- function(x){
             Residents.Tested = completedTest,
             Residents.Pending = pendTest,
             Residents.Active = inmatePositiveAmt,
+            Staff.Positive = staffPositiveAmt, 
             starts_with("Residents."), starts_with("Staff.")
             ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
