@@ -78,7 +78,7 @@ north_dakota_extract <- function(x){
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
-            Staff.Tested = Staff.Total.Individials.Tested, 
+            Staff.Tested = Staff.Total.Individuals.Tested, 
             Residents.Initiated, Residents.Completed
         ) %>% 
         clean_scraped_df()
