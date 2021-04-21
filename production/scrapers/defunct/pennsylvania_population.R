@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 pennsylvania_population_pull <- function(x){
-    stop_defunct_scraper()
+    stop_defunct_scraper(x)
     # xml2::read_html(x)
 }
 
@@ -96,4 +96,3 @@ if(sys.nframe() == 0){
     pennsylvania_population$validate_extract()
     pennsylvania_population$save_extract()
 }
-
