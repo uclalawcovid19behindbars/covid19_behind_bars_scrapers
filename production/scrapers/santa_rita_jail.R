@@ -27,7 +27,8 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Pending = `Pending Tests (Incarcerated population, current)`,
             Residents.Population = `Population (Incarcerated population, current)`,
             Staff.Confirmed = `Confirmed Cases (Staff, cumulative)`,
-            Residents.Initiated = `Partially Vaccinated (Incarcerated population, current)`, 
+            Staff.Active = `Active Cases (Staff, current)`, 
+            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
             Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
             ) %>% 
         mutate(

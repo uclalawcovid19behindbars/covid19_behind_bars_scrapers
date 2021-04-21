@@ -10,7 +10,7 @@ gs4_auth("ucla.law.covid.staff@gmail.com")
 options(tryCatchLog.include.full.call.stack = FALSE)
 
 # initiate all scrapers in the production folders
-sapply(list.files("production/scrapers", full.names = TRUE), source)
+sapply(list.files("production/scrapers", full.names = TRUE, pattern = ".R"), source)
 
 # grab only the scrapers and put their names in a vector
 scraper_name_vec <- get_scraper_vec()

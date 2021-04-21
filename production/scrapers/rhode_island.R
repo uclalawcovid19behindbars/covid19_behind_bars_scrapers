@@ -4,7 +4,7 @@ source("./R/utilities.R")
 rhode_island_pull <- function(x){
     
     app_source <- xml2::read_html(x) %>%
-        rvest::xml_nodes("iframe") %>%
+        rvest::html_element("iframe") %>% 
         rvest::html_attr("src")
         
     

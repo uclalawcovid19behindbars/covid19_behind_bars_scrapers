@@ -17,30 +17,6 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
-    check_names(x, c(
-        "As of Date", 
-        "Facility Name", 
-        "County", 
-        "Confirmed Cases (Incarcerated population, cumulative)", 
-        "Cases Confirmed at Intake or Quarantine Period (Incarcerated population, cumulative)", 
-        "Active Cases (Incarcerated population, current, ONLY Main Jail)", 
-        "Active Cases (Incarcerated population, current, ONLY RCCC)", 
-        "Active Cases (Incarcerated population, current)", 
-        "Active Cases (Incarcerated population, 7-day diff, ONLY Main Jail)", 
-        "Active Cases (Incarcerated population, 7-day diff, ONLY RCCC)", 
-        "Active Cases (Incarcerated population, 7-day diff)", 
-        "Cases Released while Active (Incarcerated population)", 
-        "Deaths (Incarcerated population, cumulative)", 
-        "Tests (Incarcerated population, cumulative)", 
-        "New Tests (Incarcerated population, 7-day diff)", 
-        "Population (Incarcerated population, current)", 
-        "Population (Incarcerated population, 7-day diff)", 
-        "Percent of Population Tested (Incarcerated population, 7-day period)", 
-        "Fully Vaccinated (Incarcerated population, cumulative)",
-        "Fully Vaccinated (Staff, cumulative)",
-        "Notes"
-    ))
-    
     x %>%
         select(
             Residents.Active = `Active Cases (Incarcerated population, current)`, 
@@ -48,10 +24,12 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Deaths = `Deaths (Incarcerated population, cumulative)`,
             Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
             Residents.Population = `Population (Incarcerated population, current)`,
+            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
             Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`,
             Staff.Completed = `Fully Vaccinated (Staff, cumulative)`
         ) %>%
-        mutate(Name = "SACRAMENTO COUNTY JAIL")
+        mutate(Name = "SACRAMENTO COUNTY JAIL") %>% 
+        mutate(Residents.Initiated = Residents.Initiated + Residents.Completed)
 }
 
 #' Scraper class for general sacramento_county_jail COVID data

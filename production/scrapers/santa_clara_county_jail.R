@@ -17,49 +17,19 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
-    check_names(x, c(
-        "As of Date", 
-        "Facility Name", 
-        "County", 
-        "Active Cases (Incarcerated population, current)", 
-        "Population (Incarcerated population, current)", 
-        "Population (Incarcerated population, 1-day diff)", 
-        "Tests (Incarcerated population, cumulative)", 
-        "New Tests (Incarcerated population, 1-day diff)", 
-        "New Tests (Incarcerated population, 7-day diff)", 
-        "Tests (Incarcerated population, current, positives)", 
-        "Tests (Incarcerated population, current, negatives)", 
-        "Cases Confirmed at Intake (Incarcerated population, cumulative)", 
-        "Cases Confirmed at Intake (Incarcerated population, 1-day diff)", 
-        "Cases Confirmed in Custody (Incarcerated population, cumulative)", 
-        "Cases Confirmed in Custody (Incarcerated population, 1-day diff)", 
-        "Confirmed Cases (Incarcerated population, cumulative)", 
-        "Confirmed Cases (Incarcerated population, 1-day diff)", 
-        "Tests (Custody Staff, cumulative)", 
-        "Population (Custody Staff, current)", 
-        "Offered Vaccines (Incarcerated population, cumulative)", 
-        "Fully Vaccinated (Incarcerated population, cumulative)", 
-        "Partially Vaccinated (Incarcerated population, current)", 
-        "Fully Vaccinated (Custody Staff, cumulative)", 
-        "Notes", 
-        "Date"
-    ))
-    
-    x %>%
-        mutate(Residents.Initiated = `Partially Vaccinated (Incarcerated population, current)` + 
-                   `Fully Vaccinated (Incarcerated population, cumulative)`) %>% 
+    x %>% 
         select(
+            Residents.Active = `Active Cases (Incarcerated population, current)`, 
             Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
-            Residents.Active = `Active Cases (Incarcerated population, current)`,
             Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
-            Residents.Population = `Tests (Incarcerated population, cumulative)`,
-            Staff.Tested = `Tests (Custody Staff, cumulative)`,
-            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
-            Residents.Initiated, 
-            Staff.Completed = `Fully Vaccinated (Custody Staff, cumulative)`, 
+            Residents.Population = `Population (Incarcerated population, current)`,
+            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
+            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`,
+            Staff.Completed = `Fully Vaccinated (Custody staff, cumulative)`, 
             Staff.Population = `Population (Custody Staff, current)`
-            ) %>%
-        mutate(Name = "SANTA CLARA COUNTY JAIL")
+        ) %>%
+            mutate(Name = "SANTA CLARA COUNTY JAIL") %>% 
+            mutate(Residents.Initiated = Residents.Initiated + Residents.Completed)
 }
 
 #' Scraper class for general santa_clara_county_jail COVID data

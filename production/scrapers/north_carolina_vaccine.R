@@ -29,9 +29,11 @@ north_carolina_vaccine_restruct <- function(x){
 }
 
 north_carolina_vaccine_extract <- function(x){
-    x %>%
+    x %>% 
         mutate(Name = "STATEWIDE") %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>% 
+        mutate(Residents.Initiated = Residents.Initiated + Residents.Completed, 
+               Staff.Initiated = Staff.Initiated + Staff.Completed)
 }
 
 #' Scraper class for North Carolina vaccine data 
