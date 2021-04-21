@@ -16,6 +16,8 @@ missouri_statewide_restruct <- function(x){
         rvest::html_node(
             xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
         rvest::html_text() %>%
+        # Pull number before ([%])  
+        word(1, sep = "\\(") %>% 
         string_to_clean_numeric()
     
     all_deaths <- x %>%
