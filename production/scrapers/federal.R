@@ -67,8 +67,8 @@ federal_restruct <- function(x){
             comb_df,
             tibble(
                 Name = "ALL BOP FACILITIES",
-                Residents.Completed = sum(x$vaccine$bopVaccine$inmateCompleted),
-                Staff.Completed = sum(x$vaccine$bopVaccine$staffCompleted)
+                Residents.Completed = sum_na_rm(x$vaccine$bopVaccine$inmateCompleted),
+                Staff.Completed = sum_na_rm(x$vaccine$bopVaccine$staffCompleted)
             ))
     }
     

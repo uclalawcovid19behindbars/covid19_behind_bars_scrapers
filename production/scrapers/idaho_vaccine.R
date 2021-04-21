@@ -36,6 +36,7 @@ idaho_vaccine_extract <- function(x){
                 Residents.FirstDose = CRC.Residents.FirstDose_, 
                 Residents.Full = CRC.Residents.Full_)
         ) %>% 
+        mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
         mutate(Residents.Initiated = Residents.FirstDose + Residents.Full,
                Residents.Completed = Residents.Full) %>%
         select(Name, Residents.Initiated, Residents.Completed) %>%
