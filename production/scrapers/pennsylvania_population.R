@@ -96,4 +96,3 @@ if(sys.nframe() == 0){
     pennsylvania_population$validate_extract()
     pennsylvania_population$save_extract()
 }
-

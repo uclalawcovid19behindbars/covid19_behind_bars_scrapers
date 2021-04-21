@@ -18,7 +18,7 @@ california_staff_extract <- function(x){
         Name = "Locations",
         Staff.Confirmed = "Cumulative Confirmed",
         Staff.Recovered = "Staff Returned to Work",
-        Drop.Staff.Active = "Active Cases",
+        Staff.Active = "Active Cases",
         Drop.New = "New Cases in Last 14 Days"
     )
     
