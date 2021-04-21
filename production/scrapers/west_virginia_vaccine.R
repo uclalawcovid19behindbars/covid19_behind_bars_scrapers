@@ -32,10 +32,11 @@ west_virginia_vaccine_extract <- function(x){
         rename(
             Drop.County = "County", 
             Drop.Population = "Pop.",
-            Residents.Initiated = "Vaccinated") %>%
+            Residents.Initiated = "Vaccinated (Johnson & Johnson)") %>%
         select(!starts_with("Drop")) %>%
         filter(!is.na(Residents.Initiated)) %>%
         filter(!str_detect(Name, "(?i)total")) %>%
+        filter(!str_detect(Name, "(?i)all J&J")) %>%
         filter(!str_detect(Name, "(?i)residents")) %>%
         # J&J vaccine so these should all be the same
         mutate(Residents.Completed = Residents.Initiated) %>%
