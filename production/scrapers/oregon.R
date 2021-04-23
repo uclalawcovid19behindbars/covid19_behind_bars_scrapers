@@ -38,9 +38,8 @@ oregon_extract <- function(x){
                Residents.Active = "Current AIC Active Cases",
                Residents.Deaths = "AIC Deaths") %>%
         clean_scraped_df() %>%
-        mutate(
-               Residents.Tadmin = Residents.Confirmed + Residents.Negative
-               ) %>%
+        mutate(Residents.Tadmin = 
+                   ifelse(Name == "State-Wide", NA, Residents.Confirmed + Residents.Negative)) %>% 
         mutate(Staff.Confirmed =
                    ifelse(Name == "State-Wide", NA, Staff.Confirmed)) %>%
         # doing this because Residents.Confirmed = positive tests, not positive cases (?)

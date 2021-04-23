@@ -29,7 +29,12 @@ wyoming_extract <- function(x, exp_date = Sys.Date()){
             Name = `Name`,
             Residents.Active = `Positive Inmate Cases`,
             Residents.Deaths = `Inmate Deaths`) %>% 
-        clean_scraped_df()
+        # Only reporting statewide deaths
+        # This should just replace 0's with NAs as a fail safe 
+        mutate(Residents.Deaths = ifelse(
+            Name != "STATEWIDE", NA, Residents.Deaths)) %>%  
+        clean_scraped_df() 
+        
 }
 
 #' Scraper class for Wyoming data 
