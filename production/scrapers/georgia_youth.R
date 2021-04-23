@@ -28,7 +28,7 @@ georgia_youth_extract <- function(x){
                Staff.Recovered = `Staff\nRecovered`
                ) %>%
         mutate(Name = str_c(toupper(Name), " YOUTH")) %>%
-        filter(Name != "TOTAL YOUTH")
+        filter(!str_detect(Name, "(i?)TOTAL"))
     
     out <- clean %>%
         clean_scraped_df() %>%

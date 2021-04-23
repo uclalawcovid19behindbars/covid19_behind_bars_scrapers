@@ -6,30 +6,55 @@ louisiana_youth_pull <- function(x){
 }
 
 louisiana_youth_restruct <- function(x){
-    x %>%
-        rvest::html_node('.wp-block-table') %>%
+    youth <- x %>%
+        rvest::html_nodes('.wp-block-table') %>%
+        .[[1]] %>%
+        rvest::html_table() 
+    
+    staff <- x %>%
+        rvest::html_nodes('.wp-block-table') %>% 
+        .[[3]] %>%     
         rvest::html_table()
+    
+    out <- bind_rows(youth, staff)
+    return(out)
 }
 
 louisiana_youth_extract <- function(x){
     la <- x %>%
         janitor::row_to_names(row_number = 1) 
     
-    check_names(la, 
+    la_staff_row_start <- which(la$`# of Youth Positive` == "# of Employees Positive")
+    
+    ## separate and merge dfs by name due to different facility name order
+    la_staff <- la %>%
+        slice(la_staff_row_start:n()) %>%
+        janitor::row_to_names(row_number = 1) 
+    
+    la_youth <- la %>%
+        slice(1:(la_staff_row_start - 1)) 
+    
+    youth_merged <- full_join(la_youth, la_staff, by = c("Secure Care Facility"))
+    
+    check_names(youth_merged, 
                 c("Secure Care Facility", 
                   "# of Youth Positive", 
-                  "# of Youth Recovered"))
+                  "# of Youth Recovered",
+                  "# of Employees Positive", 
+                  "# of Employees Recovered"))
     
-    la_cln <- la %>%
+    la_cln <- youth_merged %>%
         select(Name = `Secure Care Facility`, 
                Residents.Confirmed = `# of Youth Positive`,
-               Residents.Recovered = `# of Youth Recovered`) %>%
+               Residents.Recovered = `# of Youth Recovered`,
+               Staff.Confirmed = `# of Employees Positive`,
+               Staff.Recovered = `# of Employees Recovered`) %>%
         mutate(Name = str_c(toupper(Name), " YOUTH"))
     
     out <- la_cln %>%
         clean_scraped_df() %>%
         as_tibble() %>%
-        filter(Name != "TOTAL YOUTH") %>%
+        filter(!str_detect(Name, "(i?)TOTAL"))
     
     return(out)
 }
@@ -40,8 +65,10 @@ louisiana_youth_extract <- function(x){
 #' @description LA data self contained within html table. 
 #' \describe{
 #'   \item{Location}{The facilty name}
-#'   \item{Residents.Confirmed}{Residents Confirmed}
-#'   \item{Residents.Recovered}{Residents Recovered}
+#'   \item{Residents.Confirmed}{Youth Confirmed}
+#'   \item{Residents.Recovered}{Youth Recovered}
+#'   \item{Staff.Confirmed}{Staff Confirmed}
+#'   \item{Staff.Recovered}{Staff Recovered}
 #' }
 
 louisiana_youth_scraper <- R6Class(
