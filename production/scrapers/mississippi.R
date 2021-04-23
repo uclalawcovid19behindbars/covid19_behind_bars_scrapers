@@ -6,7 +6,7 @@ mississippi_pull <- function(x){
 }
 
 mississippi_restruct <- function(x, exp_date = Sys.Date()){
-    ms_pgs <- magick::image_read_pdf(x)
+    ms_pgs <- magick::image_read_pdf(x[[1]])
     
     date <- magick::image_crop(ms_pgs, "1000x200+400+2700") %>% 
         magick::image_ocr() %>% 

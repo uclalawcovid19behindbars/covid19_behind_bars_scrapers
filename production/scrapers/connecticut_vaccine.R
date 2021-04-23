@@ -21,7 +21,7 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    st_txt <- magick::image_crop(x, "180x110+240+750") %>%
+    st_txt <- magick::image_crop(x, "180x110+240+730") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -46,7 +46,8 @@ connecticut_vaccine_extract <- function(x){
     x %>%
         mutate_all(function(x) str_replace_all(x, "\\.", ",")) %>%
         mutate(Name = "STATEWIDE") %>%
-        rename(Residents.Initiated = Res, Staff.Initiated = Staff) %>%
+        rename(Residents.Initiated = Res, 
+               Staff.Initiated = Staff) %>%
         clean_scraped_df()
 }
 

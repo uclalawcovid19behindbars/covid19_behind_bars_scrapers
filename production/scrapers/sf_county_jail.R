@@ -30,17 +30,18 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(x$Date, exp_date)
     
     x %>%
+        janitor::clean_names(case = "title") %>%
         #literally no idea why this needs to happen but it fixed the issue
-        rename(Residents.Initiated = `Partially Vaccinated (Incarcerated population, current)`) %>%
+        rename(Residents.Initiated = `Partially Vaccinated Incarcerated Population Cumulative`) %>%
         select(
-            Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
-            Residents.Active = `Active Cases (Incarcerated population, current)`,
-            Residents.Tadmin = `Tests (Incarcerated Population, cumulative)`, 
-            Staff.Population = `Total SFSO Employees`, 
-            Staff.Confirmed = `SFSO Employees Total Positive Results`, 
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Active = `Active Cases Incarcerated Population Current`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`, 
+            Staff.Population = `Total Sfso Employees`, 
+            Staff.Confirmed = `Sfso Employees Total Positive Results`, 
             Residents.Initiated,
-            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
-            Residents.Deaths = `Deaths (Incarcerated population, cumulative)`
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`
             ) %>% 
         mutate(
             Residents.Initiated = Residents.Initiated + Residents.Completed
