@@ -79,18 +79,22 @@ pennsylvania_bi_vaccination_pull <- function(x, wait = 10){
             xml2::read_html() %>%
             rvest::html_nodes(xpath="//div[@class='slicerItemContainer']") %>%
             rvest::html_attr("aria-label")
-        
+
         new_labels <- !all(viz_labels %in% names(html_list))
-        
+
         if(!any(viz_labels %in% names(html_list))){
             warning(
                 "There was no overlap in labels. Check to make sure no ",
                 "facilities were skipped.")
         }
-        
+
+        if((!new_labels) & (iters == 1)){
+            warning("page is not as expected. Please inspect.")
+        }
+
         iters <- iters + 1
     }
-    
+
     fns <- str_c(sub_dir, "/", names(html_list), ".html")
     
     Map(xml2::write_html, html_list, fns)
