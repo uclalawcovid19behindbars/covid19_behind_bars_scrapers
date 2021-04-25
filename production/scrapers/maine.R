@@ -20,6 +20,10 @@ maine_extract <- function(x){
         any(str_detect(z[,1], "(?i)Juvenile")) &
             any(str_detect(z[,1], "(?i)population"))}))
     
+    vaccine_idx <- which(sapply(x, function(z){
+        any(str_detect(z[,1], "(?i)Doses Admin")) |
+            any(str_detect(z[,2], "(?i)Doses Admin"))}))
+    
     ad_pop_df <- x[[ad_pop_idx]] %>% 
         .[str_detect(.[,1], "(?i)total population"),2] %>% 
         as.numeric() %>%
@@ -28,6 +32,21 @@ maine_extract <- function(x){
     juv_pop <- x[[juv_pop_idx]] %>% 
         .[str_detect(.[,1], "(?i)total population"),2] %>%
         as.numeric()
+    
+    if(!all(dim(x[[vaccine_idx]]) == c(3, 2))){
+        warning("Structure of vaccine table not as expected.")
+    }
+    
+    ad_vaccine_df <- x[[vaccine_idx]] %>% 
+        .[str_detect(.[,1], "(?i)adult"),2] %>%
+        as.numeric() %>%
+        {tibble(Name = "State-Wide", Residents.Vadmin = .)}
+    
+    juv_vaccine_df <- x[[vaccine_idx]] %>% 
+        .[str_detect(.[,1], "(?i)juvenile"),2] %>%
+        {suppressWarnings(as.numeric())} %>%
+        # Only one juvenile facility so replace Juvenile residents  
+        {tibble(Name = "Long Creek Youth Development Center", Residents.Vadmin = .)}
     
     df_ <- as.data.frame(x[[res_test_idx]])
     
@@ -50,7 +69,10 @@ maine_extract <- function(x){
             str_detect(Name, "(?i)youth"),
             juv_pop,
             NA_real_)) %>%
-        full_join(ad_pop_df, by = c("Name", "Residents.Population"))
+        full_join(ad_pop_df, by = c("Name", "Residents.Population")) %>% 
+        left_join(
+            bind_rows(ad_vaccine_df, juv_vaccine_df), 
+            by = c("Name"))
     
     if(sum(str_detect(out_df$Name, "(?i)youth")) != 1){
         warning("Not as many youth detention centers as expected.")
