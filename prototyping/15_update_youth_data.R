@@ -47,15 +47,16 @@ new_df <- all_youth %>%
         `Cumulative Confirmed Cases - YOUTH` = Residents.Confirmed,
         `Active Confirmed Cases - YOUTH` = Residents.Active,
         `Confirmed Deaths - YOUTH` = Residents.Deaths,
-        `Cumulative Confirmed Cases - YOUTH STAFF` = Staff.Confirmed,
-        `Confirmed Deaths - YOUTH STAFF` = Staff.Deaths,
+        `Cumulative Confirmed Cases - STAFF` = Staff.Confirmed,
+        `Confirmed Deaths - STAFF` = Staff.Deaths,
         Date
     ) %>%
-    left_join(fac_sheet_df, 
-              by = "Facility ID", 
-              suffix = c(".scrape", "")) %>%
-    select(-ends_with(".scrape"),
-           -ICE.Field.Office) %>%
+    arrange(State, Name) %>%
+    # left_join(fac_sheet_df, 
+    #           by = "Facility ID", 
+    #           suffix = c(".scrape", "")) %>%
+    # select(-ends_with(".scrape"),
+    #        -ICE.Field.Office) %>%
     mutate(Date = as.character(Date),
            Name = str_to_title(Name)) %>% 
     relocate(Date, State, Name, ends_with("YOUTH"), ends_with("STAFF")) 
