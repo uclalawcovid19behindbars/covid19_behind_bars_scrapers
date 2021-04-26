@@ -175,6 +175,8 @@ pennsylvania_bi_vaccination_extract <- function(x){
         pivot_wider(names_from = "measure", values_from = "value") %>%
         mutate(Residents.Initiated = Residents.Partial + Residents.Full) %>%
         mutate(Staff.Initiated = Staff.Partial + Staff.Full) %>%
+        mutate(Staff.Population = 
+                   Staff.Partial + Staff.Full + Staff.Not.Vaccinated) %>%
         select(-ends_with("Not.Vaccinated"), -ends_with("Partial")) %>%
         clean_scraped_df() %>%
         rename(
