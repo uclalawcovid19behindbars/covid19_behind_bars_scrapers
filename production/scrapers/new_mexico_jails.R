@@ -15,7 +15,7 @@ new_mexico_jails_restruct <- function(x){
 
 new_mexico_jails_extract <- function(x, exp_date = Sys.Date()){
     
-    error_on_date(first(x$Date), exp_date, days = 10)
+    error_on_date(first(x$Date), exp_date, days = 100)
     
     check_names(x, c(
         "Date", 
@@ -31,7 +31,8 @@ new_mexico_jails_extract <- function(x, exp_date = Sys.Date()){
             Residents.Confirmed = Detainee,
             Staff.Confirmed = Staff,
         ) %>%
-        filter(!str_detect(Name, "(?i)all")) # remove sum total
+        filter(!str_detect(Name, "(?i)all")) %>%  # remove sum total
+        mutate(Name = str_c(Name, " Jail"))
 }
 
 #' Scraper class for general new_mexico_jails COVID data
