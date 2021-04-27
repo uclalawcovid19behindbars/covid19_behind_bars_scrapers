@@ -33,7 +33,7 @@ iowa_extract <- function(x){
     check_names(x, expected_names)
     
     names(x) <- c(
-        "Name", "Residents.Tested", "Residents.Active",
+        "Name", "Residents.Tadmin", "Residents.Active",
         "Residents.Recovered", "Staff.Active", "Staff.Recovered",
         "Residents.Deaths", "Staff.Deaths")
 
@@ -51,7 +51,7 @@ iowa_extract <- function(x){
 #' @description Html table with minimal recoding and cleaning
 #' \describe{
 #'   \item{Prison}{The faciilty name}
-#'   \item{Inmates Tested}{Cumulative residents tested. Not tests administered.}
+#'   \item{Inmates Tested}{tests administered (Residents.Tadmin)}
 #'   \item{Inmates Positive}{Cumulative number of residents who are positive.}
 #'   \item{Inmates Recovered}{Cumulative residents recovered.}
 #'   \item{Staff Positive}{Cumulative number of staff who are positive.}
