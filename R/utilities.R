@@ -552,7 +552,7 @@ write_agg_data <- function(...){
 
 write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, agg_window = 31){
   
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = fac_window)
+    out_df <- read_scrape_data(all_dates = FALSE, window = fac_window)
     
     covid_suffixes <- c(
       ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
