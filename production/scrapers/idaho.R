@@ -15,7 +15,7 @@ idaho_extract <- function(x){
     sw <- x[[1]][1,]
     
     exp_names <- c(
-        Residents.Tested = "Tested",
+        Residents.Tadmin = "Tested",
         Residents.Pending = "Pending",
         Residents.Negative = "Negative",
         Drop.Residents.Active = "Positive",
@@ -60,7 +60,7 @@ idaho_extract <- function(x){
 #'   \item{Facility_Name}{The facility name}
 #'   \item{Staff Positive}{Staff Active}
 #'   \item{Staff Inactive}{Staff Recovered}
-#'   \item{Residents Tested}{state-wide only, not sure if administered or individuals tested}
+#'   \item{Residents Tested}{state-wide only, tests administered}
 #'   \item{Residents Pending}{state-wide only}
 #'   \item{Residents Negative}{state-wide only}
 #'   \item{Residents Positive}{state-wide only}
