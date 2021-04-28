@@ -20,64 +20,164 @@ pennsylvania_bi_vaccination_pull <- function(x, wait = 10){
     
     Sys.sleep(wait)
     
-    raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
+    elDD <- remDr$findElement("xpath", "//div[@class='slicer-dropdown-menu']")
+    elDD$clickElement()
     
-    is_vacc <- raw_html %>%
-        rvest::html_node(xpath="//div[@class='preTextWithEllipsis']") %>%
-        rvest::html_text() %>%
-        str_detect("(?i)vaccination") %>%
-        any()
+    Sys.sleep(2)
     
-    if(!is_vacc){
-        warning("Page structure may have changed please inspect.")
+    sub_dir <- str_c(
+        "./results/raw_files/", Sys.Date(), "_pennsylvania_bi_vaccination")
+    dir.create(sub_dir, showWarnings = FALSE)
+    
+    viz_labels <- remDr$getPageSource()[[1]] %>%
+        xml2::read_html() %>%
+        rvest::html_nodes(xpath="//div[@class='slicerItemContainer']") %>%
+        rvest::html_attr("aria-label")
+    
+    html_list <- list()
+    iters <- 1
+    new_labels <- TRUE
+    not_viz_els <- FALSE
+    
+    while(new_labels & iters < 6){
+        for(l in viz_labels){
+            if(!(l %in% names(html_list))){
+                
+                src_str <- str_c(
+                    "//div[@class='slicerItemContainer' and @aria-label='",
+                    l, "']/div")
+                
+                elCB <- remDr$findElement("xpath", src_str)
+                
+                if(elCB$isElementDisplayed()[[1]]){
+                
+                    elCB$clickElement()
+                    Sys.sleep(7)
+                    
+                    html_list[[l]] <- xml2::read_html(
+                        remDr$getPageSource()[[1]])
+                }
+                else{
+                    not_viz_els <- TRUE
+                }
+            }
+        }
+        
+        if(not_viz_els){
+            sr_ <- "//text[@title='PARTIAL']"
+            elSB <- remDr$findElements(
+                "xpath", "//div[@class='scroll-bar']")[[2]]
+            elDEST <- remDr$findElement("xpath", sr_)
+            remDr$mouseMoveToLocation(webElement = elSB)
+            remDr$buttondown()
+            Sys.sleep(1)
+            remDr$mouseMoveToLocation(webElement = elDEST)
+            remDr$buttonup()
+        }
+        
+        viz_labels <- remDr$getPageSource()[[1]] %>%
+            xml2::read_html() %>%
+            rvest::html_nodes(xpath="//div[@class='slicerItemContainer']") %>%
+            rvest::html_attr("aria-label")
+
+        new_labels <- !all(viz_labels %in% names(html_list))
+
+        if(!any(viz_labels %in% names(html_list))){
+            warning(
+                "There was no overlap in labels. Check to make sure no ",
+                "facilities were skipped.")
+        }
+
+        if((!new_labels) & (iters == 1)){
+            warning("page is not as expected. Please inspect.")
+        }
+
+        iters <- iters + 1
     }
+
+    fns <- str_c(sub_dir, "/", names(html_list), ".html")
     
-    raw_html
+    Map(xml2::write_html, html_list, fns)
+    
+    iframes <- lapply(str_remove(fns, "/results/raw_files"), function(fn)
+        htmltools::tags$iframe(
+            src = fn, 
+            style="display:block", 
+            height="500", width="1200"
+        )  
+    )
+    
+    x <- htmltools::tags$html(
+        htmltools::tags$body(
+            iframes
+        )
+    )
+    
+    tf <- tempfile(fileext = ".html")
+    
+    htmltools::save_html(x, file = tf)
+    
+    xml2::read_html(tf)
 }
 
 pennsylvania_bi_vaccination_restruct  <- function(x){
-    data_cards <- x %>%
-        rvest::html_nodes(xpath="//svg[@class='card']/../../..")
     
-    titles <- x %>%
-        rvest::html_nodes(xpath="//div[@class='preTextWithEllipsis']") %>%
-        rvest::html_text()
+    sub_files <- x %>%
+        rvest::html_nodes("iframe") %>%
+        rvest::html_attr("src") %>%
+        str_replace("\\./", "./results/raw_files/")
+
+    bind_rows(lapply(sub_files, function(f){
+        
+        fac_name <- str_remove(last(str_split(f, "/")[[1]]), ".html")
     
-    res_idx <- min(which(str_detect(titles, "(?i)inmate")))
-    staff_idx <- min(which(str_detect(titles, "(?i)staff")))
-    
-    if(res_idx > staff_idx){
-        stop("Scraper is not as expected, please inspect.")
-    }
-    
-    data_cards <- x %>%
-        rvest::html_nodes(xpath="//svg[@class='card']/../../..")
-    
-    card_labs <- sapply(data_cards, function(z){
-        rvest::html_attr(rvest::html_nodes(z, "div.visualTitle"), "title")
-        }) %>%
-        str_replace(" ", ".")
-    
-    card_group <- rep(c("Residents.", "Staff."), each = length(card_labs)/2)
-    
-    card_vals <- sapply(data_cards, function(z){
-        rvest::html_text(rvest::html_nodes(z, "title"))
-        }) %>%
-        string_to_clean_numeric()
-    
-    tibble(
-        name = str_c(card_group, card_labs),
-        value = card_vals
-    )
+        sub_html <- xml2::read_html(f)
+        
+        data_cards <- sub_html %>%
+            rvest::html_nodes(xpath="//svg[@class='card']/../../..")
+        
+        titles <- sub_html %>%
+            rvest::html_nodes(xpath="//div[@class='preTextWithEllipsis']") %>%
+            rvest::html_text()
+        
+        res_idx <- min(which(str_detect(titles, "(?i)inmate")))
+        staff_idx <- min(which(str_detect(titles, "(?i)staff")))
+        
+        if(res_idx > staff_idx){
+            stop("Scraper is not as expected, please inspect.")
+        }
+        
+        data_cards <- sub_html %>%
+            rvest::html_nodes(xpath="//svg[@class='card']/../../..")
+        
+        card_labs <- sapply(data_cards, function(z){
+            rvest::html_attr(rvest::html_nodes(z, "div.visualTitle"), "title")
+            }) %>%
+            str_replace(" ", ".")
+        
+        card_group <- rep(c("Residents.", "Staff."), each = length(card_labs)/2)
+        
+        card_vals <- sapply(data_cards, function(z){
+            rvest::html_text(rvest::html_nodes(z, "title"))
+            }) %>%
+            string_to_clean_numeric()
+        
+        tibble(
+            Name = fac_name,
+            measure = str_c(card_group, card_labs),
+            value = card_vals
+        )
+    }))
 }
 
 pennsylvania_bi_vaccination_extract <- function(x){
     x %>%
-        pivot_wider() %>%
+        pivot_wider(names_from = "measure", values_from = "value") %>%
         mutate(Residents.Initiated = Residents.Partial + Residents.Full) %>%
         mutate(Staff.Initiated = Staff.Partial + Staff.Full) %>%
+        mutate(Staff.Population = 
+                   Staff.Partial + Staff.Full + Staff.Not.Vaccinated) %>%
         select(-ends_with("Not.Vaccinated"), -ends_with("Partial")) %>%
-        mutate(Name = "STATEWIDE") %>%
         clean_scraped_df() %>%
         rename(
             Residents.Completed = Residents.Full, Staff.Completed = Staff.Full)

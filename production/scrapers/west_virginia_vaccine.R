@@ -32,21 +32,24 @@ west_virginia_vaccine_extract <- function(x){
         rename(
             Drop.County = "County", 
             Drop.Population = "Pop.",
-            Residents.Initiated = "Vaccinated (Johnson & Johnson)") %>%
+            Moderna.Initiated = "Moderna \n(1st dose)",
+            Residents.Completed = "Johnson & Johnson \n(fully vaccinated)*") %>%
         select(!starts_with("Drop")) %>%
-        filter(!is.na(Residents.Initiated)) %>%
+        clean_scraped_df() %>%
+        mutate(Residents.Initiated = vector_sum_na_rm(
+            Residents.Completed, Moderna.Initiated)) %>%
+        select(-Moderna.Initiated) %>%
+        filter(!is.na(Residents.Completed)) %>%
         filter(!str_detect(Name, "(?i)total")) %>%
         filter(!str_detect(Name, "(?i)all J&J")) %>%
         filter(!str_detect(Name, "(?i)residents")) %>%
-        # J&J vaccine so these should all be the same
-        mutate(Residents.Completed = Residents.Initiated) %>%
-        mutate(Residents.Vadmin = Residents.Initiated) %>%
         clean_scraped_df()
     
     staff_df <- x[emp_idx:nrow(x),] %>%
-        filter(str_detect(Name, "(?i)total"))
+        filter(str_detect(Name, "(?i)total")) %>%
+        select(-`Moderna \n(1st dose)`)
     
-    names(staff_df) <- unlist(x[emp_idx,])
+    names(staff_df) <- as.character(na.omit(unlist(x[emp_idx,])))
     
     staff_df %>%
         select(

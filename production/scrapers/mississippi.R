@@ -2,7 +2,8 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 mississippi_pull <- function(x){
-    get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases")
+    get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases") %>%
+        first()
 }
 
 mississippi_restruct <- function(x, exp_date = Sys.Date()){
