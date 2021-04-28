@@ -2,23 +2,48 @@ rm(list=ls())
 library(tidyverse)
 library(behindbarstools)
 library(googlesheets4)
+source("./R/utilities.R")
 gs4_auth("ucla.law.covid.staff@gmail.com")
 
-## QUESTIONS: 
-# - which sheet to use? --> formal sheet 
-# - all dates, or just latest scrape? ---> most recent confirmed case number 
-# - date last updated? or date last scraped? 
-# historical data --> also create a sheet of historical sheets 
+manual_youth_data_loc <- "17mC-uHp1jhMQO8JGqn4is6pJLrKHP0G0TR57R01MxrY"
+youth_sheet_destination <- "1AfqaEPZTMy1hMdnZC8UYMP_JTJrnDlLi_6uh8sxmQWM" ## change this to official youth data tab
 
-youth_sheet <- "1AfqaEPZTMy1hMdnZC8UYMP_JTJrnDlLi_6uh8sxmQWM"
+## set column order for row-binding data sets
+column_order <- c("State", "Name", "Date", "Residents.Confirmed",
+                  "Staff.Confirmed", "Residents.Active", "Residents.Deaths",
+                  "Staff.Deaths", "Address", "City",
+                  "Facility.ID")
 
-# fac_sheet_df <- read_sheet(fac_sheet, sheet = "Facility TAB") %>%
-#     filter(!is.na(`Facility ID`)) %>%
-#     select(-starts_with("...") , -ends_with("(Detainees)")) %>%
-#     select(-ends_with("Staff)"), -Address, -State)
+scraped_states <- c("Georgia", "Illinois", "Indiana",
+                    "Kansas", "Louisiana", "Maryland", "Missouri",
+                    "Montana", "Nebraska", "North Carolina", 
+                    "North Dakota", "Pennsylvania", "South Carolina",
+                    "Wisconsin")
 
-fac_sheet_df <- behindbarstools::read_fac_info() %>%
-    rename(`Facility ID` = Facility.ID)
+## convert manually-collected youth facilities to clean data
+manual_youth_dat_sheet <- read_sheet(manual_youth_data_loc, 
+                                     sheet = "Permanent",
+                                     col_types = "c") 
+manual_youth_dat <- manual_youth_dat_sheet %>%
+    mutate(Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
+           Staff.Confirmed = string_to_clean_numeric(`Confirmed Cases (Staff)`),
+           Facility.ID = NA,
+           Address = NA,
+           City = NA,
+           Residents.Active = NA,
+           Residents.Deaths = NA,
+           Staff.Deaths = NA
+           ) %>%
+    dplyr::rename(jurisdiction = Jurisdiction, 
+           Name = `County/Name of Facility`,
+           Date = `Date of last positive case/last update`
+           ) %>%
+    filter(!is.na(Name),
+           !str_detect(Name, "(?i)total")) %>%
+    mutate(Date = lubridate::mdy(Date)) %>%
+    select(column_order) %>%
+    ## remove manual data if we have a scraper for it
+    filter(!State %in% scraped_states) 
 
 all_dat <- read_scrape_data(all_dates = FALSE) 
 youth_df <- all_dat %>%
@@ -29,15 +54,17 @@ other_youth <- all_dat %>%
     filter((str_detect(Name, "(?i)juvenile|youth"))) %>%
     filter(Age != "Juvenile" | is.na(Age))
 
-# bind together age-classified and name-searched
-all_youth <- youth_df %>%
+## bind together age-classified and name-searched
+all_scraped_youth <- youth_df %>%
     bind_rows(other_youth)
 
-new_df <- all_youth %>%
-    # save only the latest data
+all_youth <- all_scraped_youth %>%
+    ## save only the latest data
     group_by(Facility.ID) %>%
     filter(Date == max(Date)) %>%
     ungroup() %>%
+    select(column_order) %>%
+    bind_rows(manual_youth_dat) %>%
     select(
         `Facility ID` = Facility.ID,
         Name, 
@@ -51,19 +78,14 @@ new_df <- all_youth %>%
         `Confirmed Deaths - STAFF` = Staff.Deaths,
         Date
     ) %>%
-    arrange(State, Name) %>%
-    # left_join(fac_sheet_df, 
-    #           by = "Facility ID", 
-    #           suffix = c(".scrape", "")) %>%
-    # select(-ends_with(".scrape"),
-    #        -ICE.Field.Office) %>%
+    arrange(State, Name, Date) %>%
     mutate(Date = as.character(Date),
            Name = str_to_title(Name)) %>% 
     relocate(Date, State, Name, ends_with("YOUTH"), ends_with("STAFF")) 
 
 range_write(
-    data = new_df, 
-    ss = youth_sheet, 
+    data = all_youth, 
+    ss = youth_sheet_destination, 
     sheet = "main", 
     reformat = FALSE)
 
