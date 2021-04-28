@@ -21,7 +21,10 @@ sf_county_jail_pull <- function(x){
 
 sf_county_jail_restruct <- function(x){
     x %>%
+        janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::mdy(`As of Date`)) %>%
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
         filter(Date == max(Date))
 }
 
@@ -30,25 +33,23 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(x$Date, exp_date)
     
     x %>%
-        janitor::clean_names(case = "title") %>%
-        #literally no idea why this needs to happen but it fixed the issue
-        rename(Residents.Initiated = `Partially Vaccinated Incarcerated Population Cumulative`) %>%
         select(
             Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
             Residents.Active = `Active Cases Incarcerated Population Current`,
             Residents.Tadmin = `Tests Incarcerated Population Cumulative`, 
             Staff.Population = `Total Sfso Employees`, 
             Staff.Confirmed = `Sfso Employees Total Positive Results`, 
-            Residents.Initiated,
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
             Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
             Residents.Deaths = `Deaths Incarcerated Population Cumulative`
             ) %>% 
-        mutate(
-            Residents.Initiated = Residents.Initiated + Residents.Completed
-        ) %>%
-        mutate_all(unlist) %>%
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
         mutate_all(as.numeric) %>%
-        mutate(Name = "SF COUNTY JAIL")
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SF COUNTY JAIL") 
 }
 
 #' Scraper class for general sf_county_jail COVID data

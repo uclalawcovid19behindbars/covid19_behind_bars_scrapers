@@ -8,8 +8,11 @@ santa_rita_jail_pull <- function(x){
 
 santa_rita_jail_restruct <- function(x){
     x %>%
+        janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>% 
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
         filter(Date == max(Date, na.rm = TRUE))
 }
 
@@ -19,21 +22,25 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         select(
-            Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
-            Residents.Active = `Active Cases (Incarcerated population, current)`,
-            Residents.Recovered = `Resolved Cases (Incarcerated population, cumulative)`,
-            Residents.Deaths = `Deaths (Incarcerated population, cumulative)`,
-            Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
-            Residents.Pending = `Pending Tests (Incarcerated population, current)`,
-            Residents.Population = `Population (Incarcerated population, current)`,
-            Staff.Confirmed = `Confirmed Cases (Staff, cumulative)`,
-            Staff.Active = `Active Cases (Staff, current)`, 
-            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
-            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`, 
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Active = `Active Cases Incarcerated Population Current`,
+            Residents.Recovered = `Resolved Cases Incarcerated Population Cumulative`,
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
+            Residents.Pending = `Pending Tests Incarcerated Population Current`,
+            Residents.Population = `Population Incarcerated Population Current`,
+            Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
+            Staff.Active = `Active Cases Staff Current`, 
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
             ) %>% 
-        mutate(
-            Residents.Initiated = Residents.Initiated + Residents.Completed, 
-            Name = "SANTA RITA JAIL")
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate_all(as.numeric) %>%
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SANTA RITA JAIL") 
 }
 
 #' Scraper class for general santa_rita_jail COVID data

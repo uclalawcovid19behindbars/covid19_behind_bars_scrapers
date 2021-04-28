@@ -8,8 +8,11 @@ sacramento_county_jail_pull <- function(x){
 
 sacramento_county_jail_restruct <- function(x){
     x %>%
+        janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>%
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
         filter(Date == max(Date))
 }
 
@@ -19,17 +22,22 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         select(
-            Residents.Active = `Active Cases (Incarcerated population, current)`, 
-            Residents.Confirmed = `Confirmed Cases (Incarcerated population, cumulative)`,
-            Residents.Deaths = `Deaths (Incarcerated population, cumulative)`,
-            Residents.Tadmin = `Tests (Incarcerated population, cumulative)`,
-            Residents.Population = `Population (Incarcerated population, current)`,
-            Residents.Initiated = `Partially Vaccinated (Incarcerated population, cumulative)`, 
-            Residents.Completed = `Fully Vaccinated (Incarcerated population, cumulative)`,
-            Staff.Completed = `Fully Vaccinated (Staff, cumulative)`
+            Residents.Active = `Active Cases Incarcerated Population Current`, 
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
+            Residents.Population = `Population Incarcerated Population Current`,
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`,
+            Staff.Completed = `Fully Vaccinated Staff Cumulative`
         ) %>%
-        mutate(Name = "SACRAMENTO COUNTY JAIL") %>% 
-        mutate(Residents.Initiated = Residents.Initiated + Residents.Completed)
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate_all(as.numeric) %>%
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SACRAMENTO COUNTY JAIL") 
 }
 
 #' Scraper class for general sacramento_county_jail COVID data
