@@ -28,5 +28,5 @@ list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = TRUE) %
     write_csv("/srv/shiny-server/scraper_data/summary_data/aggregated_data.csv")
 
 # Update time series scraped data 
-behindbarstools::read_scrape_data(all_dates = TRUE, coalesce = TRUE) %>% 
+behindbarstools::read_scrape_data(all_dates = TRUE) %>% 
     write_csv("/srv/shiny-server/scraper_data/summary_data/scraped_time_series.csv")
