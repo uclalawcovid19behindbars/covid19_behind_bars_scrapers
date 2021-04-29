@@ -65,28 +65,52 @@ all_youth <- all_scraped_youth %>%
     ungroup() %>%
     select(column_order) %>%
     bind_rows(manual_youth_dat) %>%
-    select(
-        `Facility ID` = Facility.ID,
-        Name, 
-        Address, 
-        City, 
-        State,
-        `Cumulative Confirmed Cases - YOUTH` = Residents.Confirmed,
-        `Active Confirmed Cases - YOUTH` = Residents.Active,
-        `Confirmed Deaths - YOUTH` = Residents.Deaths,
-        `Cumulative Confirmed Cases - STAFF` = Staff.Confirmed,
-        `Confirmed Deaths - STAFF` = Staff.Deaths,
-        Date
-    ) %>%
     arrange(State, Name, Date) %>%
     mutate(Date = as.character(Date),
-           Name = str_to_title(Name)) %>% 
-    relocate(Date, State, Name, ends_with("YOUTH"), ends_with("STAFF")) 
+           Name = str_to_title(Name))
+    
+## add youth total counts
+sum_res_confirmed <- sum_na_rm(all_youth$Residents.Confirmed)
+sum_res_active <- sum_na_rm(all_youth$Residents.Active)
+sum_res_deaths <- sum_na_rm(all_youth$Residents.Deaths)
+sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
+sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
+all_youth_out <- all_youth %>%
+    mutate() %>%
+    add_row(Date = as.character(Sys.Date()), 
+            State = "", 
+            Name = "TOTAL",
+            Residents.Confirmed = sum_res_confirmed,
+            Residents.Active = sum_res_active,
+            Residents.Deaths = sum_res_deaths,
+            Staff.Confirmed = sum_staff_confirmed,
+            Staff.Deaths = sum_staff_deaths,
+            .before = 1
+                ) %>%
+        select(
+            `Facility ID` = Facility.ID,
+            Name, 
+            Address, 
+            City, 
+            State,
+            `Cumulative Confirmed Cases - YOUTH` = Residents.Confirmed,
+            `Active Confirmed Cases - YOUTH` = Residents.Active,
+            `Confirmed Deaths - YOUTH` = Residents.Deaths,
+            `Cumulative Confirmed Cases - STAFF` = Staff.Confirmed,
+            `Confirmed Deaths - STAFF` = Staff.Deaths,
+            Date
+        ) %>%
+    relocate(Date, State, Name, ends_with("YOUTH"), ends_with("STAFF"))
+
+## delete current data (except headers, for formatting)
+range_flood(ss = youth_sheet_destination,
+            range = "A2:K800", 
+            cell = "")
+
+## write new data
 range_write(
-    data = all_youth, 
+    data = all_youth_out, 
     ss = youth_sheet_destination, 
     sheet = "main", 
     reformat = FALSE)
-
-
