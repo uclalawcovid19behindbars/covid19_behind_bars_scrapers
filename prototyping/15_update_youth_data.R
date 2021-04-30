@@ -6,8 +6,7 @@ source("./R/utilities.R")
 gs4_auth("ucla.law.covid.staff@gmail.com")
 
 manual_youth_data_loc <- "17mC-uHp1jhMQO8JGqn4is6pJLrKHP0G0TR57R01MxrY"
-youth_sheet_destination <- "1AfqaEPZTMy1hMdnZC8UYMP_JTJrnDlLi_6uh8sxmQWM" ## change this to official youth data tab
-
+youth_sheet_destination <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" 
 ## set column order for row-binding data sets
 column_order <- c("State", "Name", "Date", "Residents.Confirmed",
                   "Staff.Confirmed", "Residents.Active", "Residents.Deaths",
@@ -78,9 +77,9 @@ sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
 all_youth_out <- all_youth %>%
     mutate() %>%
-    add_row(Date = as.character(Sys.Date()), 
+    add_row(Date = "TOTAL", 
             State = "", 
-            Name = "TOTAL",
+            Name = "",
             Residents.Confirmed = sum_res_confirmed,
             Residents.Active = sum_res_active,
             Residents.Deaths = sum_res_deaths,
@@ -105,12 +104,13 @@ all_youth_out <- all_youth %>%
 
 ## delete current data (except headers, for formatting)
 range_flood(ss = youth_sheet_destination,
-            range = "A2:K800", 
+            sheet = "COVID-19 Youth Correctional Facilities",
+            range = "A2:M800", 
             cell = "")
 
 ## write new data
 range_write(
     data = all_youth_out, 
     ss = youth_sheet_destination, 
-    sheet = "main", 
+    sheet = "COVID-19 Youth Correctional Facilities", 
     reformat = FALSE)
