@@ -40,7 +40,7 @@ manual_youth_dat <- manual_youth_dat_sheet %>%
     filter(!is.na(Name),
            !str_detect(Name, "(?i)total")) %>%
     mutate(Date = lubridate::mdy(Date)) %>%
-    select(column_order) %>%
+    select(all_of(column_order)) %>%    
     ## remove manual data if we have a scraper for it
     filter(!State %in% scraped_states) 
 
@@ -62,7 +62,7 @@ all_youth <- all_scraped_youth %>%
     group_by(Facility.ID) %>%
     filter(Date == max(Date)) %>%
     ungroup() %>%
-    select(column_order) %>%
+    select(all_of(column_order)) %>%
     bind_rows(manual_youth_dat) %>%
     arrange(State, Name, Date) %>%
     mutate(Date = as.character(Date),
@@ -76,7 +76,6 @@ sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
 all_youth_out <- all_youth %>%
-    mutate() %>%
     add_row(Date = "TOTAL", 
             State = "", 
             Name = "",
