@@ -57,9 +57,10 @@ other_youth <- all_dat %>%
 
 ## bind together age-classified and name-searched
 all_scraped_youth <- youth_df %>%
-    bind_rows(other_youth) %>%
+    bind_rows(other_youth) #%>%
     ## this is a state-wide total and we have facility-specific from youth tab
-    filter(State != "Colorado")
+    ## naila requested I keep it in 4/30/21
+    # filter(State != "Colorado")
 
 all_youth <- all_scraped_youth %>%
     ## save only the latest data
