@@ -25,7 +25,7 @@ hawaii_staff_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "CORRECTIONS DIVISION", "0", "Name",
-        "STAFF ACTIVE", "1", "Drop.Staff.Active",
+        "STAFF ACTIVE", "1", "Staff.Active",
         "STAFF RECOVERED", "2", "Staff.Recovered",
         "INMATES ACTIVE", "3", "Drop.Dup1",
         "INMATES RECOVERED", "4", "Drop.Dup2"
@@ -38,7 +38,7 @@ hawaii_staff_extract <- function(x){
     renamed_df <- rename_extractable(df_, col_name_df)
     
     renamed_df %>%
-        select(Name, Staff.Recovered) %>%
+        select(Name, Staff.Recovered, Staff.Active) %>%
         .[-1,] %>%
         filter(!str_detect(Name, "(?i)total")) %>%
         filter(Staff.Recovered != "") %>%
@@ -90,7 +90,6 @@ hawaii_staff_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     hawaii_staff <- hawaii_staff_scraper$new(log=TRUE)
-    hawaii_staff$perma_save()
     hawaii_staff$raw_data
     hawaii_staff$pull_raw()
     hawaii_staff$save_raw()

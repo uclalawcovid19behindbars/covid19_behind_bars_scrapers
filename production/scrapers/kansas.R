@@ -17,7 +17,7 @@ kansas_extract <- function(x){
     
     exp_names <- c(
         Name = "Facility",
-        Drop.Staff.Active = "CurrentStaff Cases",
+        Staff.Active = "CurrentStaff Cases",
         Residents.Active = "Current ResidentCases",
         Drop.Resident.At = "Current PositiveResidents Housedat thisFacility",
         Staff.Confirmed = "Cumulative Staff Cases",

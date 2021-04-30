@@ -45,7 +45,7 @@ new_hampshire_extract <- function(x){
     staff_exp <- c(
         Name = "Worksite",
         Staff.Confirmed = "Staff Positive - Total",
-        Drop.Staff.Active = "Staff Positive - Active")
+        Staff.Active = "Staff Positive - Active")
     
     check_names(staff_df, staff_exp)
     check_names(rez_df, rez_exp)

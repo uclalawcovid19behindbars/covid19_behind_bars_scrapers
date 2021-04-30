@@ -32,6 +32,7 @@ alabama_extract <- function(x){
             Staff.Confirmed = Employee_Positive,
             Staff.Deaths = Employee_Death,
             Staff.Recovered = Employee_Recovered, 
+            Staff.Active = Employee_Active_Cases, 
             Staff.Vadmin = Employee_Vaccinations, 
             Residents.Vadmin = Inmate_Vaccinations
         )

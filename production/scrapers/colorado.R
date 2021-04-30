@@ -90,17 +90,17 @@ colorado_restruct <- function(x){
             unlist() %>%
             string_to_clean_numeric(),
 
-        z %>%
-            magick::image_crop("213x1080+824+1030") %>%
-            ExtractTable() %>%
-            unlist() %>%
-            string_to_clean_numeric(),
+        # z %>%
+        #     magick::image_crop("213x1080+824+1030") %>%
+        #     ExtractTable() %>%
+        #     unlist() %>%
+        #     string_to_clean_numeric(),
 
         z %>%
             magick::image_crop("213x1080+1264+1030") %>%
             ExtractTable() %>%
             unlist() %>%
-            string_to_clean_numeric(),
+            string_to_clean_numeric(), 
 
         z %>%
             magick::image_crop("213x1080+1700+1030") %>%

@@ -17,7 +17,7 @@ illinois_extract <- function(x){
         Name = "Locations",
         Staff.Confirmed = "Staff Confirmed",
         Staff.Recovered = "Staff Recovered",
-        Drop.Staff.Active = "Staff Current",
+        Staff.Active = "Staff Current",
         Drop.Staf.Tests = "StaffTests",
         Residents.Confirmed = "OffendersConfirmed",
         Residents.Recovered = "OffendersRecovered",

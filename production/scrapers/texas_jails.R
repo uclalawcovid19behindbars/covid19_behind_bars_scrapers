@@ -22,7 +22,7 @@ texas_jails_restruct <- function(x){
     )
     
     staff_exp <- c(
-        Drop.Staff.Active = 
+        Staff.Active = 
             "Number of jailers with active positive test confirmation",
         Drop.Staff.Quarantine =
             "Number of jailers quarantined/isolated pending test results"

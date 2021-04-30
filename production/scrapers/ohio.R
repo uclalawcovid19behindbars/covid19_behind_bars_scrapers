@@ -60,7 +60,7 @@ ohio_extract <- function(x){
                Residents.Confirmed = Residents.Active + Residents.Confirmed.Deaths + Residents.Recovered, 
                Residents.Quarantine = Residents.Quarantine + Residents.Isolation) %>% 
         select(
-            -Staff.Active, -Residents.Pending, -Residents.Isolation,
+            -Residents.Pending, -Residents.Isolation,
             -Residents.Confirmed.Deaths)
 }
 
