@@ -48,7 +48,7 @@ south_dakota_extract <- function(x){
             "Cumulative Positive", "1", "Staff.Confirmed",
             "Negative", "2", "Staff.Negative",
             "Recovered", "3", "Staff.Recovered",
-            "Active Positive", "4", "Drop.Staff.Active",
+            "Active Positive", "4", "Staff.Active",
             "Death", "5", "Staff.Deaths"
         ), ncol = 3, nrow = 6, byrow = TRUE)
     

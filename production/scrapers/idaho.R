@@ -49,9 +49,9 @@ idaho_extract <- function(x){
             x[[staff_idx]] %>%
                 rename(Name = Location) %>%
                 clean_scraped_df() %>%
-                mutate(Positive = ifelse(is.na(Positive), 0, Positive)) %>%
+                mutate(Staff.Active = ifelse(is.na(Positive), 0, Positive)) %>%
                 mutate(Inactive = ifelse(is.na(Inactive), 0, Inactive)) %>%
-                mutate(Staff.Confirmed = Positive + Inactive) %>%
+                mutate(Staff.Confirmed = Staff.Active + Inactive) %>%
                 mutate(Staff.Recovered = Inactive) %>%
                 select(-Positive, -Inactive)
         ) %>%
