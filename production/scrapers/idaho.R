@@ -27,6 +27,16 @@ idaho_extract <- function(x){
     check_names(sw, exp_names)
     names(sw) <- names(exp_names)
     
+    nlist <- lapply(x, names)
+    
+    staff_idx <- which((sapply(nlist, length) == 3) &
+        sapply(nlist, function(z){
+            all(suppressWarnings(z == c("Location", "Positive", "Inactive")))}))
+    
+    if(length(staff_idx) != 1){
+        stop("Scraper is not as expected. Please inspect")
+    }
+    
     sw %>%
         mutate_all(as.numeric) %>%
         mutate(Name = "State-Wide") %>%
@@ -36,7 +46,7 @@ idaho_extract <- function(x){
         mutate(Residents.Active = 
                    Drop.Residents.Asymp + Drop.Residents.Active) %>%
         bind_rows(
-            x[[7]] %>%
+            x[[staff_idx]] %>%
                 rename(Name = Location) %>%
                 clean_scraped_df() %>%
                 mutate(Positive = ifelse(is.na(Positive), 0, Positive)) %>%
