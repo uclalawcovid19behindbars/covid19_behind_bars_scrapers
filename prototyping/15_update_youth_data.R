@@ -7,6 +7,7 @@ gs4_auth("ucla.law.covid.staff@gmail.com")
 
 manual_youth_data_loc <- "17mC-uHp1jhMQO8JGqn4is6pJLrKHP0G0TR57R01MxrY"
 youth_sheet_destination <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" 
+
 ## set column order for row-binding data sets
 column_order <- c("State", "Name", "Date", "Residents.Confirmed",
                   "Staff.Confirmed", "Residents.Active", "Residents.Deaths",
@@ -17,12 +18,13 @@ scraped_states <- c("Georgia", "Illinois", "Indiana",
                     "Kansas", "Louisiana", "Maryland", "Missouri",
                     "Montana", "Nebraska", "North Carolina", 
                     "North Dakota", "Pennsylvania", "South Carolina",
-                    "Wisconsin")
+                    "Wisconsin", "Maine", "New Mexico")
 
 ## convert manually-collected youth facilities to clean data
 manual_youth_dat_sheet <- read_sheet(manual_youth_data_loc, 
                                      sheet = "Permanent",
                                      col_types = "c") 
+
 manual_youth_dat <- manual_youth_dat_sheet %>%
     mutate(Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
            Staff.Confirmed = string_to_clean_numeric(`Confirmed Cases (Staff)`),
@@ -55,7 +57,9 @@ other_youth <- all_dat %>%
 
 ## bind together age-classified and name-searched
 all_scraped_youth <- youth_df %>%
-    bind_rows(other_youth)
+    bind_rows(other_youth) %>%
+    ## this is a state-wide total and we have facility-specific from youth tab
+    filter(State != "Colorado")
 
 all_youth <- all_scraped_youth %>%
     ## save only the latest data
