@@ -22,7 +22,7 @@ south_carolina_extract <- function(x){
         Name = "Assigned Locations", 
         Staff.Confirmed = "Staff", 
         Staff.Recovered = "Staff Cleared", 
-        Staff.Drop = "Staff Active Cases",
+        Staff.Active = "Staff Active Cases",
         Staff.Deaths = "Staff Deaths")
     rez_exp <- c(
         Name = "Assigned Locations",

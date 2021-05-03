@@ -21,7 +21,7 @@ san_diego_jails_employee_extract <- function(x) {
     
     col_name <- matrix(c(
         "Staff.Confirmed", "0", "CUMULATIVE POSITIVE CASES", 
-        "Drop.Staff.Active", "1", "ACTIVE POSITIVE CASES",
+        "Staff.Active", "1", "ACTIVE POSITIVE CASES",
         "Staff.Recovered", "2", "RECOVERED POSITIVE CASES", 
         "Staff.Deaths", "3", "DECEASED DUE TO COVID-19"
     ), ncol = 3, nrow = 4, byrow = TRUE)

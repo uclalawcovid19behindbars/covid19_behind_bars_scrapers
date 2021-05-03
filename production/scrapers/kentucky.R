@@ -16,7 +16,7 @@ kentucky_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Institution", "0", "Name", 
-        "Total Active Staff", "1", "Drop.Staff.Active",
+        "Total Active Staff", "1", "Staff.Active",
         "Total Staff Cases", "2", "Staff.Confirmed",
         "Total Staff Deaths", "3", "Staff.Deaths", 
         "Total Active Inmates", "4", "Residents.Active",
