@@ -23,8 +23,13 @@ new_hampshire_vaccine_restruct <- function(x){
 }
 
 new_hampshire_vaccine_extract <- function(x){
+    
+    if(ncol(x) != 7){
+        stop("html is not as expected please inspect")
+    }
+    
     long_df <- x[,1:3] %>%
-        bind_rows(rename(x[,4:6], X1 = X4, X2 = X5, X3 = X6)) %>%
+        bind_rows(rename(x[,4:7], X1 = X4, X2 = X5, X3 = X6)) %>%
         as_tibble()
     
     if(!any(str_detect(long_df$X1, "(?i)phase"))){
@@ -39,16 +44,26 @@ new_hampshire_vaccine_extract <- function(x){
         stop("html is not as expected please inspect")
     }
     
+    if(!any(str_detect(long_df$X7, "(?i)1 Dose"))){
+        stop("html is not as expected please inspect")
+    }
+    
     long_df %>%
-        rename(Name = X1, Residents.Initiated = X2) %>%
-        rename(Residents.Completed = X3) %>%
+        rename(Name = X1, 
+               First.Dose = X2, 
+               Second.Dose = X3, 
+               One.Dose = X7) %>% 
+        mutate(across(ends_with("Dose"), ~ na_if(., "n/a"))) %>% 
         filter(!str_detect(Name, "(?i)total")) %>%
-        filter(!str_detect(Name, "(?i)phase")) %>%
+        filter(!str_detect(Name, "(?i)phase")) %>% 
         clean_scraped_df() %>%
         group_by(Name) %>%
         summarize_all(sum_na_rm) %>%
-        mutate(Residents.Vadmin = Residents.Initiated + Residents.Completed) %>% 
-        filter(!Name == "")
+        mutate(Residents.Vadmin = First.Dose + Second.Dose + One.Dose, 
+               Residents.Initiated = First.Dose + One.Dose, 
+               Residents.Completed = Second.Dose + One.Dose) %>% 
+        filter(!Name == "") %>% 
+        select(-ends_with("Dose"))
 }
 
 #' Scraper class for general New Hampshire COVID data
@@ -60,8 +75,9 @@ new_hampshire_vaccine_extract <- function(x){
 #' completed.
 #' \describe{
 #'   \item{Facility_Name}{The facility name.}
-#'   \item{1st Dose}{Residents.Initiated}
-#'   \item{2nd Dose}{Residents.Completed}
+#'   \item{1st Dose}{}
+#'   \item{2nd Dose}{}
+#'   \item{1 Dose Vaccine}{}
 #' }
 
 new_hampshire_vaccine_scraper <- R6Class(
