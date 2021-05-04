@@ -31,7 +31,7 @@ indiana_extract <- function(x){
     col_name_mat <- matrix(c(
         "Correctional Facility", "0", "Name",
         "Staff Tested", "1", "Staff.Tested",
-        "Staff Current Positive", "2", "Drop.Staff.Active",
+        "Staff Current Positive", "2", "Staff.Active",
         "Staff Total Positive", "3", "Staff.Confirmed",
         "Staff Recovered", "4", "Staff.Recovered",
         "Staff Death", "5", "Staff.Deaths",

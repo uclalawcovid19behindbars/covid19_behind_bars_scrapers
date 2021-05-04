@@ -13,7 +13,7 @@ missouri_restruct <- function(x){
 missouri_extract <- function(x){
     col_name_mat <- matrix(c(
         "Facility", "0", "Name",
-        "Staff Active Cases", "1", "Drop.Staff.Active",
+        "Staff Active Cases", "1", "Staff.Active",
         "Staff Recovered", "2", "Staff.Recovered",
         "Offender Active Cases", "3", "Residents.Active",
         "Offenders Recovered", "4", "Residents.Recovered"

@@ -78,7 +78,7 @@ west_virginia_extract <- function(x){
     
     staff_df %>%
         mutate(Name = "State-Wide") %>%
-        select(-starts_with("Drop"), -Staff.Population, -Staff.Active) %>%
+        select(-starts_with("Drop"), -Staff.Population, Staff.Active) %>%
         select(-Staff.Quarantine) %>% 
         clean_scraped_df() %>%
         mutate(Residents.Deaths = resident_deaths) %>%

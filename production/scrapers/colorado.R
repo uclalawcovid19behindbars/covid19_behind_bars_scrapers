@@ -88,7 +88,7 @@ colorado_pull <- function(x){
     app_src <- xml2::read_html(base_html[[1]])%>%
         rvest::html_element("iframe") %>%
         rvest::html_attr("src")
-
+    
     remDr$navigate(app_src)
     Sys.sleep(6)
     
@@ -131,8 +131,8 @@ colorado_restruct <- function(x){
         z %>%
             magick::image_crop("423x50+1494+484") %>%
             magick::image_ocr()
-        ))
-
+    ))
+    
     # extract tables struggles to pull some of this data so
     # by cropping it first we can ensure greater consistency.
     # that is as long as CO keeps the same formatting.
@@ -175,7 +175,7 @@ colorado_restruct <- function(x){
         magick::image_convert(type = 'Bilevel')
 
     fac_names <- colorado_extract_col(fac_col, FALSE)
-
+  
     col_vals %>%
         as_tibble() %>%
         mutate(Name =fac_names) %>%
@@ -193,7 +193,7 @@ colorado_extract <- function(x){
         Residents.Deaths = "DEATHS",
         Name = "Name",
         Residents.Vadmin = "Residents.Vadmin"
-        )
+    )
     
     check_names(df_, exp_names)
     
@@ -265,4 +265,3 @@ if(sys.nframe() == 0){
     colorado$validate_extract()
     colorado$save_extract()
 }
-
