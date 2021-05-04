@@ -14,6 +14,10 @@ column_order <- c("State", "Name", "Date", "Residents.Confirmed",
                   "Staff.Deaths", "Address", "City",
                   "Facility.ID")
 
+## Colorado note: Colorado's YOS (Youthful Offender System) is an 
+## individual youth prison run by the DOC instead of a statewide tracker 
+## for juvenile justice facilities. So, the scraped DOC data is DISTINCT from the 
+## manual CO data for the DYS (Department of Youth Services Data) and this is not double counting. 
 scraped_states <- c("Georgia", "Indiana",
                     "Kansas", "Louisiana", "Maryland", "Missouri",
                     "Montana", "Nebraska", "North Carolina", 
