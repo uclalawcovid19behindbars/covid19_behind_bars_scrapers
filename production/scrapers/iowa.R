@@ -41,8 +41,7 @@ iowa_extract <- function(x){
         filter(!Name %in% c("Prison", "Total")) %>% 
         clean_scraped_df() %>% 
         mutate(Residents.Confirmed = Residents.Active + Residents.Recovered, 
-               Staff.Confirmed = Staff.Active + Staff.Recovered) %>% 
-        select(-Staff.Active)
+               Staff.Confirmed = Staff.Active + Staff.Recovered) 
 }
 
 #' Scraper class for general Iowa COVID data
@@ -89,6 +88,7 @@ if(sys.nframe() == 0){
     iowa$restruct_raw()
     iowa$restruct_data
     iowa$extract_from_raw()
-    iowa$validate_extract()
     iowa$extract_data
+    iowa$validate_extract()
+    iowa$save_extract()
 }

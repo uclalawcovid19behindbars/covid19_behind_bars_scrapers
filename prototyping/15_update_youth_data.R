@@ -6,7 +6,7 @@ source("./R/utilities.R")
 gs4_auth("ucla.law.covid.staff@gmail.com")
 
 manual_youth_data_loc <- "17mC-uHp1jhMQO8JGqn4is6pJLrKHP0G0TR57R01MxrY"
-youth_sheet_destination <- "1AfqaEPZTMy1hMdnZC8UYMP_JTJrnDlLi_6uh8sxmQWM" ## change this to official youth data tab
+youth_sheet_destination <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" 
 
 ## set column order for row-binding data sets
 column_order <- c("State", "Name", "Date", "Residents.Confirmed",
@@ -14,16 +14,21 @@ column_order <- c("State", "Name", "Date", "Residents.Confirmed",
                   "Staff.Deaths", "Address", "City",
                   "Facility.ID")
 
-scraped_states <- c("Georgia", "Illinois", "Indiana",
+## Colorado note: Colorado's YOS (Youthful Offender System) is an 
+## individual youth prison run by the DOC instead of a statewide tracker 
+## for juvenile justice facilities. So, the scraped DOC data is DISTINCT from the 
+## manual CO data for the DYS (Department of Youth Services Data) and this is not double counting. 
+scraped_states <- c("Georgia", "Indiana",
                     "Kansas", "Louisiana", "Maryland", "Missouri",
                     "Montana", "Nebraska", "North Carolina", 
                     "North Dakota", "Pennsylvania", "South Carolina",
-                    "Wisconsin")
+                    "Wisconsin", "Maine", "New Mexico")
 
 ## convert manually-collected youth facilities to clean data
 manual_youth_dat_sheet <- read_sheet(manual_youth_data_loc, 
                                      sheet = "Permanent",
                                      col_types = "c") 
+
 manual_youth_dat <- manual_youth_dat_sheet %>%
     mutate(Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
            Staff.Confirmed = string_to_clean_numeric(`Confirmed Cases (Staff)`),
@@ -41,7 +46,7 @@ manual_youth_dat <- manual_youth_dat_sheet %>%
     filter(!is.na(Name),
            !str_detect(Name, "(?i)total")) %>%
     mutate(Date = lubridate::mdy(Date)) %>%
-    select(column_order) %>%
+    select(all_of(column_order)) %>%    
     ## remove manual data if we have a scraper for it
     filter(!State %in% scraped_states) 
 
@@ -56,14 +61,14 @@ other_youth <- all_dat %>%
 
 ## bind together age-classified and name-searched
 all_scraped_youth <- youth_df %>%
-    bind_rows(other_youth)
+    bind_rows(other_youth) 
 
 all_youth <- all_scraped_youth %>%
     ## save only the latest data
     group_by(Facility.ID) %>%
     filter(Date == max(Date)) %>%
     ungroup() %>%
-    select(column_order) %>%
+    select(all_of(column_order)) %>%
     bind_rows(manual_youth_dat) %>%
     arrange(State, Name, Date) %>%
     mutate(Date = as.character(Date),
@@ -77,10 +82,9 @@ sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
 all_youth_out <- all_youth %>%
-    mutate() %>%
-    add_row(Date = as.character(Sys.Date()), 
+    add_row(Date = "TOTAL", 
             State = "", 
-            Name = "TOTAL",
+            Name = "",
             Residents.Confirmed = sum_res_confirmed,
             Residents.Active = sum_res_active,
             Residents.Deaths = sum_res_deaths,
@@ -105,12 +109,13 @@ all_youth_out <- all_youth %>%
 
 ## delete current data (except headers, for formatting)
 range_flood(ss = youth_sheet_destination,
-            range = "A2:K800", 
+            sheet = "COVID-19 Youth Correctional Facilities",
+            range = "A2:M800", 
             cell = "")
 
 ## write new data
 range_write(
     data = all_youth_out, 
     ss = youth_sheet_destination, 
-    sheet = "main", 
+    sheet = "COVID-19 Youth Correctional Facilities", 
     reformat = FALSE)

@@ -17,25 +17,18 @@ idaho_vaccine_extract <- function(x){
     exp_names <- c(
         Name = "Facility",
         Residents.FirstDose = "1st dose only",
-        Residents.Full = "Fully vaccinated*",
-        Drop_ = "", 
-        CRC_ = "Community Reentry Center",
-        CRC.Residents.FirstDose_ = "1st dose only",
-        CRC.Residents.Full_ = "Fully vaccinated*"
+        Residents.Full = "Fully vaccinated*"
+        # Drop_ = "", 
+        # CRC_ = "Community Reentry Center",
+        # CRC.Residents.FirstDose_ = "1st dose only",
+        # CRC.Residents.Full_ = "Fully vaccinated*"
     )
     
     check_names(sw, exp_names)
     names(sw) <- names(exp_names)
     
-    bind_rows(
         sw %>% 
-            select(Name, Residents.FirstDose, Residents.Full), 
-        sw %>% 
-            select(
-                Name = CRC_, 
-                Residents.FirstDose = CRC.Residents.FirstDose_, 
-                Residents.Full = CRC.Residents.Full_)
-        ) %>% 
+        select(Name, Residents.FirstDose, Residents.Full) %>% 
         mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
         mutate(Residents.Initiated = Residents.FirstDose + Residents.Full,
                Residents.Completed = Residents.Full) %>%
