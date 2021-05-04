@@ -173,9 +173,9 @@ colorado_restruct <- function(x){
     fac_col <- z %>%
         magick::image_crop("213x987+177+1100") %>%
         magick::image_convert(type = 'Bilevel')
-    
+
     fac_names <- colorado_extract_col(fac_col, FALSE)
-    
+  
     col_vals %>%
         as_tibble() %>%
         mutate(Name =fac_names) %>%
