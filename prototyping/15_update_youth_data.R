@@ -14,7 +14,7 @@ column_order <- c("State", "Name", "Date", "Residents.Confirmed",
                   "Staff.Deaths", "Address", "City",
                   "Facility.ID")
 
-scraped_states <- c("Georgia", "Illinois", "Indiana",
+scraped_states <- c("Georgia", "Indiana",
                     "Kansas", "Louisiana", "Maryland", "Missouri",
                     "Montana", "Nebraska", "North Carolina", 
                     "North Dakota", "Pennsylvania", "South Carolina",
@@ -57,10 +57,7 @@ other_youth <- all_dat %>%
 
 ## bind together age-classified and name-searched
 all_scraped_youth <- youth_df %>%
-    bind_rows(other_youth) #%>%
-    ## this is a state-wide total and we have facility-specific from youth tab
-    ## naila requested I keep it in 4/30/21
-    # filter(State != "Colorado")
+    bind_rows(other_youth) 
 
 all_youth <- all_scraped_youth %>%
     ## save only the latest data
