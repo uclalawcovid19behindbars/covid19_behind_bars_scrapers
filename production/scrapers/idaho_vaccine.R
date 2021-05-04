@@ -33,6 +33,7 @@ idaho_vaccine_extract <- function(x){
         mutate(Residents.Initiated = Residents.FirstDose + Residents.Full,
                Residents.Completed = Residents.Full) %>%
         select(Name, Residents.Initiated, Residents.Completed) %>%
+        filter(!str_detect(Name, "(?i)total")) %>% 
         filter(Name != "") %>% 
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         clean_scraped_df() %>%
