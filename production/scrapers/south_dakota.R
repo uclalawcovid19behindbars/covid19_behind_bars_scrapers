@@ -36,19 +36,19 @@ south_dakota_extract <- function(x){
     
     sd_staff_sidx <- ifelse(x$staff[[1]][1,1] == "Facility", 1, 2)
     sd_res_sidx <- ifelse(x$offender[[1]][1,1] == "Facility", 1, 2)
-    
+
     sd_staff <- as.data.frame(x$staff[[1]]) %>%
         .[sd_staff_sidx:nrow(.),]
     sd_res <- as.data.frame(x$offender[[1]]) %>%
         .[sd_res_sidx:nrow(.),]
-    
+  
     if(ncol(sd_staff) == 6){
         col_name_st <- matrix(c(
             "Facility", "0", "Name",
             "Cumulative Positive", "1", "Staff.Confirmed",
             "Negative", "2", "Staff.Negative",
             "Recovered", "3", "Staff.Recovered",
-            "Active Positive", "4", "Drop.Staff.Active",
+            "Active Positive", "4", "Staff.Active",
             "Death", "5", "Staff.Deaths"
         ), ncol = 3, nrow = 6, byrow = TRUE)
         
