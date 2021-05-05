@@ -183,13 +183,43 @@ kable(measure_decline_df, format.args = list(big.mark = ",")) %>%
 AP and the Marshall Project report [data on COVID in prisons at the state-level](https://www.themarshallproject.org/2020/05/01/a-state-by-state-look-at-coronavirus-in-prisons) each week. Because of differences in our methodology (e.g. data sources, update frequency, etc.), we do NOT expect our statewide totals to perfectly align with data from AP/TMP. The table below includes states where our totals differ by more than 20% OR where TMP is reporting values higher than we are. 
 
 ``` {r, echo = F}
-# Read Marshall Project data 
-new_state_df %>% 
+mp <- read_mpap_data()
+
+covid_vars <- c(
+    "Residents.Confirmed", 
+    "Residents.Deaths", 
+    "Residents.Tadmin", 
+    "Residents.Tested", 
+    "Residents.Completed", 
+    "Staff.Confirmed", 
+    "Staff.Deaths", 
+    "Staff.Tested", 
+    "Staff.Completed"
+)
+
+joined <- full_join(
+    new_df %>% 
+        mutate(State = ifelse(Jurisdiction == "federal", "Federal", State)) %>%
+        filter(Jurisdiction %in% c("state", "federal")) %>% 
+        filter(!Age %in% c("Juvenile")) %>% 
+        group_by(State) %>% 
+        summarise_at(., covid_vars, sum_na_rm) %>% 
+        pivot_longer(!State, names_to = "metric", values_to = "UCLA"), 
+    
+    mp %>% 
+        group_by(State) %>% 
+        summarise_at(., covid_vars, sum_na_rm) %>% 
+        pivot_longer(!State, names_to = "metric", values_to = "MP"), 
+    
+    by = c("State", "metric")
+)
+
+joined %>% 
     filter(!is.na(UCLA) & !is.na(MP)) %>% 
-    mutate(pct_diff = abs((MP - UCLA) / UCLA)) %>% 
-    filter(pct_diff > 0.2 | MP > UCLA) %>%
-    arrange(desc(pct_diff)) %>% 
-    select(State, Measure, UCLA, MP) %>%
+    mutate(diff = abs((UCLA - MP) / MP)) %>% 
+    filter(diff != 0) %>% 
+    arrange(desc(diff)) %>% 
+    select(State, Metric = metric, UCLA, MP) %>% 
     kable(format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     scroll_box(height = "300px")

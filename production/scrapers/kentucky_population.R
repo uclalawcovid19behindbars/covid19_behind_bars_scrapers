@@ -42,15 +42,16 @@ kentucky_population_extract <- function(x, date = Sys.Date()){
     df_ <- x %>% 
         .[[1]] %>% 
         as.data.frame() %>% 
-        janitor::row_to_names(row_number = 2)
+        janitor::row_to_names(row_number = 1) %>% 
+        janitor::clean_names()
     
     check_names(df_, c(
-        "Location", "In Count", "Hospital", "Court", "Other",
-        "Total", "Operational Capacity"))
+        "location", "in_count", "hospital", "court", "other",
+        "total", "operational_capacity"))
     
     cleaned <- df_ %>% 
-        select(Name = `Location:`, 
-               Residents.Population = `In Count`) %>% 
+        select(Name = `location`, 
+               Residents.Population = `in_count`) %>% 
         mutate(Name = clean_fac_col_txt(Name, to_upper = TRUE)) %>% 
         filter(Name != "") %>% 
         clean_scraped_df() 

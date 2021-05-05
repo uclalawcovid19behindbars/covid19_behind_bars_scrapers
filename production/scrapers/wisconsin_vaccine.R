@@ -10,24 +10,37 @@ wisconsin_vaccine_pull <- function(x){
 }
 
 wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
-    check_names(x, c("X", "As.of.Date..Vaccine."))
-    names(x) <- c("Name", "Residents.Initiated")
+
+    x_ <- x %>% 
+        janitor::clean_names()
     
-    if (x[1, 1] != "Facility"){
-        warning("Facility not in expected position, check if file structure has changed")
-    }
+    check_names(x_, c(
+        "facility", 
+        "as_of_date_vaccine", 
+        "first_doses_moderna_or_pfizer",
+        "second_doses_moderna_or_pfizer", 
+        "johnson_johnson_doses", 
+        "total_doses"
+    ))
     
-    date <- x[1, 2] %>% lubridate::mdy()
+    # Use earliest date if rows differ 
+    date <- min(x_$as_of_date_vaccine) %>% 
+        lubridate::mdy()
+
     error_on_date(date, exp_date)
     
-    x
+    x_
 }
 
 wisconsin_vaccine_extract <- function(x){
     x %>% 
-        filter(!Name == "Facility") %>% 
+        rename(Name = facility) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>% 
+        mutate(Residents.Initiated = first_doses_moderna_or_pfizer + johnson_johnson_doses, 
+               Residents.Completed = second_doses_moderna_or_pfizer + johnson_johnson_doses, 
+               Residents.Vadmin = total_doses) %>% 
+        select(Name, starts_with("Res"))
 }
 
 #' Scraper class for general COVID data
@@ -39,8 +52,11 @@ wisconsin_vaccine_extract <- function(x){
 #' Dashboard says data is updated on Monday of every week. 
 #' \describe{
 #'   \item{Facility_Name}{The facility name.}
-#'   \item{PIOC vaccinated}{The sum of PIOC who have received at 
-#'   least one dose of a COVID-19 vaccine}
+#'   \item{As of Date (Vaccine)}{}
+#'   \item{First Doses (Moderna or Pfizer)}{}
+#'   \item{Second Doses (Moderna or Pfizer)}{}
+#'   \item{Johnson & Johnson Doses}
+#'   \item{Total Doses}
 #' }
 
 wisconsin_vaccine_scraper <- R6Class(
