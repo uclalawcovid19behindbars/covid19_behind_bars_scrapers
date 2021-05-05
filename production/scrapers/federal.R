@@ -55,21 +55,20 @@ federal_restruct <- function(x){
             rename(id = facilityCode) %>%
             full_join(as_tibble(x$final$bopData), by = "id") %>%
             bind_rows(as_tibble(x$final$privateData)) %>%
-            left_join(
-                as_tibble(x$loc$Locations) %>%
-                    select(id = code, Name = nameDisplay),
-                by = "id") %>%
-            select(-id) %>%
             mutate(inmateDeathHcon = 0))
     
     if("vaccine" %in% names(x)){
-        comb_df <- bind_rows(
-            comb_df,
-            tibble(
-                Name = "ALL BOP FACILITIES",
-                Residents.Completed = sum_na_rm(x$vaccine$bopVaccine$inmateCompleted),
-                Staff.Completed = sum_na_rm(x$vaccine$bopVaccine$staffCompleted)
-            ))
+        comb_df <- comb_df %>% 
+            full_join(
+                as_tibble(x$vaccine$bopVaccine) %>% 
+                    rename(id = facility), 
+                by = "id") %>% 
+            left_join(
+                as_tibble(x$loc$Locations) %>%
+                    select(id = code, Name = nameDisplay),
+                by = "id") %>% 
+            mutate(Name = coalesce(Name.x, Name.y)) %>% 
+            select(-id, -Name.x, -Name.y)
     }
     
     comb_df
@@ -87,6 +86,8 @@ federal_extract <- function(x){
             Residents.Pending = pendTest,
             Residents.Active = inmatePositiveAmt,
             Staff.Active = staffPositiveAmt, 
+            Residents.Completed = inmateCompleted, 
+            Staff.Completed = staffCompleted, 
             starts_with("Residents."), starts_with("Staff.")
             ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
