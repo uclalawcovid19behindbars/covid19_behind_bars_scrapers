@@ -51,13 +51,13 @@ new_jersey_statewide_extract <- function(x){
     check_names(x, exp_names)
     
     names(x) <- c(
-        "Residents.Tadmin", 
+        "Residents.Tadmin.Aug.Drop", # Cumulative since July, not true cumulative  
         "Residents.Confirmed.Drop", # Collecting facility-level in main scraper 
-        "Residents.Vadmin", 
+        "Residents.Initiated", 
         "Residents.Deaths.Drop", # Collecting facility-level in main scraper 
         "Staff.Tadmin.Drop", # We don't collect Staff.Tadmin 
         "Staff.Confirmed.Drop", # Collecting facility-level in main scraper 
-        "Staff.Vadmin"
+        "Staff.Initiated"
     )
     
     x %>% 
@@ -70,16 +70,18 @@ new_jersey_statewide_extract <- function(x){
 #' 
 #' @name new_jersey_statewide_scraper
 #' @description In addition to the main NJ dashboard, they started reporting a 
-#' new dashboard with statewide totals for  tests completed and vaccine doses 
-#' distributed for incarcerated people and staff. 
+#' new dashboard with statewide totals for tests completed and vaccine doses 
+#' distributed for incarcerated people and staff. Definitions for variables were
+#' confirmed from calling the DOC. The agency said this will be updated bi-weekly. 
+#' 
 #' \describe{
-#'   \item{Incarcerated Population Test Completed}{}
-#'   \item{Incarcerated Population Cumulative Positives}{}
-#'   \item{Incarcerated Population Vaccines Doses Distributed}{}
+#'   \item{Incarcerated Population Test Completed}{Tadmin since 7/27/20}
+#'   \item{Incarcerated Population Cumulative Positives}{Confirmed since 7/27/20}
+#'   \item{Incarcerated Population Vaccines Doses Distributed}{Initiated}
 #'   \item{Incarcerated Population Deaths}{}
-#'   \item{Staff Population Test Completed}{}
-#'   \item{Staff Population Cumulative Positives}{}
-#'   \item{Staff Population Vaccines Doses Distributed}{}
+#'   \item{Staff Population Test Completed}{Tadmin since 7/27/20}
+#'   \item{Staff Population Cumulative Positives}{Confirmed since 7/27/20}
+#'   \item{Staff Population Vaccines Doses Distributed}{Initiated}
 #' }
 
 new_jersey_statewide_scraper <- R6Class(
