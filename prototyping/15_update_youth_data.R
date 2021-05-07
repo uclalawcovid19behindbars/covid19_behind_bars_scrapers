@@ -19,7 +19,9 @@ column_order <- c("State", "Name", "Date", "Residents.Confirmed",
 ## for juvenile justice facilities. So, the scraped DOC data is DISTINCT from the 
 ## manual CO data for the DYS (Department of Youth Services Data) and this is not double counting. 
 scraped_states <- c("Georgia", "Indiana",
-                    "Kansas", "Louisiana", "Maryland", "Missouri",
+                    "Kansas", "Louisiana", 
+                    # "Maryland", ## keep both manual and scraped for contract and DJS rows
+                    "Missouri",
                     "Montana", "Nebraska", "North Carolina", 
                     "North Dakota", "Pennsylvania", "South Carolina",
                     "Wisconsin", "Maine", "New Mexico")

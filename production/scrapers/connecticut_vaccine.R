@@ -21,7 +21,7 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    st_txt <- magick::image_crop(x, "180x110+240+730") %>%
+    st_txt <- magick::image_crop(x, "190x110+280+730") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
