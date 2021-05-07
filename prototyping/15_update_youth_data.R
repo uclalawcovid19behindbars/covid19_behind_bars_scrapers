@@ -82,16 +82,16 @@ sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
 all_youth_out <- all_youth %>%
-    add_row(Date = "TOTAL", 
-            State = "", 
-            Name = "",
-            Residents.Confirmed = sum_res_confirmed,
-            Residents.Active = sum_res_active,
-            Residents.Deaths = sum_res_deaths,
-            Staff.Confirmed = sum_staff_confirmed,
-            Staff.Deaths = sum_staff_deaths,
-            .before = 1
-                ) %>%
+    # add_row(Date = "TOTAL", 
+    #         State = "", 
+    #         Name = "",
+    #         Residents.Confirmed = sum_res_confirmed,
+    #         Residents.Active = sum_res_active,
+    #         Residents.Deaths = sum_res_deaths,
+    #         Staff.Confirmed = sum_staff_confirmed,
+    #         Staff.Deaths = sum_staff_deaths,
+    #         .before = 1
+    #             ) %>%
         select(
             `Facility ID` = Facility.ID,
             Name, 
