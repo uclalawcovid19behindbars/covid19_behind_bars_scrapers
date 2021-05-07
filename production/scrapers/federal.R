@@ -117,6 +117,9 @@ federal_extract <- function(x){
 #'   \item{inmateCompletedTest}{Tests adminstered, I think not individuals tested}
 #'   \item{inmatePendTest}{Current Pending Cases}
 #'   \item{inmatePosTest}{Cumulative Positive Cases}
+#'   \item{inmateCompleted}{Residents.Completed}
+#'   \item{staffCompleted}{Staff.Completed}
+#'   
 #' }
 
 federal_scraper <- R6Class(
