@@ -9,9 +9,14 @@ manual_youth_data_loc <- "17mC-uHp1jhMQO8JGqn4is6pJLrKHP0G0TR57R01MxrY"
 youth_sheet_destination <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" 
 
 ## set column order for row-binding data sets
-column_order <- c("State", "Name", "Date", "Residents.Confirmed",
-                  "Staff.Confirmed", "Residents.Active", "Residents.Deaths",
-                  "Staff.Deaths", "Address", "City",
+column_order <- c("State", "Name", "Date", 
+                  "Residents.Confirmed",
+                  "Staff.Confirmed", 
+                  "Residents.Active", 
+                  "Residents.Deaths",
+                  "Staff.Deaths",
+                  "Address", 
+                  "City",
                   "Facility.ID")
 
 ## Colorado note: Colorado's YOS (Youthful Offender System) is an 
@@ -34,6 +39,8 @@ manual_youth_dat_sheet <- read_sheet(manual_youth_data_loc,
 manual_youth_dat <- manual_youth_dat_sheet %>%
     mutate(Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
            Staff.Confirmed = string_to_clean_numeric(`Confirmed Cases (Staff)`),
+           Staff.Deaths = `Confirmed Deaths (Staff)`,
+           # Staff.Deaths = string_to_clean_numeric(`Confirmed Deaths (Staff)`),
            Facility.ID = NA,
            Address = NA,
            City = NA,
@@ -46,7 +53,9 @@ manual_youth_dat <- manual_youth_dat_sheet %>%
            Date = `Date of last positive case/last update`
            ) %>%
     filter(!is.na(Name),
-           !str_detect(Name, "(?i)total")) %>%
+           ## commenting this out because in some cases, we want to keep state-wide counts
+           # !str_detect(Name, "(?i)total")
+           ) %>%
     mutate(Date = lubridate::mdy(Date)) %>%
     select(all_of(column_order)) %>%    
     ## remove manual data if we have a scraper for it
@@ -84,16 +93,16 @@ sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
 all_youth_out <- all_youth %>%
-    add_row(Date = "TOTAL", 
-            State = "", 
-            Name = "",
-            Residents.Confirmed = sum_res_confirmed,
-            Residents.Active = sum_res_active,
-            Residents.Deaths = sum_res_deaths,
-            Staff.Confirmed = sum_staff_confirmed,
-            Staff.Deaths = sum_staff_deaths,
-            .before = 1
-                ) %>%
+    # add_row(Date = "TOTAL", 
+    #         State = "", 
+    #         Name = "",
+    #         Residents.Confirmed = sum_res_confirmed,
+    #         Residents.Active = sum_res_active,
+    #         Residents.Deaths = sum_res_deaths,
+    #         Staff.Confirmed = sum_staff_confirmed,
+    #         Staff.Deaths = sum_staff_deaths,
+    #         .before = 1
+    #             ) %>%
         select(
             `Facility ID` = Facility.ID,
             Name, 
