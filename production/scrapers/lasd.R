@@ -144,12 +144,18 @@ lasd_restruct <- function(x){
 }
 
 lasd_extract <- function(x){
-    x %>%
+    out_df <- x %>%
         mutate(Residents.Negative = drop.neg.asymp + drop.neg.symp) %>%
         mutate(Residents.Active = drop.pos.asymp + drop.pos.symp) %>%
         mutate(Residents.Tadmin = drop.test.asymp + drop.test.symp) %>% 
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
+    
+    if(out_df$Residents.Deaths != 13){
+        warning("You sure LA shouldnt be 13???")
+    }
+    
+    out_df
 }
 
 #' Scraper class for general LASD staff COVID data

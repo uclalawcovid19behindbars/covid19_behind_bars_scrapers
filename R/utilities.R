@@ -588,7 +588,7 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, ag
             Residents.Deaths, Staff.Deaths, Residents.Recovered,
             Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
             Staff.Negative, Residents.Pending, Staff.Pending,
-            Residents.Quarantine, Staff.Quarantine, Residents.Active,
+            Residents.Quarantine, Staff.Quarantine, Residents.Active, Staff.Active,
             Population.Feb20, Residents.Population, Residents.Tested, 
             Residents.Initiated, Staff.Initiated, Residents.Completed, Staff.Completed, 
             Residents.Vadmin, Staff.Vadmin, Address, Zipcode, City, County, Latitude,
