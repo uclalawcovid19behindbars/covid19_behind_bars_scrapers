@@ -39,14 +39,12 @@ manual_youth_dat_sheet <- read_sheet(manual_youth_data_loc,
 manual_youth_dat <- manual_youth_dat_sheet %>%
     mutate(Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
            Staff.Confirmed = string_to_clean_numeric(`Confirmed Cases (Staff)`),
-           Staff.Deaths = `Confirmed Deaths (Staff)`,
-           # Staff.Deaths = string_to_clean_numeric(`Confirmed Deaths (Staff)`),
+           Staff.Deaths = string_to_clean_numeric(`Confirmed Deaths (Staff)`),
            Facility.ID = NA,
            Address = NA,
            City = NA,
            Residents.Active = NA,
-           Residents.Deaths = NA,
-           Staff.Deaths = NA
+           Residents.Deaths = NA
            ) %>%
     dplyr::rename(jurisdiction = Jurisdiction, 
            Name = `County/Name of Facility`,
@@ -93,16 +91,16 @@ sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
 all_youth_out <- all_youth %>%
-    # add_row(Date = "TOTAL", 
-    #         State = "", 
-    #         Name = "",
-    #         Residents.Confirmed = sum_res_confirmed,
-    #         Residents.Active = sum_res_active,
-    #         Residents.Deaths = sum_res_deaths,
-    #         Staff.Confirmed = sum_staff_confirmed,
-    #         Staff.Deaths = sum_staff_deaths,
-    #         .before = 1
-    #             ) %>%
+    add_row(Date = "TOTAL",
+            State = "",
+            Name = "",
+            Residents.Confirmed = sum_res_confirmed,
+            Residents.Active = sum_res_active,
+            Residents.Deaths = sum_res_deaths,
+            Staff.Confirmed = sum_staff_confirmed,
+            Staff.Deaths = sum_staff_deaths,
+            .before = 1
+                ) %>%
         select(
             `Facility ID` = Facility.ID,
             Name, 
