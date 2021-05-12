@@ -15,7 +15,7 @@ ohio_vaccine_restruct <- function(x){
 
 ohio_vaccine_extract <- function(x, exp_date = Sys.Date()){
     
-    error_on_date(first(x$Date), exp_date)
+    # error_on_date(first(x$Date), exp_date)
     
     check_names(x, c(
         "Date", 
@@ -27,8 +27,8 @@ ohio_vaccine_extract <- function(x, exp_date = Sys.Date()){
     x %>%
         select(
             Name = `Name`,
-            Residents.Vadmin = `Inmates`,
-            Staff.Vadmin = `Staff`) %>% 
+            Residents.Initiated = `Inmates`,
+            Staff.Initiated = `Staff`) %>% 
         clean_scraped_df()
 }
 

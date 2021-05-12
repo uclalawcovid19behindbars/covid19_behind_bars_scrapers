@@ -41,11 +41,11 @@ new_jersey_statewide_extract <- function(x){
     exp_names <- c(
         "Test Completed Residents", 
         "Cumulative Positives Residents", 
-        "Vaccines Doses Distributed Residents", 
+        "Vaccine Doses Distributed Residents", 
         "Deaths Residents", 
         "Test Completed Staff", 
         "Cumulative Positives Staff", 
-        "Vaccines Doses Distributed Staff"
+        "Vaccine Doses Distributed Staff"
     )
     
     check_names(x, exp_names)

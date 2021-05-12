@@ -5,7 +5,7 @@ indiana_pull <- function(x){
     in_img <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID")
     
     magick::image_read(in_img) %>% 
-        magick::image_convert(type = 'Grayscale')
+        magick::image_convert(type = 'Bilevel')
 }
 
 indiana_restruct <- function(x){

@@ -59,6 +59,7 @@ wisconsin_population_extract <- function(x){
         "SUB-TOTAL FEMALES ALL LOCATIONS", 
         "MINIMUM SECURITY INST", 
         "DIVISION OF JUVENILE CORRECTIONS", 
+        "3 TOTAL ON-GROUNDS POPULATION", 
         "TOTAL ON-GROUNDS POPULATION 3", 
         "SUBTOTAL-MALES", 
         "SUBTOTAL-FEMALES")
