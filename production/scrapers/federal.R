@@ -35,7 +35,10 @@ federal_restruct <- function(x){
                 ),
         
             as_tibble(x$final$rrcData) %>%
-                select(-contractNum) %>%
+                select(-contractNum,
+                       ## not sure why these are here but adding in the de-select
+                       -J,
+                       -K) %>%
                 mutate(id = str_to_upper(id)) %>%
                 group_by(id) %>%
                 summarize_all(function(z) sum(z, na.rm = TRUE))

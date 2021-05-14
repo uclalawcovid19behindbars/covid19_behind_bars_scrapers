@@ -22,6 +22,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         select(
+            Name = `Facility Name`,
             Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
             Residents.Active = `Active Cases Incarcerated Population Current`,
             Residents.Recovered = `Resolved Cases Incarcerated Population Cumulative`,
@@ -31,13 +32,13 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Population = `Population Incarcerated Population Current`,
             Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
             Staff.Active = `Active Cases Staff Current`, 
-            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Cumulative`, 
-            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Partial = `Partially Vaccinated Total Incarcerated Population Current`,
+            Residents.Completed = `Fully Vaccinated Total Incarcerated Population Cumulative`, 
             ) %>% 
         rowwise() %>% 
-        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial, Residents.Completed, na.rm = T)) %>% 
         mutate(Residents.Initiated = ifelse(
-            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+            is.na(Residents.Partial) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
         mutate_all(as.numeric) %>%
         select(-ends_with("Drop")) %>% 
         mutate(Name = "SANTA RITA JAIL") 
