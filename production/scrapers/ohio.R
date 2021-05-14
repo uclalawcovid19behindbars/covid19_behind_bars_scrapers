@@ -31,18 +31,19 @@ ohio_restruct <- function(x){
 ohio_extract <- function(x){
     
     col_name_mat <- matrix(c(
-        "Institution", "0", "Name",
-        "# of Staff who have Reported Positive Tests", "1", "Staff.Confirmed",
-        "# of Staff Currently Positive", "2", "Staff.Active",
-        "# of COVID- 19 Related Staff Deaths", "3", "Staff.Deaths",
-        "# of Staff who have Recovered", "4", "Staff.Recovered",
-        "Housing Type (cell, open bay, combo)", "5", "Housing.Type",
-        "# of Inmates in Quarantine", "6", "Residents.Quarantine",
-        "# of Inmates in Isolation", "7", "Residents.Isolation",
-        "# of inmates currently Positive for COVID-19", "8", "Residents.Active",
-        "# of Confirmed COVID-19 Related Inmate Deaths", "9", "Residents.Confirmed.Deaths",
-        "# of Inmates who have Pending Results",  "10", "Residents.Pending",
-        "# of current Inmates who have Recovered", "11", "Residents.Recovered"
+        "Institution", "0", "Name", #
+        "# of Staff who have Reported Positive Tests", "1", "Staff.Confirmed", #
+        "# of Staff Currently Positive", "2", "Staff.Active", #
+        "# of COVID- 19 Related Staff Deaths", "3", "Staff.Deaths", #
+        "# of Staff who have Recovered", "4", "Staff.Recovered", #
+        "Housing Type (cell, open bay, combo)", "5", "Housing.Type", #
+        "# of Inmates in Quarantine", "6", "Residents.Quarantine", #
+        "# of Inmates in Isolation", "7", "Residents.Isolation", #
+        "# of inmates currently Positive for COVID-19", "8", "Residents.Active", #
+        # "# of Probable COVID-19 Related Inmate Deaths", "9", "Drop.Residents.Probable.Deaths",
+        "# of Confirmed COVID-19 Related Inmate Deaths", "9", "Residents.Confirmed.Deaths", #
+        "# of Inmates who have Pending Results",  "10", "Residents.Pending", #
+        "# of current Inmates who have Recovered", "11", "Residents.Recovered" #
     ), ncol = 3, nrow = 12, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
@@ -60,8 +61,11 @@ ohio_extract <- function(x){
                Residents.Confirmed = Residents.Active + Residents.Confirmed.Deaths + Residents.Recovered, 
                Residents.Quarantine = Residents.Quarantine + Residents.Isolation) %>% 
         select(
-            -Residents.Pending, -Residents.Isolation,
-            -Residents.Confirmed.Deaths)
+            -Residents.Pending, 
+            -Residents.Isolation,
+            -Residents.Confirmed.Deaths #,
+         #   -Drop.Residents.Probable.Deaths
+            )
 }
 
 #' Scraper class for general Ohio COVID data
