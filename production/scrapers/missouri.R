@@ -1,35 +1,95 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+## html version
 missouri_pull <- function(x){
-    get_src_by_attr(x, "img", attr="src", attr_regex = "(?i)covid-chart") %>%
-        magick::image_read()
+    bi_url <- "https://results.mo.gov/t/DOC/views/CovidDashboard_Public/" %>%
+        str_c("CasesTable?%3AisGuestRedirectFromVizportal=y&%3Aembed=y")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox",
+        extraCapabilities=fprof
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(bi_url)
+    Sys.sleep(6)
+    
+    old_windows <- unlist(remDr$getWindowHandles())
+    
+    remDr$findElement(
+        "css", "[id='download-ToolbarButton']")$clickElement()
+    Sys.sleep(10)
+    remDr$findElement(
+        "css", "[data-tb-test-id='DownloadData-Button']")$clickElement()
+    Sys.sleep(10)
+    
+    new_window <- setdiff(unlist(remDr$getWindowHandles()), old_windows)
+    remDr$switchToWindow(new_window)
+    Sys.sleep(10)
+    
+    x = xml2::read_html(remDr$getPageSource()[[1]])
 }
 
 missouri_restruct <- function(x){
-    ExtractTable(x)
+    x %>%
+        rvest::html_node("table") %>%
+        rvest::html_table() %>%
+        as_tibble()
 }
 
 missouri_extract <- function(x){
-    col_name_mat <- matrix(c(
-        "Facility", "0", "Name",
-        "Staff Active Cases", "1", "Staff.Active",
-        "Staff Recovered", "2", "Staff.Recovered",
-        "Offender Active Cases", "3", "Residents.Active",
-        "Offenders Recovered", "4", "Residents.Recovered"
-    ), ncol = 3, nrow = 5, byrow = TRUE)
-    
-    colnames(col_name_mat) <- c("check", "raw", "clean")
-    col_name_df <- as_tibble(col_name_mat)
-    
-    check_names_extractable(x[[1]], col_name_df)
-    
-    rename_extractable(x[[1]], col_name_df) %>%
-        filter(Name!="Facility") %>%
-        select(-starts_with("Drop")) %>%
-        clean_scraped_df() %>%
-        as_tibble()
+    x %>%
+        mutate(`Recovery Status` = str_remove(
+            `Recovery Status`, " Positive")) %>%
+        mutate(Designation = str_replace(
+            Designation, "Offender", "Residents")) %>%
+        mutate(col_name = str_c(Designation, ".", `Recovery Status`)) %>%
+        select(-Designation, -`Recovery Status`) %>%
+        pivot_wider(
+            names_from = col_name, values_from = `AGG(CountWithZero)`) %>%
+        rename(Name = Location) 
 }
+
+
+## img version
+# missouri_pull <- function(x){
+#     get_src_by_attr(x, "img", attr="src", attr_regex = "(?i)covid-chart") %>%
+#         magick::image_read()
+# }
+# 
+# missouri_restruct <- function(x){
+#     ExtractTable(x)
+# }
+# 
+# missouri_extract <- function(x){
+#     col_name_mat <- matrix(c(
+#         "Facility", "0", "Name",
+#         "Staff Active Cases", "1", "Staff.Active",
+#         "Staff Recovered", "2", "Staff.Recovered",
+#     #     "Offender Active Cases", "3", "Residents.Active",
+#     #     "Offenders Recovered", "4", "Residents.Recovered"
+#     # ), ncol = 3, nrow = 5, byrow = TRUE)
+#         ## new old ones - delete below
+#     "Staff Cumulative Cases", "3", "Staff.Confirmed",
+#     "Offender Active Cases", "4", "Residents.Active",
+#     "Offenders Recovered", "5", "Residents.Recovered",
+#     "Offender Cumulative Cases", "6", "Residents.Confirmed"
+#     ), ncol = 3, nrow = 7, byrow = TRUE)
+# 
+#     colnames(col_name_mat) <- c("check", "raw", "clean")
+#     col_name_df <- as_tibble(col_name_mat)
+#     
+#     check_names_extractable(x[[1]], col_name_df)
+#     
+#     rename_extractable(x[[1]], col_name_df) %>%
+#         filter(Name!="Facility") %>%
+#         select(-starts_with("Drop")) %>%
+#         clean_scraped_df() %>%
+#         as_tibble()
+# }
 
 #' Scraper class for general Missouri COVID data
 #' 
