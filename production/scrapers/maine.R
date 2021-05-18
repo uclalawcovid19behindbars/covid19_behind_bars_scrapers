@@ -21,8 +21,8 @@ maine_extract <- function(x){
             any(str_detect(z[,1], "(?i)population"))}))
     
     vaccine_idx <- which(sapply(x, function(z){
-        any(str_detect(z[,1], "(?i)Doses Admin")) |
-            any(str_detect(z[,2], "(?i)Doses Admin"))}))
+        any(str_detect(z[,1], "(?i)Doses")) |
+            any(str_detect(z[,2], "(?i)Doses"))}))
     
     ad_pop_df <- x[[ad_pop_idx]] %>% 
         .[str_detect(.[,1], "(?i)total population"),2] %>% 
@@ -33,20 +33,30 @@ maine_extract <- function(x){
         .[str_detect(.[,1], "(?i)total population"),2] %>%
         as.numeric()
     
-    if(!all(dim(x[[vaccine_idx]]) == c(3, 2))){
+    if(!all(dim(x[[vaccine_idx]]) == c(3, 3))){
         warning("Structure of vaccine table not as expected.")
     }
     
     ad_vaccine_df <- x[[vaccine_idx]] %>% 
-        .[str_detect(.[,1], "(?i)adult"),2] %>%
-        as.numeric() %>%
-        {tibble(Name = "State-Wide", Residents.Vadmin = .)}
+        .[str_detect(.[,1], "(?i)adult"),2:3] %>%
+        as_tibble()
+    
+    names(ad_vaccine_df) <- as.character(x[[vaccine_idx]][1,2:3])
+    
+    ad_vaccine_df <- ad_vaccine_df %>%
+        rename(Residents.Initiated = `First Doses`) %>% 
+        rename(Residents.Completed = `Final Doses`) %>%
+        mutate(Name = "State-Wide")
     
     juv_vaccine_df <- x[[vaccine_idx]] %>% 
-        .[str_detect(.[,1], "(?i)juvenile"),2] %>%
-        {suppressWarnings(as.numeric())} %>%
-        # Only one juvenile facility so replace Juvenile residents  
-        {tibble(Name = "Long Creek Youth Development Center", Residents.Vadmin = .)}
+        .[str_detect(.[,1], "(?i)juvenile"),2:3]
+    
+    names(juv_vaccine_df) <- as.character(x[[vaccine_idx]][1,2:3])
+    
+    juv_vaccine_df <- juv_vaccine_df %>%
+        rename(Residents.Initiated = `First Doses`) %>% 
+        rename(Residents.Completed = `Final Doses`) %>%
+        mutate(Name = "Long Creek Youth Development Center")
     
     df_ <- as.data.frame(x[[res_test_idx]])
     
