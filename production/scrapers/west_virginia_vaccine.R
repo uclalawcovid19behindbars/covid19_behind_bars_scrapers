@@ -46,19 +46,21 @@ west_virginia_vaccine_extract <- function(x){
         clean_scraped_df()
     
     staff_df <- x[emp_idx:nrow(x),] %>%
-        filter(str_detect(Name, "(?i)total")) %>%
+        filter(!str_detect(Name, "(?i)total")) %>%
         select(-`Moderna \n(1st dose)`)
     
     names(staff_df) <- as.character(na.omit(unlist(x[emp_idx,])))
     
     staff_df %>%
         select(
+            Name = `EMPLOYEES (Moderna)`, 
             Staff.Initiated = `1st Doses`,
             Staff.Completed = `2nd Doses`,
             Staff.Population = `Staffing*`
             ) %>%
-        mutate(Name = "State-Wide") %>%
+        filter(Name != "EMPLOYEES (Moderna)") %>% 
         clean_scraped_df() %>%
+        mutate(Name = stringr::str_c(Name, " staff total")) %>% 
         # moderna so this should work
         mutate(Staff.Vadmin = Staff.Initiated + Staff.Completed) %>%
         bind_rows(res_df)

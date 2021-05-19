@@ -60,7 +60,7 @@ new_hampshire_extract <- function(x){
     
     rez_exp <- c(
         Name = "Facility",
-        Residents.Tested = "Residents COVID-19 Tests Administered",
+        Residents.Tadmin = "Residents COVID-19 Tests Administered",
         Residents.Active = "Active Residents Positive",
         Residents.Confirmed =
             "Total Residents who have tested positive since March 2020",
@@ -107,7 +107,7 @@ new_hampshire_extract <- function(x){
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Num Staff Positive}{The staff number testing positive}
-#'   \item{Num Residents tested}{Not the number of tests administered}
+#'   \item{Num Residents tested}{Number of tests administered}
 #'   \item{Num Residents Positive}{Number of residents confirmed}
 #'   \item{NHDOC Staff}{State wide staff population}
 #'   \item{Total resident population}{State wide incarcerated population}
