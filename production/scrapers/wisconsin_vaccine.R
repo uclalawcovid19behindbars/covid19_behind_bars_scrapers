@@ -23,12 +23,6 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
         "total_doses"
     ))
     
-    # Use earliest date if rows differ 
-    date <- min(x_$as_of_date_vaccine) %>% 
-        lubridate::mdy()
-
-    error_on_date(date, exp_date)
-    
     x_
 }
 
