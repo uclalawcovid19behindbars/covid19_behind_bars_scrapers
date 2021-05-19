@@ -2,10 +2,12 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 pennsylvania_population_pull <- function(x){
-    xml2::read_html(x)
+    stop_defunct_scraper(x)
+    # xml2::read_html(x)
 }
 
 pennsylvania_population_restruct <- function(x){
+    stop_defunct_scraper("https://www.cor.pa.gov/Pages/COVID-19.aspx")
     x %>%
         rvest::html_node("table") %>%
         rvest::html_table(header = TRUE) %>%
@@ -94,4 +96,3 @@ if(sys.nframe() == 0){
     pennsylvania_population$validate_extract()
     pennsylvania_population$save_extract()
 }
-

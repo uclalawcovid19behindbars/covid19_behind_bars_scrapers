@@ -14,22 +14,37 @@ santa_barbara_jails_restruct <- function(x){
 }
 
 santa_barbara_jails_extract <- function(x){
-    # Moving the first row to the header column
-    colnames(x) = x[1,]
-    x = x[-1,]
     
-    # Fixing row names
-    rownames(x) = x[,1]
-    x = x[,-1]
+    x_ <- x %>% 
+        t() %>% 
+        janitor::row_to_names(row_number = 1) %>% 
+        as.data.frame() 
     
-    x <- data.frame(
-        "Name" = c("Santa Barbara Jails"),
-        "Residents.Active" = c(x["Active Cases Medically Monitored/ Treated", "Total Cases"]),
-        "Residents.Recovered" = c(x["Recovered", "Total Cases"]),
-        "Residents.Deaths" = c(x["Deceased", "Total Cases"]),
-        "Residents.Confirmed" = c(x["TOTAL", "Total Cases"]))
-        
-    x %>% clean_scraped_df()
+    exp_names <- c(
+        "V1", 
+        "Active Cases Medically Monitored/ Treated", 
+        "Recovered", 
+        "Released from Custody", 
+        "Deceased", 
+        "TOTAL"
+    )
+    basic_check(names(x_), exp_names)
+    
+    names(x_) <- c(
+        "Metric.Drop", 
+        "Residents.Active",  
+        "Residents.Recovered", 
+        "Released.Drop", 
+        "Residents.Deaths", 
+        "Residents.Confirmed"
+    )
+    
+    x_ %>% 
+        as_tibble() %>% 
+        filter(Metric.Drop == "Total Cases") %>% 
+        mutate(Name = "Santa Barbara Jails") %>% 
+        select(!ends_with(".Drop")) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general santa_barbara_jails COVID data
@@ -80,9 +95,8 @@ if(sys.nframe() == 0){
     santa_barbara_jails$restruct_raw()
     santa_barbara_jails$restruct_data
     santa_barbara_jails$extract_from_raw()
+    santa_barbara_jails$extract_data 
     santa_barbara_jails$validate_extract()
     santa_barbara_jails$save_extract()
-    santa_barbara_jails$extract_data # I changed the order, this used to be on line 83
 }
-
 

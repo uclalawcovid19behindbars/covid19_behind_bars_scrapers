@@ -28,6 +28,11 @@ nevada_pull <- function(x){
         str_c("//div[@aria-label='Facility Type Slicer Drop down box to ",
               "select one or more facility types.']"))$clickElement()
     Sys.sleep(10)
+    # remDr$findElement(
+    #     "xpath", 
+    #     str_c("//div[@class='slicerItemContainer']",
+    #           "/span[@title='Select all']"))$clickElement()
+    # Sys.sleep(10)
     remDr$findElement(
         "xpath", 
         str_c("//div[@class='slicerItemContainer']",

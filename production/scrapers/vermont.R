@@ -21,6 +21,8 @@ vermont_extract <- function(x, exp_date = Sys.Date()){
         filter(!is.na(Name)) %>% 
         select(Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, Residents.Deaths, 
                Residents.Recovered, Residents.Tested) %>% 
+        mutate(Residents.Confirmed =
+                   ifelse(str_detect(Name, "(?i)state-wide|statewide"), NA, Residents.Confirmed)) %>%
         clean_scraped_df()
 }
 

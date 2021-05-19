@@ -82,6 +82,7 @@ ice_extract <- function(x){
     out_df %>%
         filter(!str_detect(Name, "(?i)total")) %>%
         filter(!str_detect(Name, "(?i)field office")) %>%
+        filter(!str_detect(Name, "(?i)endeavors")) %>%
         clean_scraped_df() %>%
         bind_rows(
             tibble(

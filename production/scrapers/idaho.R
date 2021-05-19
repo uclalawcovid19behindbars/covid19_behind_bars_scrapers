@@ -15,7 +15,7 @@ idaho_extract <- function(x){
     sw <- x[[1]][1,]
     
     exp_names <- c(
-        Residents.Tested = "Tested",
+        Residents.Tadmin = "Tested",
         Residents.Pending = "Pending",
         Residents.Negative = "Negative",
         Drop.Residents.Active = "Positive",
@@ -27,6 +27,16 @@ idaho_extract <- function(x){
     check_names(sw, exp_names)
     names(sw) <- names(exp_names)
     
+    nlist <- lapply(x, names)
+    
+    staff_idx <- which((sapply(nlist, length) == 3) &
+        sapply(nlist, function(z){
+            all(suppressWarnings(z == c("Location", "Positive", "Inactive")))}))
+    
+    if(length(staff_idx) != 1){
+        stop("Scraper is not as expected. Please inspect")
+    }
+    
     sw %>%
         mutate_all(as.numeric) %>%
         mutate(Name = "State-Wide") %>%
@@ -36,12 +46,12 @@ idaho_extract <- function(x){
         mutate(Residents.Active = 
                    Drop.Residents.Asymp + Drop.Residents.Active) %>%
         bind_rows(
-            x[[7]] %>%
+            x[[staff_idx]] %>%
                 rename(Name = Location) %>%
                 clean_scraped_df() %>%
-                mutate(Positive = ifelse(is.na(Positive), 0, Positive)) %>%
+                mutate(Staff.Active = ifelse(is.na(Positive), 0, Positive)) %>%
                 mutate(Inactive = ifelse(is.na(Inactive), 0, Inactive)) %>%
-                mutate(Staff.Confirmed = Positive + Inactive) %>%
+                mutate(Staff.Confirmed = Staff.Active + Inactive) %>%
                 mutate(Staff.Recovered = Inactive) %>%
                 select(-Positive, -Inactive)
         ) %>%
@@ -60,7 +70,7 @@ idaho_extract <- function(x){
 #'   \item{Facility_Name}{The facility name}
 #'   \item{Staff Positive}{Staff Active}
 #'   \item{Staff Inactive}{Staff Recovered}
-#'   \item{Residents Tested}{state-wide only, not sure if administered or individuals tested}
+#'   \item{Residents Tested}{state-wide only, tests administered}
 #'   \item{Residents Pending}{state-wide only}
 #'   \item{Residents Negative}{state-wide only}
 #'   \item{Residents Positive}{state-wide only}

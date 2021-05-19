@@ -8,58 +8,39 @@ santa_rita_jail_pull <- function(x){
 
 santa_rita_jail_restruct <- function(x){
     x %>%
-        filter(!is.na(Date)) %>%
-        mutate(Date = lubridate::ymd(Date)) %>%
-        filter(Date == max(Date))
+        janitor::clean_names(case = "title") %>%
+        mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
+        mutate(Date = as.Date(Date)) %>% 
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
+        filter(Date == max(Date, na.rm = TRUE))
 }
 
 santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
-    check_names(x, c(
-        "Date", 
-        "SRJ Population (total)", 
-        "SRJ Population (diff)", 
-        "Tests (Incarcerated population, total)", 
-        "Tests (Incarcerated population, difference)", 
-        "Pending tests", 
-        "Percentage of population tested within the past: 7 days", 
-        "Percentage of population tested within the past: 14 days", 
-        "Percentage of population tested within the past: 30 days", 
-        "Incarcerated population cases (total)", 
-        'Incarcerated population cases ("active")',
-        "1-day change in 'active' cases",
-        "Incarcerated population hospitalizations (total)",
-        "Staff cases (total)",
-        "1-day change in staff cases",
-        "Red patients (current)",
-        "Dark Red patients (current)",
-        "Orange patients (current)",
-        "1-day change in Orange patients",
-        "Percent of Orange patients in population",
-        "Total Resolved Cases",
-        "Released while Active",
-        "Percentage of total cases released while active",
-        "Released after Resolved",
-        "Percentage of total cases released after resolved",
-        "Resolved in Custody",
-        "Percentage of total cases resolved in custody",
-        "Deaths",
-        "Current staff cases"))
-    
     x %>%
         select(
-            Residents.Confirmed = `Incarcerated population cases (total)`,
-            Residents.Active = `Incarcerated population cases ("active")`,
-            Residents.Recovered = `Total Resolved Cases`,
-            Residents.Deaths = Deaths,
-            Residents.Tadmin = `Tests (Incarcerated population, total)`,
-            Residents.Pending = `Pending tests`,
-            Residents.Population = `SRJ Population (total)`,
-            Staff.Confirmed = `Staff cases (total)`
-            ) %>%
-        mutate(Name = "SANTA RITA JAIL")
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Active = `Active Cases Incarcerated Population Current`,
+            Residents.Recovered = `Resolved Cases Incarcerated Population Cumulative`,
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
+            Residents.Pending = `Pending Tests Incarcerated Population Current`,
+            Residents.Population = `Population Incarcerated Population Current`,
+            Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
+            Staff.Active = `Active Cases Staff Current`, 
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
+            ) %>% 
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate_all(as.numeric) %>%
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SANTA RITA JAIL") 
 }
 
 #' Scraper class for general santa_rita_jail COVID data

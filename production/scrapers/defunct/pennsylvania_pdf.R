@@ -2,7 +2,8 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 pennsylvania_pdf_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)daily-count")
+    stop_defunct_scraper(x)
+    # get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)daily-count")
 }
 
 pennsylvania_pdf_restruct <- function(x){

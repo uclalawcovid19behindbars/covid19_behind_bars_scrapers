@@ -4,7 +4,7 @@ source("./R/utilities.R")
 minnesota_vaccine_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "MN Vaccine", 
-                                  col_types = "Dccccc")
+                                  col_types = "Dcccccccc")
 }
 
 minnesota_vaccine_restruct <- function(x){
@@ -20,33 +20,54 @@ minnesota_vaccine_extract <- function(x, exp_date = Sys.Date()){
     check_names(x, c(
         "Date", 
         "Facility", 
-        "Staff Received 1st Dose", 
-        "Staff Received 2nd Dose", 
+        "Staff Received 1st Dose Only", 
+        "Staff Completed DOC Vaccine Process", 
+        "Staff Started External Vaccination Process", 
+        "Staff Completed External Vaccination Process", 
         "Client Received 1st Dose", 
-        "Client Received 2nd Dose"
-        ))
+        "Client Received 2nd Dose", 
+        "Client Received J&J Vaccine"
+    ))
     
     x %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
+        {suppressWarnings(mutate_at(., vars(starts_with("Client")), as.numeric))} %>%
+        mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>%
+        mutate(
+            Residents.Initiated = `Client Received 1st Dose` + `Client Received J&J Vaccine`, 
+            Residents.Completed = `Client Received 2nd Dose` + `Client Received J&J Vaccine`, 
+            Staff.Initiated = `Staff Received 1st Dose Only` + `Staff Started External Vaccination Process`, 
+            Staff.Completed = `Staff Completed DOC Vaccine Process` + `Staff Completed External Vaccination Process`, 
+            Staff.Initiated = Staff.Initiated + Staff.Completed, 
+            Residents.Vadmin = `Client Received 1st Dose` + `Client Received 2nd Dose` + `Client Received J&J Vaccine`
+            # Can't compute Staff.Vadmin bc we don't know if completed vaccinations 
+            # were one-shot or two 
+        ) %>% 
         select(
-            Name = `Facility`,
-            Residents.Initiated = `Client Received 1st Dose`,
-            Residents.Completed = `Client Received 2nd Dose`, 
-            Staff.Initiated = `Staff Received 1st Dose`, 
-            Staff.Completed = `Staff Received 2nd Dose`) %>% 
+            Name = Facility,
+            Residents.Initiated,
+            Residents.Completed,
+            Residents.Vadmin, 
+            Staff.Initiated, 
+            Staff.Completed
+        ) %>% 
         clean_scraped_df()
 }
 
 #' Scraper class for Minnesota vaccine data 
 #' 
 #' @name minnesota_vaccine_scraper
-#' @description Grabs manually entered Google Sheet data for MN vaccines 
+#' @description Grabs manually entered Google Sheet data for MN vaccines. J&J 
+#' vaccine doses are included in both the initiated and completed totals. 
 #' 
 #' \describe{
 #'   \item{Facility}{The facilty name}
-#'   \item{Staff Received 1st Dose}{Cumulative number of staff who received a 1st dose}
-#'   \item{Staff Received 2nd Dose}{Cumulative number of staff who received a 2nd dose}
-#'   \item{Client Received 1st Dose}{Cumulative number of incarcerated people who received a 1st dose}
-#'   \item{Client Received 2nd Dose}{Cumulative number of incarcerated people who received a 2nd dose}
+#'   \item{Staff Received 1st Dose Only}
+#'   \item{Staff Completed DOC Vaccine Process}
+#'   \item{Staff Started External Vaccination Process}
+#'   \item{Client Received 1st Dose}
+#'   \item{Client Received 2nd Dose}
+#'   \item{Client Received J&J Vaccine}
 #' }
 
 minnesota_vaccine_scraper <- R6Class(

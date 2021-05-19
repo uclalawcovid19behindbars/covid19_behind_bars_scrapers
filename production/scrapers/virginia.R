@@ -25,14 +25,14 @@ virginia_restruct <- function(x){
                         "preceding-sibling::span")) %>%
                 rvest::html_text(),
     
-            Residents.Vadmin = x %>%
+            Residents.Initiated = x %>%
                 rvest::html_nodes(
                     xpath = str_c(
                         "//span[contains(text(), 'inmate vaccinations')]/",
                         "following-sibling::span")) %>%
                 rvest::html_text(),
         
-            Staff.Vadmin = x %>%
+            Staff.Initiated = x %>%
                 rvest::html_nodes(
                     xpath = str_c(
                         "//span[contains(text(), 'staff vaccinations')]/",
@@ -72,8 +72,8 @@ virginia_extract <- function(x){
 #'   \item{Death of COVID-19 positive offender}{Residents deaths}
 #'   \item{Total positive offenders on site}{No transfers but cumulative}
 #'   \item{Staff active}{Staff currently infected}
-#'   \item{Residents Vaccinations Administered}{}
-#'   \item{Staff Vaccinations Administered}{}
+#'   \item{Residents Vaccinations Initiated}{Number of inmates that have received at least one dose of a vaccine}
+#'   \item{Staff Vaccinations Initiated}{Number of staff that have received at least one dose of a vaccine}
 #' }
 
 virginia_scraper <- R6Class(

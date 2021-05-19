@@ -9,7 +9,7 @@ north_carolina_deaths_pull <- function(x){
 north_carolina_deaths_restruct <- function(x){
     x %>%
         rvest::html_table() %>%
-        .[[1]]
+        .[[3]]
 }
 
 north_carolina_deaths_extract <- function(x){

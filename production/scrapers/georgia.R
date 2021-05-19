@@ -2,11 +2,10 @@ source("./R/generic_scraper.R")
 
 georgia_pull <- function(x){
     stringr::str_c(
-        "https://services5.arcgis.com/mBtYHKRd2hqJxboF/arcgis/rest/services/",
-        "COVID19Statewide/FeatureServer/0/query?f=json&where=1%3D1&",
+        "https://services5.arcgis.com/mBtYHKRd2hqJxboF/arcgis/rest/services/", 
+        "COVID19StatewideVaccineV42/FeatureServer/0/query?f=json&where=1%3D1&", 
         "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&",
-        "resultOffset=0&resultRecordCount=1000&resultType=standard",
-        "&cacheHint=true") %>%
+        "resultOffset=0&resultRecordCount=1000&resultType=standard&cacheHint=true") %>%
         jsonlite::read_json(simplifyVector = TRUE)
 }
 
@@ -33,6 +32,12 @@ georgia_pull <- function(x){
 #'   \item{Death Dispaly}{Display format for vizualizations.}
 #'   \item{Recovered Display}{Display format for vizualizations.}
 #'   \item{FID}{Georgia internal facility id.}
+#'   \item{Staff_Vaccine_1}{}
+#'   \item{Staff_Vaccine_2}{}
+#'   \item{Inmate_Vaccine_1}{}
+#'   \item{Inmate_Vaccine_2}{}
+#'   \item{Total_Vaccinated}{}
+#'   \item{VaccinatedDisplay}{}
 #' }
 
 georgia_scraper <- R6Class(
@@ -55,11 +60,16 @@ georgia_scraper <- R6Class(
             extract_func = function(x){
                 x %>% 
                     select(
-                        Name = Facility_Name, Staff.Confirmed = Staff_Confirmed, 
-                        Staff.Recovered = Staff_Recovered, Staff.Deaths = Staff_Deaths, 
+                        Name = Facility_Name, 
+                        Staff.Confirmed = Staff_Confirmed, 
+                        Staff.Recovered = Staff_Recovered, 
+                        Staff.Deaths = Staff_Deaths, 
                         Residents.Confirmed = Inmate_Confirmed, 
                         Residents.Recovered = Inmate_Recovered, 
-                        Residents.Deaths = Inmate_Deaths)}){
+                        Residents.Deaths = Inmate_Deaths, 
+                        Staff.Initiated = Staff_Vaccine_1, 
+                        Residents.Initiated = Inmate_Vaccine_1
+                        )}){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
@@ -80,4 +90,3 @@ if(sys.nframe() == 0){
     georgia$validate_extract()
     georgia$save_extract()
 }
-

@@ -67,8 +67,8 @@ federal_restruct <- function(x){
             comb_df,
             tibble(
                 Name = "ALL BOP FACILITIES",
-                Residents.Completed = sum(x$vaccine$bopVaccine$inmateCompleted),
-                Staff.Completed = sum(x$vaccine$bopVaccine$staffCompleted)
+                Residents.Completed = sum_na_rm(x$vaccine$bopVaccine$inmateCompleted),
+                Staff.Completed = sum_na_rm(x$vaccine$bopVaccine$staffCompleted)
             ))
     }
     
@@ -85,6 +85,8 @@ federal_extract <- function(x){
             Residents.Recovered = inmateRecoveries,
             Residents.Tested = completedTest,
             Residents.Pending = pendTest,
+            Residents.Active = inmatePositiveAmt,
+            Staff.Active = staffPositiveAmt, 
             starts_with("Residents."), starts_with("Staff.")
             ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
@@ -108,6 +110,7 @@ federal_extract <- function(x){
 #'   \item{staffRecoveries}{staff recoveries}
 #'   \item{staffDeathAmt}{staff deaths}
 #'   \item{inmatePositiveAmt}{Residents active cases}
+#'   \item{staffPositiveAmt}{Staff active cases}
 #'   \item{inmateDeathAmt}{residents deaths}
 #'   \item{inmateRecoveries}{cumulative residents recovered}
 #'   \item{inmateCompletedTest}{Tests adminstered, I think not individuals tested}

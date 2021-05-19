@@ -1,20 +1,25 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-historical_santa_rita_jail_pull <- function(x){
-    "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
-        googlesheets4::read_sheet()
+historical_santa_rita_jail_pull <- function(x, date = NULL, file = NULL){
+    ## ran this once and then downloaded it to avoid rate limiting
+    # z <- "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
+    #     googlesheets4::read_sheet(
+    #         sheet = "Sheet1",
+    #         col_types = "cddddddddddddddddddddddddddddddddddd"
+    #         )
+    # z %>%
+    #     mutate(Date = ifelse(Date == "9/26", "9/26/20", Date),
+    #            Date = ifelse(Date == "10/16", "10/16/20", Date),
+    #            Date = ifelse(Date == "11/25", "11/25/20", Date),
+    #            Date = ifelse(Date == "11/26", "11/26/20", Date),
+    #            Date = lubridate::mdy(Date))
+    z <- read_csv("./production/historical_scrape/historical_santa_rita_jail.csv")
 }
 
 historical_santa_rita_jail_restruct <- function(x, date = NULL){
-    if(date > lubridate::ymd("2020-12-28")){
-        stop(
-            "historical_santa_rita_jail should not be run past 2020-12-28 as to",
-            "not overlap", "with santa_rita_jail scraper")
-    }
     x %>%
-        filter(!is.na(Date)) %>%
-        mutate(Date = lubridate::ymd(Date)) 
+        filter(!is.na(Date))
 }
 
 historical_santa_rita_jail_extract <- function(x, date){
@@ -48,10 +53,18 @@ historical_santa_rita_jail_extract <- function(x, date){
         "Resolved in Custody",
         "Percentage of total cases resolved in custody",
         "Deaths",
-        "Current staff cases"))
+        "Current staff cases",
+        "Offered Vaccine (Incarcerated Population, total)",
+        "Offered Vaccine (Incarcerated Population, 1-day diff)",
+        "1st Dose Accepted (Incarcerated Population, total)",
+        "1st Dose Accepted (Incarcerated Population, 1-day diff)",
+        "2nd Dose Accepted (Incarcerated Population)",
+        "Percent of Population Vaccinated",
+        "Percent of Vaccines Accepted"))
     
     x %>%
         select(
+            Date,
             Residents.Confirmed = `Incarcerated population cases (total)`,
             Residents.Active = `Incarcerated population cases ("active")`,
             Residents.Recovered = `Total Resolved Cases`,
@@ -59,7 +72,9 @@ historical_santa_rita_jail_extract <- function(x, date){
             Residents.Tadmin = `Tests (Incarcerated population, total)`,
             Residents.Pending = `Pending tests`,
             Residents.Population = `SRJ Population (total)`,
-            Staff.Confirmed = `Staff cases (total)`
+            Staff.Confirmed = `Staff cases (total)`,
+            Residents.Initiated = `1st Dose Accepted (Incarcerated Population, total)`,
+            Residents.Completed = `2nd Dose Accepted (Incarcerated Population)`
         ) %>%
         mutate(Name = "SANTA RITA JAIL") %>%
         filter(Date == date) %>%
@@ -102,15 +117,16 @@ historical_santa_rita_jail_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    historical_santa_rita_jail <- historical_santa_rita_jail_scraper$new(log=TRUE)
-    historical_santa_rita_jail$reset_date("SET_DATE_HERE")
+    historical_santa_rita_jail <- historical_santa_rita_jail_scraper$new(log = TRUE)
+    # historical_santa_rita_jail$reset_date("DATE")
+    historical_santa_rita_jail$reset_date("2020-04-08")
     historical_santa_rita_jail$raw_data
-    historical_santa_rita_jail$pull_raw(date = scraper$date, file = NULL, .dated_pull = TRUE)
+    historical_santa_rita_jail$pull_raw(date = historical_santa_rita_jail$date, .dated_pull = TRUE)
     historical_santa_rita_jail$raw_data
     historical_santa_rita_jail$save_raw()
-    historical_santa_rita_jail$restruct_raw(date = historical_santa_rita$date)
+    historical_santa_rita_jail$restruct_raw(date = historical_santa_rita_jail$date)
     historical_santa_rita_jail$restruct_data
-    historical_santa_rita_jail$extract_from_raw(date = historical_santa_rita$date)
+    historical_santa_rita_jail$extract_from_raw(date = historical_santa_rita_jail$date)
     historical_santa_rita_jail$extract_data
     historical_santa_rita_jail$validate_extract()
     historical_santa_rita_jail$save_extract()

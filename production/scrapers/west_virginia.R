@@ -3,7 +3,8 @@ source("./R/utilities.R")
 
 west_virginia_pull <- function(x){
     tsv_src <- get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "txt$")
+        x, "a", attr = "href", attr_regex = "txt$") %>%
+        {.[!str_detect(., "vaccine")]}
     
     dev_null <- suppressWarnings(out <- read_tsv(
         tsv_src, skip = 1, col_types = cols()))
@@ -77,7 +78,7 @@ west_virginia_extract <- function(x){
     
     staff_df %>%
         mutate(Name = "State-Wide") %>%
-        select(-starts_with("Drop"), -Staff.Population, -Staff.Active) %>%
+        select(-starts_with("Drop"), -Staff.Population, Staff.Active) %>%
         select(-Staff.Quarantine) %>% 
         clean_scraped_df() %>%
         mutate(Residents.Deaths = resident_deaths) %>%

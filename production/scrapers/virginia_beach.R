@@ -11,35 +11,32 @@ virginia_beach_restruct <- function(x){
         rvest::html_table() %>%
         lapply(function(z){
             df_ <- as.data.frame(t(z))[2,]
-            names(df_) <- clean_fac_col_txt(z[,1])
+            names(df_) <- clean_fac_col_txt(z[[1]])
             df_
         })
 }
 
 virginia_beach_extract <- function(x){
     exp_names_rez <- c(
-        Residents.Tested = "INMATES TESTED",
+        Residents.Tadmin = "INMATE TESTS",
         Residents.Negative = "INMATE NEGATIVE RESULTS",
         Residents.Confirmed = "INMATE POSITIVE RESULTS",
         Residents.Pending = "INMATE RESULTS PENDING",
-        Drop.Res.Active = "ACTIVE INMATE CASES",
-        Residents.Recovered = "INMATES CLEARED OR RELEASED",
+        Residents.Active = "ACTIVE INMATE CASES",
+        Residents.Recovered = "INMATES CLEARED OR RELEASED**",
         Residents.Deaths = "INMATE DEATHS DUE TO COVID-19",
         Residents.Population = "TOTAL INMATES (CURRENT JAIL POPULATION)"
     )
 
     exp_names_staff <- c(
-        Staff.Tested = "DEPUTIES TESTED",
-        Staff.Negative = "DEPUTY NEGATIVE RESULTS",
         Staff.Confirmed = "DEPUTY POSITIVE RESULTS",
-        Drop.Staff.Pending = "DEPUTY RESULTS PENDING",
-        Drop.Staff.Active ="ACTIVE DEPUTY CASES",
+        Staff.Active ="ACTIVE DEPUTY CASES",
         Staff.Recovered = "DEPUTIES CLEARED",
-        Drop.Staff.Population = "TOTAL DEPUTIES"
+        Staff.Population = "TOTAL DEPUTIES"
     )
     
-    df_staff <- x[[2]]
-    df_rez <- x[[3]]
+    df_staff <- x[[1]]
+    df_rez <- x[[2]]
     
     check_names(df_staff, exp_names_staff)
     check_names(df_rez, exp_names_rez)

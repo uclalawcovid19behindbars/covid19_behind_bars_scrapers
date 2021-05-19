@@ -33,7 +33,7 @@ iowa_extract <- function(x){
     check_names(x, expected_names)
     
     names(x) <- c(
-        "Name", "Residents.Tested", "Residents.Active",
+        "Name", "Residents.Tadmin", "Residents.Active",
         "Residents.Recovered", "Staff.Active", "Staff.Recovered",
         "Residents.Deaths", "Staff.Deaths")
 
@@ -41,8 +41,7 @@ iowa_extract <- function(x){
         filter(!Name %in% c("Prison", "Total")) %>% 
         clean_scraped_df() %>% 
         mutate(Residents.Confirmed = Residents.Active + Residents.Recovered, 
-               Staff.Confirmed = Staff.Active + Staff.Recovered) %>% 
-        select(-Staff.Active)
+               Staff.Confirmed = Staff.Active + Staff.Recovered) 
 }
 
 #' Scraper class for general Iowa COVID data
@@ -51,7 +50,7 @@ iowa_extract <- function(x){
 #' @description Html table with minimal recoding and cleaning
 #' \describe{
 #'   \item{Prison}{The faciilty name}
-#'   \item{Inmates Tested}{Cumulative residents tested. Not tests administered.}
+#'   \item{Inmates Tested}{tests administered (Residents.Tadmin)}
 #'   \item{Inmates Positive}{Cumulative number of residents who are positive.}
 #'   \item{Inmates Recovered}{Cumulative residents recovered.}
 #'   \item{Staff Positive}{Cumulative number of staff who are positive.}
@@ -89,6 +88,7 @@ if(sys.nframe() == 0){
     iowa$restruct_raw()
     iowa$restruct_data
     iowa$extract_from_raw()
-    iowa$validate_extract()
     iowa$extract_data
+    iowa$validate_extract()
+    iowa$save_extract()
 }

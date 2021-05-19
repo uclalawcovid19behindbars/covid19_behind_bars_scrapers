@@ -8,8 +8,11 @@ santa_clara_county_jail_pull <- function(x){
 
 santa_clara_county_jail_restruct <- function(x){
     x %>%
-        mutate(Date = lubridate::round_date(`Date`, unit = "day")) %>%
+        janitor::clean_names(case = "title") %>%
+        mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>%
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
         filter(Date == max(Date))
 }
 
@@ -17,26 +20,24 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
-    check_names(x, c(
-        "Date", 
-        "Active Cases In Custody", 
-        "Incarcerated People In Custody", 
-        "Population Change", 
-        "Total Tests Completed", 
-        "Positive Test Results", 
-        "Negative Test Results", 
-        "Cumulative Cases", 
-        "New Cases", 
-        "Notes"))
-    
-    x %>%
+    x %>% 
         select(
-            Residents.Confirmed = `Cumulative Cases`,
-            Residents.Active = `Active Cases In Custody`,
-            Residents.Tadmin = `Total Tests Completed`,
-            Residents.Population = `Incarcerated People In Custody`
-            ) %>%
-        mutate(Name = "SANTA CLARA COUNTY JAIL")
+            Residents.Active = `Active Cases Incarcerated Population Current`, 
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
+            Residents.Population = `Population Incarcerated Population Current`,
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`,
+            Staff.Completed = `Fully Vaccinated Custody Staff Cumulative`, 
+            Staff.Population = `Population Custody Staff Current`
+        ) %>% 
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate_all(as.numeric) %>%
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SANTA CLARA COUNTY JAIL") 
 }
 
 #' Scraper class for general santa_clara_county_jail COVID data
@@ -87,4 +88,3 @@ if(sys.nframe() == 0){
     santa_clara_county_jail$validate_extract()
     santa_clara_county_jail$save_extract()
 }
-

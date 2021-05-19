@@ -184,8 +184,8 @@ string_to_clean_numeric <- function(column) {
     if (is.factor(column)) { column <- as.character(column) }
     # check if there are any nonnumeric characters we didn't expect
     expected.nonnumeric.values <- 
-        c("-", "N/A", "na", "n/a", "NA", "", " +",
-          NA, "T", "[", "]", "o", "O",
+        c("-", "N/A", "na", "n/a", "NA", "", " +", "n/a*",
+          NA, "T", "[", "]", "o", "O", "Unknown",
           "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "", "PENDING")
     
     unexpected.nonnumeric.values <- column[
@@ -260,7 +260,7 @@ info_scraper <- function(scraper){
 
 get_scraper_vec <- function(){
     # initiate all scrapers in the production folders
-    sc_vec <- list.files("production/scrapers", full.names = FALSE) %>%
+    sc_vec <- list.files("production/scrapers", full.names = FALSE, pattern = ".R") %>%
         str_replace(".R", "_scraper")
 
     names(sc_vec) <- str_remove(sc_vec, "_scraper")
@@ -539,9 +539,7 @@ write_agg_data <- function(...){
     "Residents.Confirmed", "Staff.Confirmed",
     "Residents.Deaths", "Staff.Deaths",
     "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin",
-    #"Residents.Initiated", "Staff.Initiated",
-    #"Residents.Completed", "Staff.Completed",
-    "Residents.Vadmin", "Staff.Vadmin"
+    "Residents.Initiated", "Staff.Initiated"
   )
   
   raw_agg %>%
@@ -552,9 +550,9 @@ write_agg_data <- function(...){
     write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
 }
 
-write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 60, agg_window = 60){
+write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, agg_window = 31){
   
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = fac_window)
+    out_df <- read_scrape_data(all_dates = FALSE, window = fac_window)
     
     covid_suffixes <- c(
       ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",

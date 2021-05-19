@@ -71,13 +71,17 @@ north_dakota_extract <- function(x){
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
-                   Staff.Positive) %>%
+                   Staff.Positive, 
+               Residents.Initiated = Residents.First.Dose + Residents.Single.Dose, 
+               Residents.Completed = Residents.Second.Dose + Residents.Single.Dose) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
-            Staff.Tested = Staff.Total.Tests.Administered
-        )
+            Staff.Tested = Staff.Total.Individuals.Tested, 
+            Residents.Initiated, Residents.Completed
+        ) %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general north_dakota COVID data
@@ -86,7 +90,7 @@ north_dakota_extract <- function(x){
 #' @description Data come from hicharts js loaded data. Scraper could be
 #' improved by pulling data directly from tables, however, loading these
 #' tables requires mouse clicks which are difficult to locate the location of.
-#' Data is updated frequently.
+#' Data is updated frequently. Started reporting vaccine data in March 2020. 
 #' \describe{
 #'   \item{Facility}{The facility name.}
 #'   \item{Residents.Positive}{Active positive cases not cumulative}
@@ -100,6 +104,9 @@ north_dakota_extract <- function(x){
 #'   \item{Staff.Total.Tests.Administered}{}
 #'   \item{Staff.Total.Individials.Tested}{}
 #'   \item{Staff.Total.Individuals.Tested.Twice}{}
+#'   \item{Residents.First.Dose}{}
+#'   \item{Residents.Second.Dose}{}
+#'   \item{Residents.Single.Dose}{}
 #' }
 
 north_dakota_scraper <- R6Class(
@@ -141,4 +148,3 @@ if(sys.nframe() == 0){
     north_dakota$validate_extract()
     north_dakota$save_extract()
 }
-

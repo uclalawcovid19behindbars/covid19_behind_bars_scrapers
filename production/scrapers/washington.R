@@ -30,23 +30,6 @@ washington_extract <- function(x){
         select(-Drop) %>% 
         clean_scraped_df()
     
-    
-    # get people in RCFs; they count as confirmed resident cases
-    rcf.tab <- rvest::html_table(wa_tables[[8]], fill = TRUE) %>% 
-        as.data.frame() %>%
-        rename(
-            "Name" = "Regional Care Facility",
-            "Residents.Confirmed_rcf" = "Incarcerated Individuals Housed") %>%
-        clean_scraped_df()
-    
-    # add the RCF counts
-    res.tab <- full_join(rcf.tab, res.tab, by = "Name")
-    res.tab[is.na(res.tab)] <- 0
-    
-    res.tab$Residents.Confirmed <- res.tab$Residents.Confirmed + 
-        res.tab$Residents.Confirmed_rcf
-    res.tab.lean <- select(res.tab, -Residents.Confirmed_rcf)
-    
     bad_names <- c(
         "Business & Training Offices",
         "Prisons",
@@ -68,7 +51,7 @@ washington_extract <- function(x){
         filter(!(Name %in% bad_names)) %>%
         clean_scraped_df()
     
-    wa <- full_join(staff.tab, res.tab.lean, by = "Name")
+    wa <- full_join(staff.tab, res.tab, by = "Name")
     
     # statewide testing counts
     # no longer reported
