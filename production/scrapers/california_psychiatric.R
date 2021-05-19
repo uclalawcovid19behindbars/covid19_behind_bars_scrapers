@@ -63,7 +63,7 @@ california_psychiatric_extract <- function(x){
     # Combining the tables and cleaning the final result
     df <- merge(resident, staff, all = TRUE)
     
-    # !!! Important Note: Values which are '<11' are assigned as NA
+    # !!! Important Note: values which are '<11' are assigned as NA
     for(i in 1:ncol(df)) { 
         df[[i]][which(df[i] == "<11")] <- NA
     }
@@ -81,9 +81,13 @@ california_psychiatric_extract <- function(x){
 #' 11 should be treated as NA.
 #' 
 #' \describe{
+#'   \item{Facility Name}{Name}
 #'   \item{Patients Positive}{Residents.Confirmed}
+#'   \iten{Current Positive Residents}{Residents.Active}
 #'   \item{Patients Death}{Residents.Deaths}
 #'   \item{Tests}{Residents.Tadmin}
+#'   \item{Staff Positive}{Staff.Confirmed}
+#'   \item{Current Positive Staff}{Staff.Active}
 #' }
 
 california_psychiatric_scraper <- R6Class(
@@ -123,5 +127,3 @@ if(sys.nframe() == 0){
     california_psychiatric$validate_extract()
     california_psychiatric$save_extract()
 }
-
-str(california_psychiatric$extract_data)
