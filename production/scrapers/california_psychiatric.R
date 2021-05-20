@@ -2,16 +2,74 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 california_psychiatric_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)patient") %>%
+    resident <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)patient") %>%
         magick::image_read()
+    
+    staff <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)staff") %>%
+        magick::image_read()
+    
+    magick::image_append(c(resident, staff), stack = TRUE)
 }
 
 california_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://www.dsh.ca.gov/COVID-19/Patient_and_Staff_COVID-19_Tracking.html")
+    ExtractTable(x)
 }
 
 california_psychiatric_extract <- function(x){
-    NULL
+    # Staff data
+    staff <- as.data.frame(t(x[[1]]))
+    
+    names(staff) <- staff[1,]
+    staff <- staff[-1, ]
+    
+    staff_expected_names <- c(
+        "DSH COVID-19", 
+        "Testing: 5/4/2021", 
+        "Staff: Positive for COVID-19 Confirmed by Public Health or medical facility (Cumulative # since 3/20/2020)", 
+        "Staff: Newly Positive for COVID-19 in the last 14 days", 
+        "Other¹: Positive for COVID- 19 Confirmed by Public Health or medical facility (Cumulative # since 5/26/2020)", 
+        "Other¹: Newly Positive for COVID-19 in the last 14 days")
+    
+    check_names(staff, staff_expected_names)
+    names(staff) <- c("Drop.Header", "Name", "Staff.Confirmed", "Staff.Active", "Drop.OtherStaffConfirmed", "Drop.OtherStaffActive")
+    
+    staff <- staff %>%
+        select(-starts_with("Drop")) 
+    
+    # Resident data   
+    resident <- as.data.frame(t(x[[2]]))
+    
+    names(resident) <- resident[1, ]
+    resident <- resident[-1, ]
+    
+    resident_expected_names <- c(
+        "DSH COVID-19" ,
+        "Testing: 5/4/2021",
+        "",
+        "Patients: Positive for COVID-19 (Cumulative # since 5/16/2020)",
+        "Patients: Newly Positive for COVID-19 in the last 14 days",
+        "Patients: Positive for COVID- 19 while at acute hospitalization",
+        "Patients: Death² while patient was positive for COVID-19 (Cumulative # since 5/30/2020)",
+        "",
+        "Tests: Total # of tests administered (Cumulative # since 3/23/2020, includes retesting)")
+    
+    check_names(resident, resident_expected_names)
+    names(resident) <- c("Drop.Header1", "Name", "Drop.Header2", "Residents.Confirmed", "Residents.Active", 
+                         "Drop.Hospitalization", "Residents.Deaths", "Drop.Header3", "Residents.Tadmin")
+    
+    resident <- resident %>%
+        select(-starts_with("Drop"))
+    
+    # Combining the tables and cleaning the final result
+    df <- merge(resident, staff, all = TRUE)
+    
+    # !!! Important Note: values which are '<11' are assigned as NA
+    for(i in 1:ncol(df)) { 
+        df[[i]][which(df[i] == "<11")] <- NA
+    }
+    
+    clean_scraped_df(df)
+    
 }
 
 #' Scraper class for general california_psychiatric COVID data
@@ -23,9 +81,13 @@ california_psychiatric_extract <- function(x){
 #' 11 should be treated as NA.
 #' 
 #' \describe{
+#'   \item{Facility Name}{Name}
 #'   \item{Patients Positive}{Residents.Confirmed}
+#'   \iten{Current Positive Residents}{Residents.Active}
 #'   \item{Patients Death}{Residents.Deaths}
 #'   \item{Tests}{Residents.Tadmin}
+#'   \item{Staff Positive}{Staff.Confirmed}
+#'   \item{Current Positive Staff}{Staff.Active}
 #' }
 
 california_psychiatric_scraper <- R6Class(
@@ -65,4 +127,3 @@ if(sys.nframe() == 0){
     california_psychiatric$validate_extract()
     california_psychiatric$save_extract()
 }
-
