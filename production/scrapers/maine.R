@@ -6,59 +6,72 @@ maine_pull <- function(x){
 }
 
 maine_restruct <- function(x){
-    ExtractTable(magick::image_read_pdf(x, pages = 1))
+    list(pop = x %>% 
+             magick::image_read_pdf(pages = 1) %>% 
+             magick::image_crop("900x2200+240+600") %>% 
+             magick::image_convert(type = 'Bilevel') %>% 
+             ExtractTable(), 
+         vaccines = x %>% 
+             magick::image_read_pdf(pages = 1) %>% 
+             magick::image_crop("1300x500+1100+1500") %>% 
+             magick::image_convert(type = 'Bilevel') %>% 
+             ExtractTable(), 
+         tests = x %>% 
+             magick::image_read_pdf(pages = 1) %>% 
+             magick::image_crop("1300x920+1100+600") %>% 
+             magick::image_convert(type = 'Bilevel') %>% 
+             ExtractTable()
+         )
 }
 
 maine_extract <- function(x){
-    ad_pop_idx <- which(sapply(x, function(z){
+    # Population 
+    ad_pop_idx <- which(sapply(x$pop, function(z){
         any(str_detect(z[,1], "(?i)Adult Facility"))}))
     
-    res_test_idx <- which(sapply(x, function(z){
-        any(str_detect(z[,2], "(?i)test"))}))
+    juv_pop_idx <- which(sapply(x$pop, function(z){
+        any(str_detect(z[,1], "(?i)Juvenile Facility"))}))
     
-    juv_pop_idx <- which(sapply(x, function(z){
-        any(str_detect(z[,1], "(?i)Juvenile")) &
-            any(str_detect(z[,1], "(?i)population"))}))
+    pop_df <- bind_rows(
+        x$pop[[ad_pop_idx]] %>% 
+            .[str_detect(.[,1], "(?i)total population"),2] %>% 
+            as.numeric() %>%
+            {tibble(Name = "Adult Residents", Residents.Population = .)}, 
+        
+        x$pop[[juv_pop_idx]] %>% 
+            .[str_detect(.[,1], "(?i)total population"),2] %>%
+            as.numeric() %>% 
+            {tibble(Name = "Juvenile Residents", Residents.Population = .)}
+    )
     
-    vaccine_idx <- which(sapply(x, function(z){
-        any(str_detect(z[,1], "(?i)Doses")) |
-            any(str_detect(z[,2], "(?i)Doses"))}))
+    # Vaccines 
+    doses_idx <- which(sapply(x$vaccines, function(z){
+        any(str_detect(z[,2], "(?i)administered"))}))
     
-    ad_pop_df <- x[[ad_pop_idx]] %>% 
-        .[str_detect(.[,1], "(?i)total population"),2] %>% 
-        as.numeric() %>%
-        {tibble(Name = "State-Wide", Residents.Population = .)}
+    people_idx <- which(sapply(x$vaccines, function(z){
+        any(str_detect(z[,2], "(?i)first"))}))
     
-    juv_pop <- x[[juv_pop_idx]] %>% 
-        .[str_detect(.[,1], "(?i)total population"),2] %>%
-        as.numeric()
+    vaccines_ <- x$vaccines[[people_idx]] 
     
-    if(!all(dim(x[[vaccine_idx]]) == c(3, 3))){
-        warning("Structure of vaccine table not as expected.")
-    }
+    vax_col_name_mat <- matrix(c(
+        "", "0", "Name",
+        "First Doses", "1", "Residents.Initiated",
+        "Final Doses", "2", "Residents.Completed"
+    ), ncol = 3, nrow = 3, byrow = TRUE)
     
-    ad_vaccine_df <- x[[vaccine_idx]] %>% 
-        .[str_detect(.[,1], "(?i)adult"),2:3] %>%
-        as_tibble()
+    colnames(vax_col_name_mat) <- c("check", "raw", "clean")
+    vax_col_name_df <- as_tibble(vax_col_name_mat)
+    check_names_extractable(vaccines_, vax_col_name_df)
     
-    names(ad_vaccine_df) <- as.character(x[[vaccine_idx]][1,2:3])
+    vaccines_df <-rename_extractable(vaccines_, vax_col_name_df) %>%
+        as_tibble() %>% 
+        filter(Name != "")
     
-    ad_vaccine_df <- ad_vaccine_df %>%
-        rename(Residents.Initiated = `First Doses`) %>% 
-        rename(Residents.Completed = `Final Doses`) %>%
-        mutate(Name = "State-Wide")
+    # Tests and cases 
+    tests_idx <- which(sapply(x$tests, function(z){
+        any(str_detect(z[,1], "(?i)test") | str_detect(z[,2], "(?i)test"))}))
     
-    juv_vaccine_df <- x[[vaccine_idx]] %>% 
-        .[str_detect(.[,1], "(?i)juvenile"),2:3]
-    
-    names(juv_vaccine_df) <- as.character(x[[vaccine_idx]][1,2:3])
-    
-    juv_vaccine_df <- juv_vaccine_df %>%
-        rename(Residents.Initiated = `First Doses`) %>% 
-        rename(Residents.Completed = `Final Doses`) %>%
-        mutate(Name = "Long Creek Youth Development Center")
-    
-    df_ <- as.data.frame(x[[res_test_idx]])
+    tests_ <- x$tests[[tests_idx]] 
     
     col_name_mat <- matrix(c(
         "Adult Facilities - Resident", "0", "Name",
@@ -69,26 +82,16 @@ maine_extract <- function(x){
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
     
-    check_names_extractable(df_, col_name_df)
-    out_df <- rename_extractable(df_, col_name_df) %>%
+    check_names_extractable(tests_, col_name_df)
+    
+    rename_extractable(tests_, col_name_df) %>%
         as_tibble() %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         filter(!(Name == "" | is.na(Residents.Tadmin))) %>%
-        filter(!str_detect(Name, "(?i)total")) %>%
-        mutate(Residents.Population = ifelse(
-            str_detect(Name, "(?i)youth"),
-            juv_pop,
-            NA_real_)) %>%
-        full_join(ad_pop_df, by = c("Name", "Residents.Population")) %>% 
-        left_join(
-            bind_rows(ad_vaccine_df, juv_vaccine_df), 
-            by = c("Name"))
-    
-    if(sum(str_detect(out_df$Name, "(?i)youth")) != 1){
-        warning("Not as many youth detention centers as expected.")
-    }
-    
-    out_df
+        filter(!str_detect(Name, "(?i)total")) %>% 
+        full_join(pop_df, by = "Name") %>% 
+        full_join(vaccines_df, by = "Name") %>% 
+        clean_scraped_df()
 }
 
 #' Scraper class for general maine COVID data
