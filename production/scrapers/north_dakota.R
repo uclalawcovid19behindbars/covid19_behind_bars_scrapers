@@ -72,15 +72,21 @@ north_dakota_extract <- function(x){
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
                    Staff.Positive, 
-               # Residents.Initiated = Residents.First.Dose + Residents.Single.Dose, 
-               # Residents.Completed = Residents.Second.Dose + Residents.Single.Dose
+               ## 3/31/21 - onwards
+               Residents.Initiated = Residents.First.Dose + Residents.Single.Dose,
+               Residents.Completed = Residents.Second.Dose + Residents.Single.Dose
+               ## 3/17/21 - 3/29/21: no `Residents.Single.Dose` variable
+               # Residents.Initiated = Residents.First.Dose,
+               # Residents.Completed = Residents.Second.Dose
                ) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
-            Staff.Tested = Staff.Total.Individuals.Tested, 
-            # Residents.Initiated, Residents.Completed, 
+            ## this spelling fix from 4/20/21 onwards 
+            Staff.Tested = Staff.Total.Individuals.Tested,
+            # Staff.Tested = Staff.Total.Individials.Tested, 
+            Residents.Initiated, Residents.Completed,
             Residents.Active = Residents.Positive, 
             Staff.Active = Staff.Positive
         ) %>% 
