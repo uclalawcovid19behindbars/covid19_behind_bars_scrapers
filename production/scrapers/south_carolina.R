@@ -33,9 +33,9 @@ south_carolina_restruct <- function(x){
     }
     
     list(
-        rez_df = get_sc_table(data_tables, headers, 1), 
-        vaccine_df = get_sc_table(data_tables, headers, 2), 
-        staff_df = get_sc_table(data_tables, headers, 3)
+        rez_df = get_sc_table(tables, headers, 1), 
+        vaccine_df = get_sc_table(tables, headers, 2), 
+        staff_df = get_sc_table(tables, headers, 3)
     )
 }
 
