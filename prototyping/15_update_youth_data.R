@@ -90,6 +90,10 @@ sum_res_deaths <- sum_na_rm(all_youth$Residents.Deaths)
 sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
+print(str_c("total youth confirmed: ", sum_res_confirmed))
+print(str_c("total youth deaths: ", sum_res_deaths))
+
+
 all_youth_out <- all_youth %>%
     add_row(Date = "TOTAL",
             State = "",
