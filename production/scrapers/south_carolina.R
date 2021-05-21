@@ -57,7 +57,7 @@ south_carolina_extract <- function(x){
     )
     vaccine_exp <- c(
         Name = "Assigned Location", 
-        Residents.Vadmin = "Completed Vaccinations", 
+        Residents.Completed = "Completed Vaccinations", 
         Declined.Drop = "Declined"
     )
     
