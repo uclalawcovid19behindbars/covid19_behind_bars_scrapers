@@ -5,7 +5,7 @@ library(behindbarstools)
 library(futile.logger)
 source("R/generic_scraper.R")
 
-basic_check <- function(true_names, expected_names){
+basic_check <- function(true_names, expected_names, detect = FALSE){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
     }
@@ -19,19 +19,32 @@ basic_check <- function(true_names, expected_names){
             else{
                 cexp <- clean_fac_col_txt(expected_names[i])
                 ctrue <- clean_fac_col_txt(true_names[i])
-                if(cexp != ctrue){
-                    warning(str_c(
-                        "Extracted column ", i, " does not match expected ",
-                        "name. Expected: ", cexp, " Received: ", ctrue))
+                
+                # Exact match 
+                if (!detect){
+                    if(cexp != ctrue){
+                        warning(str_c(
+                            "Extracted column ", i, " does not match expected ",
+                            "name. Expected: ", cexp, " Received: ", ctrue))
+                    }
+                }
+                
+                # Case-insensitive string contains match 
+                if (detect){
+                    if(!str_detect(ctrue, paste0("(?i)", cexp))){
+                          warning(str_c(
+                            "Extracted column ", i, " does not contain expected string. ",
+                            "Expected: ", cexp, " Received: ", ctrue))
+                    }
                 }
             }
         }
     }
 }
 
-check_names <- function(DF, expected_names){
+check_names <- function(DF, expected_names, detect = FALSE){
     true_names <- names(DF)
-    basic_check(true_names, expected_names)
+    basic_check(true_names, expected_names, detect)
 }
 
 check_names_extractable <- function(df_, col_name_df){
