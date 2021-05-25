@@ -4,8 +4,7 @@ source("./R/utilities.R")
 indiana_pull <- function(x){
     in_img <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID")
     
-    magick::image_read(in_img) %>% 
-        magick::image_convert(type = 'Bilevel')
+    magick::image_read(in_img)
 }
 
 indiana_restruct <- function(x){
@@ -30,18 +29,18 @@ indiana_restruct <- function(x){
 
 indiana_extract <- function(x){
     col_name_mat <- matrix(c(
-        "Correctional Facility", "0", "Name",
-        "Staff Tested", "1", "Staff.Tested",
-        "Staff Current Positive", "2", "Staff.Active",
-        "Staff Total Positive", "3", "Staff.Confirmed",
-        "Staff Recovered", "4", "Staff.Recovered",
-        "Staff Death", "5", "Staff.Deaths",
-        "Offender Test", "6", "Residents.Tadmin",
-        "Offender Current Positive", "7", "Residents.Active",
-        "Offender Total Positive", "8", "Residents.Confirmed",
-        "Offender Recovered", "9", "Residents.Recovered",
-        "Offender Presumed Death", "10", "Drop.Res.Deaths.Presumed",
-        "Offender Confirmed Death", "11", "Drop.Res.Deaths.Confirmed"
+        "Correctional Facility", "6", "Name",
+        "Staff Tested", "7", "Staff.Tested",
+        "Staff Current Positive", "8", "Staff.Active",
+        "Staff Total Positive", "9", "Staff.Confirmed",
+        "Staff Recovered", "10", "Staff.Recovered",
+        "Staff Death", "11", "Staff.Deaths",
+        "Offender Test", "0", "Residents.Tadmin",
+        "Offender Current Positive", "1", "Residents.Active",
+        "Offender Total Positive", "2", "Residents.Confirmed",
+        "Offender Recovered", "3", "Residents.Recovered",
+        "Offender Presumed Death", "4", "Drop.Res.Deaths.Presumed",
+        "Offender Confirmed Death", "5", "Drop.Res.Deaths.Confirmed"
         ), ncol = 3, nrow = 12, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")

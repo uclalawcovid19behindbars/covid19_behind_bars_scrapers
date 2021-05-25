@@ -43,7 +43,7 @@ ohio_extract <- function(x){
         "# of Confirmed COVID-19 Related Inmate Deaths", "8", "Residents.Confirmed.Deaths",
         "# of Inmates who have Pending Results",  "9", "Residents.Pending",
         "# of current Inmates who have Recovered", "10", "Residents.Recovered"
-    ), ncol = 3, nrow = 12, byrow = TRUE)
+    ), ncol = 3, nrow = 11, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)

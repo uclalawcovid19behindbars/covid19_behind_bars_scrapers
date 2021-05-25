@@ -30,7 +30,7 @@ lasd_crop <- function(img, crop, detect = "", rimg = FALSE){
 
 lasd_pull <- function(x, wait = 5){
    get_src_by_attr(
-       x, "img", attr = "src", attr_regex = "(?i)covid.?fact.?sheet") %>%
+       x, "img", attr = "src", attr_regex = "(?i)fact.?sheet") %>%
         magick::image_read()
 }
 
@@ -125,6 +125,20 @@ lasd_restruct <- function(x){
             drop.test.asymp = lasd_crop(x, "562x25+620+600", "(?i)total"),
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
+    }
+    else if(abs(1515 - h_) <= 19 & w_ == 1200){
+        out <- tibble(
+            Residents.Confirmed = lasd_crop(x, "570x30+620+435", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+715", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+790", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1055", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+612", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+612", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "545x25+625+558", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+558", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+640", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+640", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+233", "(?i)jail pop"))
     }
     else{
         out <- tibble(
