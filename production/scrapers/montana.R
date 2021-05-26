@@ -28,9 +28,9 @@ montana_extract <- function(x){
     )
     
     exp_names2 <- c(
-        Name = "Location",
-        Residents.Confirmed = "Offenders confirmed",
-        Staff.Confirmed = "Staff confirmed"
+        Name = "Locations",
+        Residents.Confirmed = "Offenders Confirmed",
+        Staff.Confirmed = "Staff Confirmed"
     )
     
     check_names(x$tables[[1]], exp_names1)
