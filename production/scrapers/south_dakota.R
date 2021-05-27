@@ -96,7 +96,8 @@ south_dakota_extract <- function(x){
                 filter(!str_detect(Name, "(?i)facility|total")),
             by = "Name") %>%
         select(-starts_with("Drop")) %>%
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        mutate(Residents.Tadmin = Residents.Confirmed + Residents.Negative)
     
     # legacy code
     sd_df$Name[sd_df$Name=="Jameson Annex"] <- 
