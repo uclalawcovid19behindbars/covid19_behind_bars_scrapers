@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 south_dakota_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)positivecase")
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases")
 }
 
 south_dakota_restruct <- function(x){

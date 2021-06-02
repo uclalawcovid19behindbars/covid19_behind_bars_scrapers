@@ -67,7 +67,7 @@ wisconsin_deaths_restruct <- function(x){
     
     list(
         Name = z %>%
-            magick::image_crop("1000x550+0+332") %>%
+            magick::image_crop("1000x780+0+332") %>%
             magick::image_ocr() %>%
             str_split("\\n") %>%
             unlist() %>%
@@ -75,7 +75,7 @@ wisconsin_deaths_restruct <- function(x){
             .[. != ""],
         
         Residents.Deaths = z %>%
-            magick::image_crop("200x548+2200+332") %>%
+            magick::image_crop("200x778+2200+332") %>%
             magick::image_ocr() %>%
             str_split("\\n") %>%
             unlist() %>%
@@ -94,7 +94,8 @@ wisconsin_deaths_extract <- function(x){
         }
     })
     
-    as_tibble(x)
+    as_tibble(x) %>% 
+        filter(!str_detect(Name, "(?i)total"))
 }
 
 #' Scraper class for general COVID data
