@@ -567,6 +567,10 @@ write_state_agg_data <- function(...){
     full_var_df <- calc_aggregate_counts(...)
     aggregate_pop_df <- read_aggregate_pop_data()
     
+    covid_suffixes <- c(
+      ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
+      ".Initiated", ".Completed", ".Vadmin")
+    
     full_var_df %>%
         # Pivot wide 
         filter(!is.na(Val)) %>%
