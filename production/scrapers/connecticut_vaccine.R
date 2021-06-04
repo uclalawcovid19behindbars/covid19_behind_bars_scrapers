@@ -35,7 +35,7 @@ connecticut_vaccine_restruct <- function(x){
             magick::image_ocr() %>%
             string_to_clean_numeric(),
     
-        Staff = magick::image_crop(x, "180x110+250+840") %>%
+        Staff = magick::image_crop(x, "180x110+260+840") %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric()
