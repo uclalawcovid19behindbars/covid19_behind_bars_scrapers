@@ -52,13 +52,15 @@ get_maryland_facility_vaccine_table <- function(x){
         rvest::html_nodes("div") %>%
         rvest::html_children()
     
-    dat_df <- do.call(rbind, lapply(col_dat, function(p){
+    dat_list <- lapply(col_dat, function(p){
         sapply(rvest::html_children(p), function(z){
             z %>% 
                 rvest::html_nodes("div") %>%
-                rvest::html_attr("title")})})) %>%
+                rvest::html_attr("title")})})
+
+    dat_df <- do.call(rbind, dat_list[sapply(dat_list, is.matrix)]) %>%
         as.data.frame()
-    
+
     names(dat_df) <- tab %>%
         rvest::html_node(".columnHeaders") %>%
         rvest::html_node("div") %>%
