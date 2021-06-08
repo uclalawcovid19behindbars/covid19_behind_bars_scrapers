@@ -137,7 +137,7 @@ pennsylvania_bi_vaccination_restruct  <- function(x){
             rvest::html_nodes(xpath="//svg[@class='card']/../../..")
         
         titles <- sub_html %>%
-            rvest::html_nodes(xpath="//div[@class='preTextWithEllipsis']") %>%
+            rvest::html_nodes(xpath="//h3[@class='preTextWithEllipsis']") %>%
             rvest::html_text()
         
         res_idx <- min(which(str_detect(titles, "(?i)inmate")))

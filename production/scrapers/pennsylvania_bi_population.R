@@ -23,7 +23,7 @@ pennsylvania_bi_population_pull <- function(x, wait = 10){
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
     is_population <- raw_html %>%
-        rvest::html_nodes(xpath="//div[@class='preTextWithEllipsis']") %>%
+        rvest::html_nodes(xpath="//h3[@class='preTextWithEllipsis']") %>%
         rvest::html_text() %>%
         str_detect("(?=.*Inmate)(?=.*Population)") %>%
         any()
