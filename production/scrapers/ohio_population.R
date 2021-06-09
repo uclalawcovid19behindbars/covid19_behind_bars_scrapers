@@ -38,10 +38,6 @@ ohio_population_restruct <- function(x){
     )
 }
 
-which(sapply(x$pop, function(z){
-    any(str_detect(z[,1], "(?i)Adult Facility"))}))
-
-
 ohio_population_extract <- function(x){
     
     exp <- c("", "Institution", "Count", "", "Institution", "Count") 
