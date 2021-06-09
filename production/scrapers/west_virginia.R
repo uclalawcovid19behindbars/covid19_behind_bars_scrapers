@@ -71,19 +71,20 @@ west_virginia_extract <- function(x){
         sum()
     
     # see which row starts employee data
-    idb <- str_detect(
-        x$Name, "(?i)Employee") & str_detect(x$Name, "(?i)totals")
-    staff_df <- x[first(which(idb)),]
+    emp_idx <- first(which(str_detect(x$Name, "(?i)employee")))
+    staff_df <- x[emp_idx:nrow(x),] 
     names(staff_df) <- str_replace(names(staff_df), "Residents", "Staff")
     
-    staff_df %>%
-        mutate(Name = "State-Wide") %>%
+    staff_df %>% 
         select(-starts_with("Drop"), -Staff.Population, Staff.Active) %>%
-        select(-Staff.Quarantine) %>% 
-        clean_scraped_df() %>%
-        mutate(Residents.Deaths = resident_deaths) %>%
+        filter(!is.na(Staff.Confirmed)) %>% 
+        filter(!str_detect(Staff.Confirmed, "(?i)cumulative")) %>% 
+        filter(!str_detect(Name, "(?i)total")) %>% 
+        mutate(Name = str_c(clean_fac_col_txt(Name), " staff total")) %>% 
+        clean_scraped_df() %>% 
         bind_rows(fac_df) %>%
-        rename(Staff.Tested = Staff.Tadmin)
+        rename(Staff.Tested = Staff.Tadmin) %>% 
+        bind_rows(tibble(Name = "State-Wide", Residents.Deaths = resident_deaths))
 }
 
 #' Scraper class for general West Virginia COVID data

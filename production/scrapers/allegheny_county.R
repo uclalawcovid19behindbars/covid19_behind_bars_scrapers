@@ -8,7 +8,7 @@ allegheny_county_pull <- function(x){
 allegheny_county_restruct <- function(x){
     tabs <- x %>%
         rvest::html_nodes("table") %>%
-        .[1:2] %>%
+        .[c(1, 3)] %>%
         rvest::html_table()
     
     if(!any(str_detect(tabs[[1]][,1], "(?i)inmate"))){

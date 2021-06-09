@@ -67,19 +67,40 @@ north_dakota_restruct <- function(x){
 }
 
 north_dakota_extract <- function(x){
+    
+    check_names(x, c(
+        "Name" = "Name", 
+        "Residents.Positive", 
+        "Residents.Recovered", 
+        "Residents.Deaths", 
+        "Staff.Positive", 
+        "Staff.Recovered", 
+        "Staff.Deaths", 
+        "Residents.Total.Tests.Administered", 
+        "Residents.Total.Individuals.Tested", 
+        "Residents.Total.Individuals.Tested.Twice", 
+        "Staff.Total.Tests.Administered", 
+        "Staff.Total.Individuals.Tested", 
+        "Staff.Total.Individuals.Tested.Twice", 
+        "Residents.Total.First.Doses", 
+        "Residents.Total.Second.Doses", 
+        "Residents.Total.Single.Doses"))
+    
     x %>%
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
                    Staff.Positive, 
-               Residents.Initiated = Residents.First.Dose + Residents.Single.Dose, 
-               Residents.Completed = Residents.Second.Dose + Residents.Single.Dose) %>%
+               Residents.Initiated = Residents.Total.First.Doses + Residents.Total.Single.Doses, 
+               Residents.Completed = Residents.Total.Second.Doses + Residents.Total.Single.Doses) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
             Staff.Tested = Staff.Total.Individuals.Tested, 
-            Residents.Initiated, Residents.Completed
+            Residents.Initiated, Residents.Completed, 
+            Residents.Active = Residents.Positive, 
+            Staff.Active = Staff.Positive
         ) %>% 
         clean_scraped_df()
 }

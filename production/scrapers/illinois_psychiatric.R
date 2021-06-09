@@ -36,8 +36,8 @@ illinois_psychiatric_restruct <- function(x){
         rvest::html_table(fill = TRUE)
     
     table2_expected_names <- c("Facility (City - County)", "Total Staff at Location",
-                               "Staff Fatalities", "Total Patients at Facility",
-                               "Patient Fatalities")
+                               "Staff Fatalities", "Total Residents at Facility",
+                               "Resident Fatalities")
     
     check_names(table2, table2_expected_names)
     

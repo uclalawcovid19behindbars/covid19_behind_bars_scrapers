@@ -23,7 +23,7 @@ pennsylvania_bi_cases_pull <- function(x, wait = 10){
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
     is_covid_cases <- raw_html %>%
-        rvest::html_node("div.preTextWithEllipsis") %>%
+        rvest::html_node("h3.preTextWithEllipsis") %>%
         rvest::html_text() %>%
         str_detect("(?=.*Inmate)(?=.*Positive)(?=.*Cases)") %>%
         any()

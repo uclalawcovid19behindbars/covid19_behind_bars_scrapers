@@ -24,7 +24,7 @@ massachusetts_extract <- function(x){
                 Name = "DOC Facility",
                 Residents.Population = "Total Population",
                 Residents.Active = "Active Prisoner Cases",
-                Residents.Tested = "N Tested - Detainees/Inmates",
+                Residents.Tadmin = "N Tested - Detainees/Inmates",
                 Residents.Confirmed = "N Positive - Detainees/Inmates",
                 Residents.Deaths = "N Deaths",
                 Staff.Tested = "N Tested - COs",
@@ -37,7 +37,7 @@ massachusetts_extract <- function(x){
                 Name = "DOC Facility",
                 Residents.Population = "Total Population",
                 Residents.Active = "Active Prisoner Cases",
-                Residents.Tested = "N Tested - Detainees/Inmates",
+                Residents.Tadmin = "N Tested - Detainees/Inmates",
                 Residents.Confirmed = "N Positive - Detainees/Inmates",
                 Residents.Deaths = "N Deaths")
     }

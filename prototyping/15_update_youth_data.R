@@ -9,9 +9,14 @@ manual_youth_data_loc <- "17mC-uHp1jhMQO8JGqn4is6pJLrKHP0G0TR57R01MxrY"
 youth_sheet_destination <- "1X6uJkXXS-O6eePLxw2e4JeRtM41uPZ2eRcOA_HkPVTk" 
 
 ## set column order for row-binding data sets
-column_order <- c("State", "Name", "Date", "Residents.Confirmed",
-                  "Staff.Confirmed", "Residents.Active", "Residents.Deaths",
-                  "Staff.Deaths", "Address", "City",
+column_order <- c("State", "Name", "Date", 
+                  "Residents.Confirmed",
+                  "Staff.Confirmed", 
+                  "Residents.Active", 
+                  "Residents.Deaths",
+                  "Staff.Deaths",
+                  "Address", 
+                  "City",
                   "Facility.ID")
 
 ## Colorado note: Colorado's YOS (Youthful Offender System) is an 
@@ -19,7 +24,9 @@ column_order <- c("State", "Name", "Date", "Residents.Confirmed",
 ## for juvenile justice facilities. So, the scraped DOC data is DISTINCT from the 
 ## manual CO data for the DYS (Department of Youth Services Data) and this is not double counting. 
 scraped_states <- c("Georgia", "Indiana",
-                    "Kansas", "Louisiana", "Maryland", "Missouri",
+                    "Kansas", "Louisiana", 
+                    # "Maryland", ## keep both manual and scraped for contract and DJS rows
+                    "Missouri",
                     "Montana", "Nebraska", "North Carolina", 
                     "North Dakota", "Pennsylvania", "South Carolina",
                     "Wisconsin", "Maine", "New Mexico")
@@ -32,19 +39,21 @@ manual_youth_dat_sheet <- read_sheet(manual_youth_data_loc,
 manual_youth_dat <- manual_youth_dat_sheet %>%
     mutate(Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
            Staff.Confirmed = string_to_clean_numeric(`Confirmed Cases (Staff)`),
+           Staff.Deaths = string_to_clean_numeric(`Confirmed Deaths (Staff)`),
            Facility.ID = NA,
            Address = NA,
            City = NA,
            Residents.Active = NA,
-           Residents.Deaths = NA,
-           Staff.Deaths = NA
+           Residents.Deaths = NA
            ) %>%
     dplyr::rename(jurisdiction = Jurisdiction, 
            Name = `County/Name of Facility`,
            Date = `Date of last positive case/last update`
            ) %>%
     filter(!is.na(Name),
-           !str_detect(Name, "(?i)total")) %>%
+           ## commenting this out because in some cases, we want to keep state-wide counts
+           # !str_detect(Name, "(?i)total")
+           ) %>%
     mutate(Date = lubridate::mdy(Date)) %>%
     select(all_of(column_order)) %>%    
     ## remove manual data if we have a scraper for it
@@ -81,9 +90,13 @@ sum_res_deaths <- sum_na_rm(all_youth$Residents.Deaths)
 sum_staff_confirmed <- sum_na_rm(all_youth$Staff.Confirmed)
 sum_staff_deaths <- sum_na_rm(all_youth$Staff.Deaths)
 
+print(str_c("total youth confirmed: ", sum_res_confirmed))
+print(str_c("total youth deaths: ", sum_res_deaths))
+
+
 all_youth_out <- all_youth %>%
-    add_row(Date = "TOTAL", 
-            State = "", 
+    add_row(Date = "TOTAL",
+            State = "",
             Name = "",
             Residents.Confirmed = sum_res_confirmed,
             Residents.Active = sum_res_active,

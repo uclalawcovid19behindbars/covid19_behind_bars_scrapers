@@ -12,12 +12,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r params, echo = F, message = F, warning = F}
-STATE <- "Alabama"
+STATE <- "Tennessee"
 ```
 
 ```{r load, echo = F, message = F, warning = F}
-scrape <- read_scrape_data(all_dates = TRUE, coalesce = TRUE, 
-                           coalesce_pop = FALSE, drop_noncovid_obs = FALSE,  
+scrape <- read_scrape_data(all_dates = TRUE, drop_noncovid_obs = FALSE,  
                            state = STATE)
 ```
 

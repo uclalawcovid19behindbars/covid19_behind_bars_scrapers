@@ -23,7 +23,7 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
     is_covid_testing <- raw_html %>%
-        rvest::html_nodes("div.preTextWithEllipsis") %>%
+        rvest::html_nodes("h3.preTextWithEllipsis") %>%
         rvest::html_text() %>%
         str_detect("(?=.*Inmate)(?=.*Tests)(?=.*Facility)") %>%
         any()

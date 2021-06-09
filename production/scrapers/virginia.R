@@ -47,7 +47,7 @@ virginia_extract <- function(x){
         Drop.Active2 = "Inmates in hospitals active cases",
         Residents.Deaths = "Death of COVID-19 positive inmates",
         Residents.Confirmed = "Total positive inmatesonsite hospital deaths releases recovered transfers in - transfers out",
-        Drop.Active.Staff = "Staff active cases including employees & contractors"
+        Staff.Active = "Staff active cases including employees & contractors"
     )
 
     check_names(x$web, exp_names)

@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 south_dakota_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)positivecase")
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases")
 }
 
 south_dakota_restruct <- function(x){
@@ -96,7 +96,8 @@ south_dakota_extract <- function(x){
                 filter(!str_detect(Name, "(?i)facility|total")),
             by = "Name") %>%
         select(-starts_with("Drop")) %>%
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        mutate(Residents.Tadmin = Residents.Confirmed + Residents.Negative)
     
     # legacy code
     sd_df$Name[sd_df$Name=="Jameson Annex"] <- 

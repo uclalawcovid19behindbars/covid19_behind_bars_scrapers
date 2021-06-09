@@ -6,7 +6,7 @@ south_carolina_population_restruct <- function(x, exp_date = Sys.Date()){
     # Check date 
     pdf_date <- x %>% 
         magick::image_read_pdf() %>% 
-        magick::image_crop("340x150+1900+100") %>% 
+        magick::image_crop("330x140+1900+100") %>% 
         magick::image_ocr() %>% 
         lubridate::mdy()
     

@@ -23,7 +23,7 @@ pennsylvania_bi_staff_cases_pull <- function(x, wait = 10){
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
     is_covid_cases <- raw_html %>%
-        rvest::html_node("div.preTextWithEllipsis") %>%
+        rvest::html_node("h3.preTextWithEllipsis") %>%
         rvest::html_text() %>%
         str_detect("(?=.*Staff)(?=.*Cases)") %>%
         any()
@@ -50,7 +50,7 @@ pennsylvania_bi_staff_cases_restruct  <- function(x){
         if(str_detect(wtitle, "(?i)facility")){
             if(str_detect(wtitle, "(?i)active")){
                 sub_df <- tibble(
-                    measure = "Drop.Staff.Active",
+                    measure = "Staff.Active",
                     
                     Value = windows[[i]] %>%
                         rvest::html_nodes(".label") %>%

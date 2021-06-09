@@ -179,7 +179,7 @@ colorado_restruct <- function(x){
     col_vals %>%
         as_tibble() %>%
         mutate(Name =fac_names) %>%
-        bind_rows(tibble(Name = "STATEWIDE", Residents.Vadmin = vac_num))
+        bind_rows(tibble(Name = "STATEWIDE", Residents.Initiated = vac_num))
 }
 
 colorado_extract <- function(x){
@@ -192,7 +192,7 @@ colorado_extract <- function(x){
         Residents.Active = "ACTIVE CASES",
         Residents.Deaths = "DEATHS",
         Name = "Name",
-        Residents.Vadmin = "Residents.Vadmin"
+        Residents.Initiated = "Residents.Initiated"
     )
     
     check_names(df_, exp_names)
