@@ -31,27 +31,36 @@ colorado_extract_col <- function(sub_col, numeric = TRUE){
     
     idxs <- seq(0, 47*20, by = 47)
     
-    sapply(1:length(idxs), function(idx){
-        if(idx == 21){
-            crp <- "213x40+0+940"
-        }else{
-            crp <- str_c("213x47+0+", idxs[idx])
-        }
-        
-        if(numeric){
-            out <- sub_col %>%
-                magick::image_crop(crp) %>%
-                colorado_extract_cell()
-        }
-        else{
-            out <- sub_col %>%
-                magick::image_crop(crp) %>%
-                magick::image_ocr() %>%
-                str_replace_all("\n", " ") %>%
-                str_squish()
-        }
-        out
-    })
+    extract_vals <- tryCatch(
+            {
+                sapply(1:length(idxs), function(idx){
+                    if(idx == 21){
+                        crp <- "213x40+0+940"
+                    }else{
+                        crp <- str_c("213x47+0+", idxs[idx])
+                    }
+                    
+                    if(numeric){
+                        out <- sub_col %>%
+                            magick::image_crop(crp) %>%
+                            colorado_extract_cell()
+                    }
+                    else{
+                        out <- sub_col %>%
+                            magick::image_crop(crp) %>%
+                            magick::image_ocr() %>%
+                            str_replace_all("\n", " ") %>%
+                            str_squish()
+                    }
+                    out
+                })
+            },
+            error=function(cond) {
+                warning("Column failed to extract returning NA")
+                rep(NA, length(idxs))
+            })
+
+    return(extract_vals)
 }
 
 colorado_pull <- function(x){
