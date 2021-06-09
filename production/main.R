@@ -42,6 +42,7 @@ if(!args$raw_only){
         scraper <- get(sn)$new(log = TRUE)
         print(scraper)
         # run everything
+        scraper$perma_save()
         scraper$pull_raw()
         scraper$save_raw()
         # return the scraper
