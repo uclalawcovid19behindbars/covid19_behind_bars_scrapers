@@ -63,7 +63,13 @@ docker run -d -p 4445:4444 -p 5901:5900 -v /tmp/sel_dl:/home/seluser/Downloads \
 Rscript production/main.R
 ```
 
-**Side Note**: Sometimes we will attempt to run a scraper and the scraper will be unable to extract a particular value. When this happens we will occasionally want to manually change the value for a particular facility's column value after the extraction has occurred for the scraper. To do this, go to a particular scrapers file and run the individual scraper using the code at the bottom of the file. After running that scraper's `extract_from_raw` method, select the column name and facility for which you would like to manually change the data using the following method. Doing so will log the occurance of the manual change and keep a record of all the changes we are making by hand. Note that this method will only allow you to change data which is stored in the `extract_data` slot. 
+**Side Note 1**: If we want to only save a record of the raw COVID data and make a carbon copy of the websites hosting COVID data for that day and not extract the information we can run a limited version of the scraper which only pulls and saves raw data as shown below.
+
+```
+Rscript production/main.R --raw_only
+```
+
+**Side Note 2**: Sometimes we will attempt to run a scraper and the scraper will be unable to extract a particular value. When this happens we will occasionally want to manually change the value for a particular facility's column value after the extraction has occurred for the scraper. To do this, go to a particular scrapers file and run the individual scraper using the code at the bottom of the file. After running that scraper's `extract_from_raw` method, select the column name and facility for which you would like to manually change the data using the following method. Doing so will log the occurance of the manual change and keep a record of all the changes we are making by hand. Note that this method will only allow you to change data which is stored in the `extract_data` slot. 
 
 ```
 scraper$manual_change(
