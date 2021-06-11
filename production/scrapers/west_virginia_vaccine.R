@@ -22,14 +22,13 @@ west_virginia_vaccine_restruct <- function(x){
     names(df_)[1] <- "Name"
     names(df_) <- paste(names(df_), df_[1, ], sep = "_")
 
-    check_names(df_, c("name", "county", "pop", "1st", "2nd", "johnson"), 
+    check_names(df_, c("name", "county", "pop", "both","johnson"), 
                 detect = TRUE)
     
     names(df_) <- c(
         "Name", 
         "Drop.County", 
         "Drop.Population",
-        "Moderna.Initiated", 
         "Moderna.Completed", 
         "Johnson"
         )
@@ -44,9 +43,8 @@ west_virginia_vaccine_extract <- function(x){
     res_df <- x[1:(emp_idx-1),] %>%
         select(!starts_with("Drop")) %>%
         clean_scraped_df() %>% 
-        mutate(Residents.Initiated = vector_sum_na_rm(Moderna.Initiated, Johnson), 
-               Residents.Completed = vector_sum_na_rm(Moderna.Completed, Johnson)) %>% 
-        filter(!across(c(Moderna.Initiated, Moderna.Completed, Johnson), ~ is.na(.x))) %>% 
+        mutate(Residents.Completed = vector_sum_na_rm(Moderna.Completed, Johnson)) %>% 
+        filter(!across(c(Moderna.Completed, Johnson), ~ is.na(.x))) %>% 
         filter(!str_detect(Name, "(?i)total")) 
     
     staff_df <- x[emp_idx:nrow(x),] %>%
@@ -55,8 +53,7 @@ west_virginia_vaccine_extract <- function(x){
         rename(Staff.Population = Drop.Population) %>% 
         select(!starts_with("Drop")) %>%
         clean_scraped_df() %>% 
-        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Initiated, Johnson), 
-               Staff.Completed = vector_sum_na_rm(Moderna.Completed, Johnson))
+        mutate(Staff.Completed = vector_sum_na_rm(Moderna.Completed, Johnson))
     
     if(nrow(res_df) != 34){
         warning(stringr::str_c(
@@ -78,7 +75,8 @@ west_virginia_vaccine_extract <- function(x){
 #' @name west_virginia_vaccine_scraper
 #' @description WV vaccine data resides in a tsv file hosted on the doc website. Staff
 #' information is only provided at the state wide table and a number of coding
-#' steps are necessary to extract the information.
+#' steps are necessary to extract the information. Stopped reporting initiated numbers 
+#' around 6/11/2021. 
 #' \describe{
 #'   \item{Facility}{The facility name}
 #'   \item{Staffing}{Staff.Population}

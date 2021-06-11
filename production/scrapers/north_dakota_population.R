@@ -53,7 +53,7 @@ nd_pop_restruct <- function(x){
 #'   \item{Operational Capacity Daily Count}{Residents.Population}
 #' }
 
-nd_pop_scraper <- R6Class(
+north_dakota_population_scraper <- R6Class(
     "north_dakota_population",
     inherit = generic_scraper,
     public = list(
