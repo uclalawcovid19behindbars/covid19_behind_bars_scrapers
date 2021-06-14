@@ -20,7 +20,7 @@ michigan_restruct <- function(x){
         magick::image_convert(type = "Bilevel") %>% 
         # this is finicky and needs to be changed
         # crop out the top row with the column names 
-        magick::image_crop("3300x40+0+0") %>%
+        magick::image_crop("3300x60+0+0") %>%
         ExtractTable()
 
     names(out_list[[1]]) <- unname(unlist(out_list_names))
