@@ -31,7 +31,7 @@ arizona_vaccine_manual_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
-        mutate(Residents.Completed =  Res.Anchor.Pop * Res.Pct.Completed) %>% 
+        mutate(Residents.Completed = round(Res.Anchor.Pop * Res.Pct.Completed)) %>% 
         select(
             Name = `Name`,
             Residents.Completed 
@@ -58,7 +58,7 @@ arizona_vaccine_manual_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.colorado.gov/pacific/cdoc/covid-19-faq-and-updates",
+            url = "https://corrections.az.gov/covid-19-management-updates",
             id = "arizona_vaccine_manual",
             type = "manual",
             state = "AZ",
