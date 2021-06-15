@@ -9,37 +9,43 @@ youth_manual_pull <- function(x){
 }
 
 youth_manual_restruct <- function(x){
-    x %>%
-        janitor::clean_names(case = "title") %>%
-        # filter(!stringr::str_detect(State, "(?i)total")) %>% 
-        mutate(Date = lubridate::mdy(`Date of Last Positive Case Last Update`))
+    out <- x %>%
+        mutate(Date = lubridate::mdy(`Date of last positive case/last update`)) %>%
+        ## filter to dates within the last month, & no dates in the future 
+        filter(Date  >= lubridate::today() - lubridate::days(30),
+               Date <= lubridate::today()) %>%
+        mutate(Name = `County/Name of Facility`,
+               Name = str_glue('{Name} YOUTH FACILITY'),
+               Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
+               Residents.Active = string_to_clean_numeric(`Confirmed Cases (Youth)`),
+               Staff.Confirmed = string_to_clean_numeric(`Active Cases (Youth)`),
+               Staff.Deaths = string_to_clean_numeric(`Confirmed Deaths (Staff)`),
+               Staff.Active = string_to_clean_numeric(`Active Cases Staff`),
+               Residents.Population = string_to_clean_numeric(`Youth Population`)) %>%
+        relocate(any_of(starts_with("Residents.")),
+                 any_of(starts_with("Staff."))) %>%
+        rowwise() %>%
+        mutate(total_numeric = sum_na_rm(c_across(Residents.Confirmed:Staff.Active))) %>%
+        ## filter out rows where all numeric vars are NA 
+        filter(!is.na(total_numeric))
+    
+    return(out)
 }
 
-youth_manual_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(x$Date, exp_date)
-    
+youth_manual_extract <- function(x){
     x %>%
         select(
-            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
-            Residents.Active = `Active Cases Incarcerated Population Current`,
-            Residents.Recovered = `Resolved Cases Incarcerated Population Cumulative`,
-            Residents.Deaths = `Deaths Incarcerated Population Cumulative`,
-            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
-            Residents.Pending = `Pending Tests Incarcerated Population Current`,
-            Residents.Population = `Population Incarcerated Population Current`,
-            Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
-            Staff.Active = `Active Cases Staff Current`, 
-            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Cumulative`, 
-            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
-        ) %>% 
-        rowwise() %>% 
-        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
-        mutate(Residents.Initiated = ifelse(
-            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
-        mutate_all(as.numeric) %>%
-        select(-ends_with("Drop")) %>% 
-        mutate(Name = "SANTA RITA JAIL") 
+            Date, 
+            Name,
+            State, 
+            Jurisdiction, 
+            Residents.Confirmed,
+            Residents.Active,
+            Residents.Population,
+            Staff.Confirmed,
+            Staff.Active,
+            Staff.Deaths
+        ) 
 }
 
 #' Scraper class for general youth_manual COVID data
@@ -76,7 +82,6 @@ youth_manual_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     youth_manual <- youth_manual_scraper$new(log=TRUE)
-    youth_manual$raw_data
     youth_manual$pull_raw()
     youth_manual$raw_data
     youth_manual$save_raw()
