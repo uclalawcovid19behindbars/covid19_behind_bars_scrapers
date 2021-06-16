@@ -68,7 +68,7 @@ youth_manual_scraper <- R6Class(
             id = "youth_manual",
             type = "csv",
             state = "",
-            jurisdiction = "state",
+            jurisdiction = "youth",
             pull_func = youth_manual_pull,
             restruct_func = youth_manual_restruct,
             extract_func = youth_manual_extract){
