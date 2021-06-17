@@ -3,7 +3,8 @@ source("./R/utilities.R")
 
 west_virginia_pull <- function(x){
     tsv_src <- get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "txt$")
+        x, "a", attr = "href", attr_regex = "txt$") %>%
+        {.[!str_detect(., "vaccine")]}
     
     dev_null <- suppressWarnings(out <- read_tsv(
         tsv_src, skip = 1, col_types = cols()))
@@ -70,19 +71,20 @@ west_virginia_extract <- function(x){
         sum()
     
     # see which row starts employee data
-    idb <- str_detect(
-        x$Name, "(?i)Employee") & str_detect(x$Name, "(?i)totals")
-    staff_df <- x[first(which(idb)),]
+    emp_idx <- first(which(str_detect(x$Name, "(?i)employee")))
+    staff_df <- x[emp_idx:nrow(x),] 
     names(staff_df) <- str_replace(names(staff_df), "Residents", "Staff")
     
-    staff_df %>%
-        mutate(Name = "State-Wide") %>%
-        select(-starts_with("Drop"), -Staff.Population, -Staff.Active) %>%
-        select(-Staff.Quarantine) %>% 
-        clean_scraped_df() %>%
-        mutate(Residents.Deaths = resident_deaths) %>%
+    staff_df %>% 
+        select(-starts_with("Drop"), -Staff.Population, Staff.Active) %>%
+        filter(!is.na(Staff.Confirmed)) %>% 
+        filter(!str_detect(Staff.Confirmed, "(?i)cumulative")) %>% 
+        filter(!str_detect(Name, "(?i)total")) %>% 
+        mutate(Name = str_c(clean_fac_col_txt(Name), " staff total")) %>% 
+        clean_scraped_df() %>% 
         bind_rows(fac_df) %>%
-        rename(Staff.Tested = Staff.Tadmin)
+        rename(Staff.Tested = Staff.Tadmin) %>% 
+        bind_rows(tibble(Name = "State-Wide", Residents.Deaths = resident_deaths))
 }
 
 #' Scraper class for general West Virginia COVID data
@@ -123,6 +125,7 @@ west_virginia_scraper <- R6Class(
             type = "csv",
             state = "WV",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = west_virginia_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -132,13 +135,15 @@ west_virginia_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     west_virginia <- west_virginia_scraper$new(log=TRUE)
+    west_virginia$run_check_date()
     west_virginia$raw_data
     west_virginia$pull_raw()
     west_virginia$raw_data

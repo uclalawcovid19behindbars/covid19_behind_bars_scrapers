@@ -152,6 +152,7 @@ california_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     california <- california_scraper$new(log=TRUE)
+    california$run_check_date()
     california$raw_data
     california$pull_raw()
     california$raw_data

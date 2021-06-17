@@ -8,7 +8,7 @@ florida_url_check_date <- function(x, date = Sys.Date()){
     base_page %>%
         rvest::html_nodes("strong") %>%
         rvest::html_text() %>%
-        {.[str_starts(., "(?i)update")]} %>%
+        {.[which(str_starts(., "(?i)update"))+1]} %>%
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(date)
@@ -69,9 +69,7 @@ process_FL_image <- function(base_image, ...){
         # Positive inmates cleared: cleared 
         Residents.Recovered = process_FL_cell(base_image, "300x42+700+305", ...),
         # Positive staff cleared: cleared 
-        Staff.Recovered = process_FL_cell(base_image, "300x42+700+430", ...),
-        # COVID-19 related inmate deaths 
-        Residents.Deaths = process_FL_cell(base_image, "400x105+0+545", ...)
+        Staff.Recovered = process_FL_cell(base_image, "300x42+700+430", ...)
     )
 }
 
@@ -150,6 +148,7 @@ florida_url_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     florida_url <- florida_url_scraper$new(log=FALSE)
+    florida_url$run_check_date()
     florida_url$raw_data
     florida_url$pull_raw()
     florida_url$raw_data

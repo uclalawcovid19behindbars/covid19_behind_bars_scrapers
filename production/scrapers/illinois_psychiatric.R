@@ -3,14 +3,56 @@ source("./R/utilities.R")
 
 illinois_psychiatric_pull <- function(x){
     xml2::read_html(x)
+    
 }
 
 illinois_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://www.dhs.state.il.us/page.aspx?item=123651")
+    
+    table1 <- x %>%
+        rvest::html_nodes("table") %>%
+        .[[3]] %>%
+        rvest::html_table(fill = TRUE)
+    
+    table1_expected_names <- c("Facility (City - County)", "Total Staff at Facility", 
+                               "Cumulative Confirmed Positive\r\nCOVID-19\r\nStaff",
+                               "Staff Returned to Work", 
+                               "Total Patients at\r\nFacility", 
+                               "Cumulative Confirmed Positive\r\nCOVID-19 Patients",
+                               "Recovered Patients")
+    
+    check_names(table1, table1_expected_names)
+    
+    colnames(table1) <- c("Name", "Drop.TotalStaff", "Staff.Confirmed", 
+                          "Staff.Recovered", "Drop.TotalResidents", 
+                          "Residents.Confirmed", "Residents.Recovered")
+    
+    table1 <- table1 %>%
+        select(-starts_with("Drop"))
+    
+    
+    table2 <- x %>%
+        rvest::html_nodes("table") %>%
+        .[[9]] %>%
+        rvest::html_table(fill = TRUE)
+    
+    table2_expected_names <- c("Facility (City - County)", "Total Staff at Location",
+                               "Staff Fatalities", "Total Residents at Facility",
+                               "Resident Fatalities")
+    
+    check_names(table2, table2_expected_names)
+    
+    colnames(table2) <- c("Name", "Drop.TotalStaff", "Staff.Deaths", 
+                          "Drop.TotalResidents", "Residents.Deaths")
+    
+    table2 <- table2 %>%
+        select(-starts_with("Drop")) 
+    
+    
+    merge(table1, table2, all = TRUE)
 }
 
 illinois_psychiatric_extract <- function(x){
-    NULL
+    x 
 }
 
 #' Scraper class for general illinois_psychiatric COVID data
@@ -40,19 +82,22 @@ illinois_psychiatric_scraper <- R6Class(
             type = "html",
             state = "IL",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             pull_func = illinois_psychiatric_pull,
             restruct_func = illinois_psychiatric_restruct,
             extract_func = illinois_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     illinois_psychiatric <- illinois_psychiatric_scraper$new(log=TRUE)
+    illinois_psychiatric$run_check_date()
     illinois_psychiatric$perma_save()
     illinois_psychiatric$raw_data
     illinois_psychiatric$pull_raw()

@@ -16,7 +16,7 @@ kentucky_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Institution", "0", "Name", 
-        "Total Active Staff", "1", "Drop.Staff.Active",
+        "Total Active Staff", "1", "Staff.Active",
         "Total Staff Cases", "2", "Staff.Confirmed",
         "Total Staff Deaths", "3", "Staff.Deaths", 
         "Total Active Inmates", "4", "Residents.Active",
@@ -63,6 +63,7 @@ kentucky_scraper <- R6Class(
             type = "img",
             state = "KY",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = kentucky_pull,
             restruct_func = kentucky_restruct,
             # Rename the columns to appropriate database names
@@ -70,13 +71,15 @@ kentucky_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     kentucky <- kentucky_scraper$new(log=TRUE)
+    kentucky$run_check_date()
     kentucky$raw_data
     kentucky$pull_raw()
     kentucky$raw_data

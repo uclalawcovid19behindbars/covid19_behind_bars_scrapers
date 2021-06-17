@@ -1,6 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+
 colorado_check_date <- function(x, date = Sys.Date()){
     base_page <- xml2::read_html(x)
     
@@ -15,6 +16,68 @@ colorado_check_date <- function(x, date = Sys.Date()){
         str_squish() %>%
         lubridate::mdy() %>%
         error_on_date(date)
+}
+
+colorado_vec_return_white <- function(vec, threshold = 200, buffer = 1){
+    start_idx <- first(which(vec < threshold))
+    sub_vec <- vec
+    sub_vec[1:start_idx] <- 0
+    
+    first(which(sub_vec >= threshold)) + buffer
+}
+
+colorado_extract_cell <- function(cell){
+    target <- drop(as.integer(cell[[1]]))
+    mid_idx <- round((dim(target)[1]+1)/2)
+    
+    new_wstart <- colorado_vec_return_white(target[mid_idx,])
+    
+    old_width <- magick::image_info(cell)$width
+    old_height <- magick::image_info(cell)$height
+    
+    cell %>%
+        magick::image_crop(
+            str_c(old_width, "x", old_height, "+", new_wstart, "+0")) %>%
+        magick::image_ocr() %>%
+        # sometimes ocr converts 4's to a's
+        str_replace_all("a", "4") %>% 
+        string_to_clean_numeric()
+}
+
+colorado_extract_col <- function(sub_col, numeric = TRUE){
+    
+    idxs <- seq(0, 47*20, by = 47)
+    
+    extract_vals <- tryCatch(
+            {
+                sapply(1:length(idxs), function(idx){
+                    if(idx == 21){
+                        crp <- "213x40+0+940"
+                    }else{
+                        crp <- str_c("213x47+0+", idxs[idx])
+                    }
+                    
+                    if(numeric){
+                        out <- sub_col %>%
+                            magick::image_crop(crp) %>%
+                            colorado_extract_cell()
+                    }
+                    else{
+                        out <- sub_col %>%
+                            magick::image_crop(crp) %>%
+                            magick::image_ocr() %>%
+                            str_replace_all("\n", " ") %>%
+                            str_squish()
+                    }
+                    out
+                })
+            },
+            error=function(cond) {
+                warning("Column failed to extract returning NA")
+                rep(NA, length(idxs))
+            })
+
+    return(extract_vals)
 }
 
 colorado_pull <- function(x){
@@ -51,7 +114,7 @@ colorado_pull <- function(x){
     app_src <- xml2::read_html(base_html[[1]])%>%
         rvest::html_element("iframe") %>%
         rvest::html_attr("src")
-
+    
     remDr$navigate(app_src)
     Sys.sleep(6)
     
@@ -94,35 +157,30 @@ colorado_restruct <- function(x){
         z %>%
             magick::image_crop("423x50+1494+484") %>%
             magick::image_ocr()
-        ))
-
+    ))
+    
     # extract tables struggles to pull some of this data so
     # by cropping it first we can ensure greater consistency.
     # that is as long as CO keeps the same formatting.
-    col_vals <- cbind(
+    
+    sub_col_list <- list(
         z %>%
-            magick::image_crop("213x1080+387+1030") %>%
-            ExtractTable() %>%
-            unlist() %>%
-            string_to_clean_numeric(),
-
+            magick::image_crop("213x987+387+1100") %>%
+            magick::image_convert(type = 'Bilevel'),
         z %>%
-            magick::image_crop("213x1080+824+1030") %>%
-            ExtractTable() %>%
-            unlist() %>%
-            string_to_clean_numeric(),
-
+            magick::image_crop("213x987+823+1100") %>%
+            magick::image_convert(type = 'Bilevel'),
         z %>%
-            magick::image_crop("213x1080+1264+1030") %>%
-            ExtractTable() %>%
-            unlist() %>%
-            string_to_clean_numeric(),
-
+            magick::image_crop("213x987+1264+1100") %>%
+            magick::image_convert(type = 'Bilevel'),
         z %>%
-            magick::image_crop("213x1080+1700+1030") %>%
-            ExtractTable() %>%
-            unlist() %>%
-            string_to_clean_numeric())
+            magick::image_crop("213x987+1700+1100") %>%
+            magick::image_convert(type = 'Bilevel')
+    )
+    
+    col_vals <- sapply(sub_col_list, function(sc){
+        colorado_extract_col(sc)
+    })
     
     colnames(col_vals) <- col_names
     
@@ -138,13 +196,16 @@ colorado_restruct <- function(x){
         magick::image_ocr() %>%
         string_to_clean_numeric()
     
+    fac_col <- z %>%
+        magick::image_crop("213x987+177+1100") %>%
+        magick::image_convert(type = 'Bilevel')
+
+    fac_names <- colorado_extract_col(fac_col, FALSE)
+  
     col_vals %>%
         as_tibble() %>%
-        mutate(Name = z %>%
-                   magick::image_crop("213x1080+177+1030") %>%
-                   ExtractTable() %>%
-                   unlist()) %>%
-        bind_rows(tibble(Name = "STATEWIDE", Residents.Vadmin = vac_num))
+        mutate(Name =fac_names) %>%
+        bind_rows(tibble(Name = "STATEWIDE", Residents.Initiated = vac_num))
 }
 
 colorado_extract <- function(x){
@@ -157,8 +218,8 @@ colorado_extract <- function(x){
         Residents.Active = "ACTIVE CASES",
         Residents.Deaths = "DEATHS",
         Name = "Name",
-        Residents.Vadmin = "Residents.Vadmin"
-        )
+        Residents.Initiated = "Residents.Initiated"
+    )
     
     check_names(df_, exp_names)
     
@@ -221,6 +282,7 @@ colorado_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     colorado <- colorado_scraper$new(log=TRUE)
+    colorado$run_check_date()
     colorado$raw_data
     colorado$pull_raw()
     colorado$raw_data
@@ -232,4 +294,3 @@ if(sys.nframe() == 0){
     colorado$validate_extract()
     colorado$save_extract()
 }
-

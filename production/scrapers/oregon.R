@@ -38,8 +38,11 @@ oregon_extract <- function(x){
                Residents.Active = "Current AIC Active Cases",
                Residents.Deaths = "AIC Deaths") %>%
         clean_scraped_df() %>%
+        mutate(Residents.Tadmin = 
+                   ifelse(Name == "State-Wide", NA, Residents.Confirmed + Residents.Negative)) %>% 
         mutate(Staff.Confirmed =
                    ifelse(Name == "State-Wide", NA, Staff.Confirmed)) %>%
+        # doing this because Residents.Confirmed = positive tests, not positive cases (?)
         mutate(Residents.Confirmed =
                    ifelse(Name == "State-Wide", NA, Residents.Confirmed)) %>%
         mutate(Residents.Negative =
@@ -81,6 +84,7 @@ oregon_scraper <- R6Class(
             type = "html",
             state = "OR",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = oregon_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -90,13 +94,15 @@ oregon_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     oregon <- oregon_scraper$new(log=TRUE)
+    oregon$run_check_date()
     oregon$raw_data
     oregon$pull_raw()
     oregon$raw_data

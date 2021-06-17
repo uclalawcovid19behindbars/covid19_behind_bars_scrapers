@@ -25,7 +25,7 @@ minnesota_restruct <- function(x){
     
     df_res <- x %>%
         rvest::html_elements("table") %>%
-        .[[4]] %>%
+        .[[2]] %>%
         rvest::html_table(fill=T) %>%
         .[,5:ncol(.)] %>%
         filter(!is.na(.[,1])) %>%
@@ -34,7 +34,7 @@ minnesota_restruct <- function(x){
     
     names(df_res) <- x %>%
         rvest::html_elements("table") %>%
-        .[[3]] %>%
+        .[[1]] %>%
         rvest::html_table() %>%
         .[,2:ncol(.)] %>%
         unlist() %>%
@@ -67,29 +67,29 @@ minnesota_restruct <- function(x){
         Residents.Population = "Facility Population"
     )
     
-    df_pop <- x %>%
-        rvest::html_elements("table") %>%
-        .[[2]] %>%
-        rvest::html_table(fill=T) %>%
-        .[,2:ncol(.)] %>%
-        filter(!is.na(.[,1])) %>%
-        as.data.frame() %>% 
-        filter(!str_detect(.[,1], "(?i)total"))
-    
-    names(df_pop) <- x %>%
-        rvest::html_elements("table") %>%
-        .[[1]] %>%
-        rvest::html_table() %>%
-        .[,2:ncol(.)] %>%
-        unlist() %>%
-        unname() %>%
-        # remove values in parentheses
-        str_remove_all('\\([^)]*\\)') %>%
-        str_squish()
+    # df_pop <- x %>%
+    #     rvest::html_elements("table") %>%
+    #     .[[2]] %>%
+    #     rvest::html_table(fill=T) %>%
+    #     .[,2:ncol(.)] %>%
+    #     filter(!is.na(.[,1])) %>%
+    #     as.data.frame() %>% 
+    #     filter(!str_detect(.[,1], "(?i)total"))
+    # 
+    # names(df_pop) <- x %>%
+    #     rvest::html_elements("table") %>%
+    #     .[[1]] %>%
+    #     rvest::html_table() %>%
+    #     .[,2:ncol(.)] %>%
+    #     unlist() %>%
+    #     unname() %>%
+    #     # remove values in parentheses
+    #     str_remove_all('\\([^)]*\\)') %>%
+    #     str_squish()
     
     df_staff <- x %>%
         rvest::html_elements("table") %>%
-        .[[18]] %>%
+        .[[16]] %>%
         rvest::html_table(fill=T) %>%
         .[,5:ncol(.)] %>%
         filter(!is.na(.[,1])) %>%
@@ -98,7 +98,7 @@ minnesota_restruct <- function(x){
     
     names(df_staff) <- x %>%
         rvest::html_elements("table") %>%
-        .[[17]] %>%
+        .[[15]] %>%
         rvest::html_table() %>%
         .[,2:ncol(.)] %>%
         unlist() %>%
@@ -109,21 +109,12 @@ minnesota_restruct <- function(x){
     
     basic_check(names(df_res), exp_res)
     basic_check(names(df_staff), exp_staff)
-    basic_check(names(df_pop), exp_pop)
     
     names(df_res) <- names(exp_res)
     names(df_staff) <- names(exp_staff)
-    names(df_pop) <- names(exp_pop)
-    
-    full_join(
-        df_pop %>% 
-            mutate(Residents.Population = as.numeric(Residents.Population)) %>%
-            mutate(Name = ifelse(
-                str_starts(Name, "MCF- "), Name, str_c("MCF-", Name))) %>%
-            mutate(Name = str_replace(Name, "(?i)st\\.* cloud", "Saint Cloud")),
-        clean_scraped_df(df_res) %>%
-            mutate(Name = str_replace(Name, "(?i)st\\.* cloud", "Saint Cloud")),
-        by = "Name") %>%
+
+    clean_scraped_df(df_res) %>%
+        mutate(Name = str_replace(Name, "(?i)st\\.* cloud", "Saint Cloud")) %>% 
         full_join(
         clean_scraped_df(df_staff) %>%
             mutate(Name = str_replace(Name, "(?i)st\\.* cloud", "Saint Cloud")),

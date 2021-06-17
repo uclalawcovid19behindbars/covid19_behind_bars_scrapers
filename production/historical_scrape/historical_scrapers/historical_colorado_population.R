@@ -57,7 +57,7 @@ historical_co_pop_extract <- function(x, date = NULL){
     exp_fac <- ifelse(
         date > as.Date("2020-07-01"), 23, 22)
     
-    if (!nrow(out) != exp_fac){
+    if (nrow(out) != exp_fac){
         stop(stringr::str_c("Total number of facilities ", nrow(out), 
                             " does not match expected ", exp_fac))
     }
@@ -95,13 +95,15 @@ historical_co_pop_scraper <- R6Class(
             type = "pdf",
             state = "CO",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = historical_co_pop_pull,
             restruct_func = historical_co_pop_restruct,
             extract_func = historical_co_pop_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )

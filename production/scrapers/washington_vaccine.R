@@ -11,16 +11,19 @@ washington_vaccine_restruct <- function(x){
 }
 
 washington_vaccine_extract <- function(x){
-    rvest::html_table(x[1], fill = TRUE) %>% 
-        as.data.frame() %>% 
-        rename(
-            "Name" = "Vaccine.Facility", 
-            "Residents.Initiated" = "Initiating.Vaccination.Administered", 
-            "Residents.Completed" = "Second.Vaccination.Administered", 
-            "Total.Drop" = "Total"
-        ) %>% 
-        filter(!Name %in% c("All Vaccine Facilities")) %>% 
-        select(-ends_with("Drop")) %>% 
+    
+    ind_idx <- x %>%
+        sapply(function(z) rvest::html_text(rvest::html_node(z, "caption"))) %>%
+        str_detect("(?i)individuals")
+    
+    x[[which(ind_idx)]] %>%
+        rvest::html_table() %>%
+        mutate(Type = case_when(
+            str_detect(Type, "(?i)custody") ~ "Residents.Initiated",
+            str_detect(Type, "(?i)staff") ~ "Staff.Initiated"
+            )) %>%
+        pivot_wider(names_from = Type, values_from = Total) %>%
+        mutate(Name = "StateWide") %>%
         clean_scraped_df()
 }
 
@@ -55,6 +58,7 @@ washington_vaccine_scraper <- R6Class(
             type = "html",
             state = "WA",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = washington_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -64,13 +68,15 @@ washington_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     washington_vaccine <- washington_vaccine_scraper$new(log=TRUE)
+    washington_vaccine$run_check_date()
     washington_vaccine$raw_data
     washington_vaccine$pull_raw()
     washington_vaccine$raw_data

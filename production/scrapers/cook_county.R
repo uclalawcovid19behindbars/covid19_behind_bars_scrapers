@@ -164,6 +164,7 @@ cook_county_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     cook_county <- cook_county_scraper$new(log=FALSE)
+    cook_county$run_check_date()
     cook_county$raw_data
     cook_county$pull_raw()
     cook_county$raw_data

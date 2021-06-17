@@ -8,8 +8,11 @@ sacramento_county_jail_pull <- function(x){
 
 sacramento_county_jail_restruct <- function(x){
     x %>%
+        janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>%
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
         filter(Date == max(Date))
 }
 
@@ -17,36 +20,24 @@ sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
-    check_names(x, c(
-        "As of Date", 
-        "Cumulative Confirmed Cases - Both Jails", 
-        "Cumulative Confirmed Cases - Intake/Quarantine Period - Both Jails", 
-        "Active in Custody - Main Jail", 
-        "Active in Custody - RCCC", 
-        "New Active Cases - Main Jail", 
-        "New Active Cases - RCCC", 
-        "Released while Active", 
-        "Resolved", 
-        "Deaths", 
-        "Cumulative Tested - Both Jails", 
-        "New Tests Administered - Both Jails", 
-        "Total Population - Both Jails", 
-        "Population Change - Both Jails", 
-        "% Population Newly Tested - Both Jails", 
-        "Notes", 
-        "Date"))
-    
     x %>%
-        mutate(Residents.Active = 
-                   `Active in Custody - Main Jail` + `Active in Custody - RCCC`) %>% 
         select(
-            Residents.Confirmed = `Cumulative Confirmed Cases - Both Jails`,
-            Residents.Active = Residents.Active,
-            Residents.Deaths = Deaths,
-            Residents.Tadmin = `Cumulative Tested - Both Jails`,
-            Residents.Population = `Total Population - Both Jails`
+            Residents.Active = `Active Cases Incarcerated Population Current`, 
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
+            Residents.Population = `Population Incarcerated Population Current`,
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`,
+            Staff.Completed = `Fully Vaccinated Staff Cumulative`
         ) %>%
-        mutate(Name = "SACRAMENTO COUNTY JAIL")
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate_all(as.numeric) %>%
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SACRAMENTO COUNTY JAIL") 
 }
 
 #' Scraper class for general sacramento_county_jail COVID data
@@ -65,11 +56,12 @@ sacramento_county_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "hhttps://www.davisvanguard.org/tag/covid-19/",
+            url = "https://www.davisvanguard.org/tag/covid-19/",
             id = "sacramento_county_jail",
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = sacramento_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -79,13 +71,15 @@ sacramento_county_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     sacramento_county_jail <- sacramento_county_jail_scraper$new(log=TRUE)
+    sacramento_county_jail$run_check_date()
     sacramento_county_jail$raw_data
     sacramento_county_jail$pull_raw()
     sacramento_county_jail$raw_data

@@ -37,13 +37,13 @@ ohio_extract <- function(x){
         "# of COVID- 19 Related Staff Deaths", "3", "Staff.Deaths",
         "# of Staff who have Recovered", "4", "Staff.Recovered",
         "Housing Type (cell, open bay, combo)", "5", "Housing.Type",
-        "# of Inmates in Quarantine", "6", "Residents.Quarantine",
-        "# of Inmates in Isolation", "7", "Residents.Isolation",
-        "# of inmates currently Positive for COVID-19", "8", "Residents.Active",
-        "# of Confirmed COVID-19 Related Inmate Deaths", "9", "Residents.Confirmed.Deaths",
-        "# of Inmates who have Pending Results",  "10", "Residents.Pending",
-        "# of current Inmates who have Recovered", "11", "Residents.Recovered"
-    ), ncol = 3, nrow = 12, byrow = TRUE)
+        #"# of Inmates in Quarantine", "6", "Residents.Quarantine",
+        "# of Inmates in Isolation", "6", "Residents.Isolation",
+        "# of inmates currently Positive for COVID-19", "7", "Residents.Active",
+        "# of Confirmed COVID-19 Related Inmate Deaths", "8", "Residents.Confirmed.Deaths",
+        "# of Inmates who have Pending Results",  "9", "Residents.Pending",
+        "# of current Inmates who have Recovered", "10", "Residents.Recovered"
+    ), ncol = 3, nrow = 11, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
@@ -57,10 +57,9 @@ ohio_extract <- function(x){
             filter(!str_detect(Name, "(?i)total"))})) %>%
         clean_scraped_df() %>% 
         mutate(Residents.Deaths = Residents.Confirmed.Deaths , 
-               Residents.Confirmed = Residents.Active + Residents.Confirmed.Deaths + Residents.Recovered, 
-               Residents.Quarantine = Residents.Quarantine + Residents.Isolation) %>% 
+               Residents.Confirmed = Residents.Active + Residents.Confirmed.Deaths + Residents.Recovered) %>% 
         select(
-            -Staff.Active, -Residents.Pending, -Residents.Isolation,
+            -Residents.Pending, -Residents.Isolation,
             -Residents.Confirmed.Deaths)
 }
 
@@ -102,18 +101,21 @@ ohio_scraper <- R6Class(
             type = "pdf",
             state = "OH",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = ohio_pull,
             restruct_func = ohio_restruct,
             extract_func = ohio_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         })
 )
 
 if(sys.nframe() == 0){
     ohio <- ohio_scraper$new(log=TRUE)
+    ohio$run_check_date()
     ohio$raw_data
     ohio$pull_raw()
     ohio$save_raw()

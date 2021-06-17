@@ -127,6 +127,7 @@ connecticut_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     connecticut <- connecticut_scraper$new(log=TRUE)
+    connecticut$run_check_date()
     connecticut$raw_data
     connecticut$pull_raw()
     connecticut$raw_data

@@ -4,7 +4,7 @@ source("./R/utilities.R")
 rhode_island_pull <- function(x){
     
     app_source <- xml2::read_html(x) %>%
-        rvest::xml_nodes("iframe") %>%
+        rvest::html_element("iframe") %>% 
         rvest::html_attr("src")
         
     
@@ -96,6 +96,7 @@ rhode_island_scraper <- R6Class(
             type = "csv",
             state = "RI",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = rhode_island_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -105,13 +106,15 @@ rhode_island_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     rhode_island <- rhode_island_scraper$new(log=TRUE)
+    rhode_island$run_check_date()
     rhode_island$raw_data
     rhode_island$pull_raw()
     rhode_island$raw_data

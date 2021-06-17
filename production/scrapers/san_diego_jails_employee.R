@@ -21,7 +21,7 @@ san_diego_jails_employee_extract <- function(x) {
     
     col_name <- matrix(c(
         "Staff.Confirmed", "0", "CUMULATIVE POSITIVE CASES", 
-        "Drop.Staff.Active", "1", "ACTIVE POSITIVE CASES",
+        "Staff.Active", "1", "ACTIVE POSITIVE CASES",
         "Staff.Recovered", "2", "RECOVERED POSITIVE CASES", 
         "Staff.Deaths", "3", "DECEASED DUE TO COVID-19"
     ), ncol = 3, nrow = 4, byrow = TRUE)
@@ -70,6 +70,7 @@ san_diego_jails_employee_scraper <- R6Class(
             type = "img",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = san_diego_jails_employee_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -79,13 +80,15 @@ san_diego_jails_employee_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     san_diego_jails_employee <- san_diego_jails_employee_scraper$new(log=FALSE)
+    san_diego_jails_employee$run_check_date()
     san_diego_jails_employee$raw_data
     san_diego_jails_employee$pull_raw()
     san_diego_jails_employee$raw_data

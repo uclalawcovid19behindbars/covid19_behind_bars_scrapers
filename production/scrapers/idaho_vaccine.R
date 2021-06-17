@@ -16,26 +16,24 @@ idaho_vaccine_extract <- function(x){
     
     exp_names <- c(
         Name = "Facility",
-        Residents.Initiated = "# of individuals that have received first dose of vaccine",
-        Residents.Completed = "# of individuals that have received second dose of vaccine",
-        Drop_ = "", 
-        CRC_ = "Community Reentry Center",
-        CRC.Residents.Initiated_ = "# of individuals that have received first dose of vaccine",
-        CRC.Residents.Completed_ = "# of individuals that have received second dose of vaccine"
+        Residents.FirstDose = "1st dose only",
+        Residents.Full = "Fully vaccinated*"
+        # Drop_ = "", 
+        # CRC_ = "Community Reentry Center",
+        # CRC.Residents.FirstDose_ = "1st dose only",
+        # CRC.Residents.Full_ = "Fully vaccinated*"
     )
     
     check_names(sw, exp_names)
     names(sw) <- names(exp_names)
     
-    bind_rows(
         sw %>% 
-            select(Name, Residents.Initiated, Residents.Completed), 
-        sw %>% 
-            select(
-                Name = CRC_, 
-                Residents.Initiated = CRC.Residents.Initiated_, 
-                Residents.Completed = CRC.Residents.Completed_)
-        ) %>% 
+        select(Name, Residents.FirstDose, Residents.Full) %>% 
+        mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
+        mutate(Residents.Initiated = Residents.FirstDose + Residents.Full,
+               Residents.Completed = Residents.Full) %>%
+        select(Name, Residents.Initiated, Residents.Completed) %>%
+        filter(!str_detect(Name, "(?i)total")) %>% 
         filter(Name != "") %>% 
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         clean_scraped_df() %>%
@@ -69,6 +67,7 @@ idaho_vaccine_scraper <- R6Class(
             type = "html",
             state = "ID",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = idaho_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -78,13 +77,15 @@ idaho_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     idaho_vaccine <- idaho_vaccine_scraper$new(log=T)
+    idaho_vaccine$run_check_date()
     idaho_vaccine$raw_data
     idaho_vaccine$pull_raw()
     idaho_vaccine$raw_data

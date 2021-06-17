@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 sf_county_jail_pull <- function(x){
-    z = "1hOBU6510jHZbxN3c3nVwXKGEUfyI9mlkv0vg2LiEJAA" %>%
+    z = "1F2iSIveA0jglb2SILgN4fobYozSMNS_Ff-7x8OGs7tM" %>%
         googlesheets4::read_sheet()
     
     # for some reason this is saved weird and we need to do some
@@ -21,7 +21,10 @@ sf_county_jail_pull <- function(x){
 
 sf_county_jail_restruct <- function(x){
     x %>%
+        janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::mdy(`As of Date`)) %>%
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
         filter(Date == max(Date))
 }
 
@@ -31,16 +34,22 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         select(
-            Residents.Confirmed = `Confirmed Cases`,
-            Residents.Active = `Active in Custody`,
-            Residents.Recovered = `Resolved`,
-            Residents.Deaths = Deaths,
-            Residents.Quarantine = `Quarantined Cases`,
-            Residents.Population = `Incarcerated Population`
-            ) %>%
-        mutate_all(unlist) %>%
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Active = `Active Cases Incarcerated Population Current`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`, 
+            Staff.Population = `Total Sfso Employees`, 
+            Staff.Confirmed = `Sfso Employees Total Positive Results`, 
+            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`
+            ) %>% 
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
         mutate_all(as.numeric) %>%
-        mutate(Name = "SF COUNTY JAIL")
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SF COUNTY JAIL") 
 }
 
 #' Scraper class for general sf_county_jail COVID data
@@ -64,6 +73,7 @@ sf_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = sf_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -73,13 +83,15 @@ sf_county_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
-    sf_county_jail <- sf_county_jail_scraper$new(log=TRUE)
+    sf_county_jail <- sf_county_jail_scraper$new(log=F)
+    sf_county_jail$run_check_date()
     sf_county_jail$raw_data
     sf_county_jail$pull_raw()
     sf_county_jail$raw_data

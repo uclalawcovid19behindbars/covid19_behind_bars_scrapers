@@ -105,6 +105,7 @@ arkansas_html_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     arkansas_html <- arkansas_html_scraper$new(log=T)
+    arkansas_html$run_check_date()
     arkansas_html$raw_data
     arkansas_html$pull_raw()
     arkansas_html$raw_data

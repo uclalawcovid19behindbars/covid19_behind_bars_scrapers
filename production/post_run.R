@@ -5,7 +5,7 @@ source("./R/utilities.R")
 
 # Sync raw, extracted, and log files 
 sync_remote_files(TRUE)
-Sys.sleep(7*60)
+Sys.sleep(2*60)
 
 # Generate and sync diagnostics 
 generate_diagnostics()

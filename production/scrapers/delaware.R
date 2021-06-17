@@ -12,7 +12,7 @@ delaware_check_date <- function(x, date = Sys.Date()){
 delaware_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "DE", 
-                                  col_types = "Dcccccccccccc")
+                                  col_types = "Dccccccccccccccc")
 }
 
 delaware_restruct <- function(x){
@@ -29,7 +29,8 @@ delaware_extract <- function(x){
             Name, Staff.Confirmed, Residents.Confirmed, Residents.Active, 
             Staff.Deaths, Staff.Recovered, Residents.Recovered, 
             Residents.Deaths = Resident.Deaths, Residents.Initiated,
-            Staff.Initiated, Residents.Completed, Staff.Completed) %>% 
+            Staff.Initiated, Residents.Completed, Staff.Completed,
+            Residents.Vadmin, Staff.Vadmin, Staff.Active) %>% 
         clean_scraped_df()
 }
 
@@ -72,6 +73,7 @@ delaware_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     delaware <- delaware_scraper$new(log=TRUE)
+    delaware$run_check_date()
     delaware$raw_data
     delaware$pull_raw()
     delaware$raw_data

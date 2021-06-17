@@ -29,7 +29,12 @@ wyoming_extract <- function(x, exp_date = Sys.Date()){
             Name = `Name`,
             Residents.Active = `Positive Inmate Cases`,
             Residents.Deaths = `Inmate Deaths`) %>% 
-        clean_scraped_df()
+        # Only reporting statewide deaths
+        # This should just replace 0's with NAs as a fail safe 
+        mutate(Residents.Deaths = ifelse(
+            Name != "STATEWIDE", NA, Residents.Deaths)) %>%  
+        clean_scraped_df() 
+        
 }
 
 #' Scraper class for Wyoming data 
@@ -55,6 +60,7 @@ wyoming_scraper <- R6Class(
             type = "manual",
             state = "WY",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = wyoming_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -64,13 +70,15 @@ wyoming_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     wyoming <- wyoming_scraper$new(log=TRUE)
+    wyoming$run_check_date()
     wyoming$raw_data
     wyoming$pull_raw()
     wyoming$raw_data

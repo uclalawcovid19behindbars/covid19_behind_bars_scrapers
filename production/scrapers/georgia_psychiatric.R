@@ -101,6 +101,7 @@ georgia_psychiatric_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     georgia_psychiatric <- georgia_psychiatric_scraper$new(log=TRUE)
+    georgia_psychiatric$run_check_date()
     georgia_psychiatric$perma_save()
     georgia_psychiatric$raw_data
     georgia_psychiatric$pull_raw()

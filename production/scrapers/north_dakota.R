@@ -67,18 +67,40 @@ north_dakota_restruct <- function(x){
 }
 
 north_dakota_extract <- function(x){
+    
+    check_names(x, c(
+        "Name" = "Name", 
+        "Residents.Positive", 
+        "Residents.Recovered", 
+        "Residents.Deaths", 
+        "Staff.Positive", 
+        "Staff.Recovered", 
+        "Staff.Deaths", 
+        "Residents.Total.Tests.Administered", 
+        "Residents.Total.Individuals.Tested", 
+        "Residents.Total.Individuals.Tested.Twice", 
+        "Staff.Total.Tests.Administered", 
+        "Staff.Total.Individuals.Tested", 
+        "Staff.Total.Individuals.Tested.Twice", 
+        "Residents.Total.First.Doses", 
+        "Residents.Total.Second.Doses", 
+        "Residents.Total.Single.Doses"))
+    
     x %>%
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
-                   Staff.Positive) %>%
+                   Staff.Positive, 
+               Residents.Initiated = Residents.Total.First.Doses + Residents.Total.Single.Doses, 
+               Residents.Completed = Residents.Total.Second.Doses + Residents.Total.Single.Doses) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
-            Staff.Tested = Staff.Total.Tests.Administered, 
-            Residents.Initiated = Residents.First.Dose, 
-            Residents.Completed = Residents.Second.Dose
+            Staff.Tested = Staff.Total.Individuals.Tested, 
+            Residents.Initiated, Residents.Completed, 
+            Residents.Active = Residents.Positive, 
+            Staff.Active = Staff.Positive
         ) %>% 
         clean_scraped_df()
 }
@@ -105,6 +127,7 @@ north_dakota_extract <- function(x){
 #'   \item{Staff.Total.Individuals.Tested.Twice}{}
 #'   \item{Residents.First.Dose}{}
 #'   \item{Residents.Second.Dose}{}
+#'   \item{Residents.Single.Dose}{}
 #' }
 
 north_dakota_scraper <- R6Class(
@@ -119,6 +142,7 @@ north_dakota_scraper <- R6Class(
             type = "html",
             state = "ND",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = north_dakota_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -128,13 +152,15 @@ north_dakota_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     north_dakota <- north_dakota_scraper$new(log=TRUE)
+    north_dakota$run_check_date()
     north_dakota$raw_data
     north_dakota$pull_raw()
     north_dakota$raw_data

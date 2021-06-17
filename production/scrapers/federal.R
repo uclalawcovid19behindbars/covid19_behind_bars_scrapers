@@ -43,7 +43,10 @@ federal_restruct <- function(x){
                 ),
         
             as_tibble(x$final$rrcData) %>%
-                select(-contractNum) %>%
+                select(-contractNum,
+                       ## not sure why these are here but adding in the de-select
+                       -J,
+                       -K) %>%
                 mutate(id = str_to_upper(id)) %>%
                 group_by(id) %>%
                 summarize_all(function(z) sum(z, na.rm = TRUE))
@@ -63,21 +66,20 @@ federal_restruct <- function(x){
             rename(id = facilityCode) %>%
             full_join(as_tibble(x$final$bopData), by = "id") %>%
             bind_rows(as_tibble(x$final$privateData)) %>%
-            left_join(
-                as_tibble(x$loc$Locations) %>%
-                    select(id = code, Name = nameDisplay),
-                by = "id") %>%
-            select(-id) %>%
             mutate(inmateDeathHcon = 0))
     
     if("vaccine" %in% names(x)){
-        comb_df <- bind_rows(
-            comb_df,
-            tibble(
-                Name = "ALL BOP FACILITIES",
-                Residents.Completed = sum(x$vaccine$bopVaccine$inmateCompleted),
-                Staff.Completed = sum(x$vaccine$bopVaccine$staffCompleted)
-            ))
+        comb_df <- comb_df %>% 
+            full_join(
+                as_tibble(x$vaccine$bopVaccine) %>% 
+                    rename(id = facility), 
+                by = "id") %>% 
+            left_join(
+                as_tibble(x$loc$Locations) %>%
+                    select(id = code, Name = nameDisplay),
+                by = "id") %>% 
+            mutate(Name = coalesce(Name.x, Name.y)) %>% 
+            select(-id, -Name.x, -Name.y)
     }
     
     comb_df
@@ -93,6 +95,10 @@ federal_extract <- function(x){
             Residents.Recovered = inmateRecoveries,
             Residents.Tested = completedTest,
             Residents.Pending = pendTest,
+            Residents.Active = inmatePositiveAmt,
+            Staff.Active = staffPositiveAmt, 
+            Residents.Completed = inmateCompleted, 
+            Staff.Completed = staffCompleted, 
             starts_with("Residents."), starts_with("Staff.")
             ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
@@ -116,11 +122,15 @@ federal_extract <- function(x){
 #'   \item{staffRecoveries}{staff recoveries}
 #'   \item{staffDeathAmt}{staff deaths}
 #'   \item{inmatePositiveAmt}{Residents active cases}
+#'   \item{staffPositiveAmt}{Staff active cases}
 #'   \item{inmateDeathAmt}{residents deaths}
 #'   \item{inmateRecoveries}{cumulative residents recovered}
 #'   \item{inmateCompletedTest}{Tests adminstered, I think not individuals tested}
 #'   \item{inmatePendTest}{Current Pending Cases}
 #'   \item{inmatePosTest}{Cumulative Positive Cases}
+#'   \item{inmateCompleted}{Residents.Completed}
+#'   \item{staffCompleted}{Staff.Completed}
+#'   
 #' }
 
 federal_scraper <- R6Class(
@@ -153,6 +163,7 @@ federal_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     federal <- federal_scraper$new(log=TRUE)
+    federal$run_check_date()
     federal$raw_data
     federal$pull_raw()
     federal$raw_data

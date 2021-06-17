@@ -31,7 +31,7 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    in_txt <- magick::image_crop(x, "150x120+10+750") %>%
+    in_txt <- magick::image_crop(x, "150x120+10+720") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -39,7 +39,7 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    st_txt <- magick::image_crop(x, "150x110+270+740") %>%
+    st_txt <- magick::image_crop(x, "190x110+270+710") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -48,13 +48,15 @@ connecticut_vaccine_restruct <- function(x){
     }
     
     tibble(
-        Res = magick::image_crop(x, "150x80+28+852") %>%
+        Res = magick::image_crop(x, "150x80+28+842") %>%
             magick::image_convert(type = 'Grayscale') %>%
-            magick::image_ocr(),
+            magick::image_ocr() %>%
+            string_to_clean_numeric(),
     
-        Staff = magick::image_crop(x, "150x80+270+853") %>%
+        Staff = magick::image_crop(x, "180x110+260+840") %>%
             magick::image_convert(type = 'Grayscale') %>%
-            magick::image_ocr()
+            magick::image_ocr() %>%
+            string_to_clean_numeric()
     )
 }
 
@@ -62,7 +64,8 @@ connecticut_vaccine_extract <- function(x){
     x %>%
         mutate_all(function(x) str_replace_all(x, "\\.", ",")) %>%
         mutate(Name = "STATEWIDE") %>%
-        rename(Residents.Initiated = Res, Staff.Initiated = Staff) %>%
+        rename(Residents.Initiated = Res, 
+               Staff.Initiated = Staff) %>%
         clean_scraped_df()
 }
 
@@ -108,6 +111,7 @@ connecticut_vaccine_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     connecticut_vaccine <- connecticut_vaccine_scraper$new(log=TRUE)
+    connecticut_vaccine$run_check_date()
     connecticut_vaccine$raw_data
     connecticut_vaccine$pull_raw()
     connecticut_vaccine$raw_data

@@ -15,7 +15,8 @@ UCLABB_MAIN_VARIABLES <- c(
     "Residents.Population", "Residents.Active",
     "Staff.Vadmin", "Residents.Vadmin",
     "Staff.Initiated", "Residents.Initiated",
-    "Staff.Completed", "Residents.Completed"
+    "Staff.Completed", "Residents.Completed", 
+    "Staff.Population", "Staff.Active"
 )
 
 generic_scraper <- R6Class(
@@ -307,6 +308,7 @@ generic_scraper <- R6Class(
                 # sometimes this wont work on the first try so give it a
                 # couple goes
                 attempts <- 0
+                pcc <- NULL 
                 while(attempts < tries){
                     tryLog(pcc <- save_perma_cc(
                         arc_url = self$url, scraper_id = self$id,
@@ -389,6 +391,10 @@ generic_scraper <- R6Class(
             less_check("Residents.Tested", "Residents.Confirmed")
             less_check("Staff.Tested", "Staff.Negative")
             less_check("Residents.Tested", "Residents.Negative")
+            less_check("Residents.Initiated", "Residents.Completed")
+            less_check("Staff.Initiated", "Staff.Completed")
+            less_check("Residents.Vadmin", "Residents.Initiated")
+            less_check("Staff.Vadmin", "Staff.Initiated")
         },
         
         validate_extract = function(){

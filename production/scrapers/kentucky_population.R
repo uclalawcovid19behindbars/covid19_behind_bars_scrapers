@@ -42,15 +42,16 @@ kentucky_population_extract <- function(x, date = Sys.Date()){
     df_ <- x %>% 
         .[[1]] %>% 
         as.data.frame() %>% 
-        janitor::row_to_names(row_number = 2)
+        janitor::row_to_names(row_number = 1) %>% 
+        janitor::clean_names()
     
     check_names(df_, c(
-        "Location", "In Count", "Hospital", "Court", "Other",
-        "Total", "Operational Capacity"))
+        "location", "in_count", "hospital", "court", "other",
+        "total", "operational_capacity"))
     
     cleaned <- df_ %>% 
-        select(Name = `Location:`, 
-               Residents.Population = `In Count`) %>% 
+        select(Name = `location`, 
+               Residents.Population = `in_count`) %>% 
         mutate(Name = clean_fac_col_txt(Name, to_upper = TRUE)) %>% 
         filter(Name != "") %>% 
         clean_scraped_df() 
@@ -107,19 +108,22 @@ kentucky_population_scraper <- R6Class(
             type = "pdf",
             state = "KY",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = kentucky_population_pull,
             restruct_func = kentucky_population_restruct,
             extract_func = kentucky_population_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     kentucky_population <- kentucky_population_scraper$new(log=TRUE)
+    kentucky_population$run_check_date()
     kentucky_population$raw_data
     kentucky_population$pull_raw()
     kentucky_population$raw_data

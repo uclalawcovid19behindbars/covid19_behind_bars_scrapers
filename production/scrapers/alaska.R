@@ -107,6 +107,7 @@ alaska_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     alaska <- alaska_scraper$new(log=FALSE)
+    alaska$run_check_date()
     alaska$raw_data
     alaska$pull_raw()
     alaska$raw_data

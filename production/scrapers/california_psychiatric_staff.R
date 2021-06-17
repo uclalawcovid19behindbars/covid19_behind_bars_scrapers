@@ -40,7 +40,8 @@ california_psychiatric_staff_scraper <- R6Class(
             jurisdiction = "psychiatric",
             pull_func = california_psychiatric_staff_pull,
             restruct_func = california_psychiatric_staff_restruct,
-            extract_func = california_psychiatric_staff_extract){
+            extract_func = california_psychiatric_staff_extract,
+            check_date = NULL){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
@@ -52,6 +53,7 @@ california_psychiatric_staff_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     california_psychiatric_staff <- california_psychiatric_staff_scraper$new(log=TRUE)
+    california_psychiatric_staff$run_check_date()
     california_psychiatric_staff$perma_save()
     california_psychiatric_staff$raw_data
     california_psychiatric_staff$pull_raw()

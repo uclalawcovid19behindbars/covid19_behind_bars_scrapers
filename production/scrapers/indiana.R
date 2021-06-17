@@ -4,7 +4,8 @@ source("./R/utilities.R")
 indiana_pull <- function(x){
     in_img <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID")
     
-    magick::image_read(in_img)
+    magick::image_read(in_img) %>% 
+        magick::image_convert(type = 'Grayscale')
 }
 
 indiana_restruct <- function(x){
@@ -31,7 +32,7 @@ indiana_extract <- function(x){
     col_name_mat <- matrix(c(
         "Correctional Facility", "0", "Name",
         "Staff Tested", "1", "Staff.Tested",
-        "Staff Current Positive", "2", "Drop.Staff.Active",
+        "Staff Current Positive", "2", "Staff.Active",
         "Staff Total Positive", "3", "Staff.Confirmed",
         "Staff Recovered", "4", "Staff.Recovered",
         "Staff Death", "5", "Staff.Deaths",
@@ -92,6 +93,7 @@ indiana_scraper <- R6Class(
             type = "img",
             state = "IN",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = indiana_pull,
             restruct_func = indiana_restruct,
             # Rename the columns to appropriate database names
@@ -99,13 +101,15 @@ indiana_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     indiana <- indiana_scraper$new(log=TRUE)
+    indiana$run_check_date()
     indiana$raw_data
     indiana$pull_raw()
     indiana$raw_data

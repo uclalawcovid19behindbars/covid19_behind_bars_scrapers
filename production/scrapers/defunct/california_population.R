@@ -28,26 +28,7 @@ california_population_check_date <- function(x, date = Sys.Date()){
 }
 
 california_population_pull <- function(x){
-    
-    # Extract all URLs
-    url_ <- x %>% 
-        xml2::read_html() %>%
-        rvest::html_nodes("a") %>%
-        rvest::html_attr("href")
-    
-    # Extract all link texts
-    link_ <- x %>%
-        xml2::read_html() %>%
-        rvest::html_nodes("a") %>%
-        rvest::html_text()
-    
-    # Return URL for latest population pdf 
-    stringr::str_c(
-        "https://www.cdcr.ca.gov/", 
-        tibble(link = link_, url = url_) %>% 
-            filter(link == "View Weekly Report (Wednesday Reporting Date)") %>% 
-            pull(url)
-    )
+    stop_defunct_scraper(x)
 }
 
 california_population_restruct <- function(x){

@@ -8,75 +8,40 @@ santa_rita_jail_pull <- function(x){
 
 santa_rita_jail_restruct <- function(x){
     x %>%
-        filter(!is.na(Date)) %>%
-        mutate(Date = lubridate::ymd(Date)) %>%
-        filter(Date == max(Date))
+        janitor::clean_names(case = "title") %>%
+        mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
+        mutate(Date = as.Date(Date)) %>% 
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
+        filter(Date == max(Date, na.rm = TRUE))
 }
 
 santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     
     error_on_date(x$Date, exp_date)
     
-    check_names(x, c(
-        "Date", 
-        "SRJ Population (total)", 
-        "SRJ Population (diff)", 
-        "Tests (Incarcerated population, total)", 
-        "Tests (Incarcerated population, difference)", 
-        "Pending tests", 
-        "Percentage of population tested within the past: 7 days", 
-        "Percentage of population tested within the past: 14 days", 
-        "Percentage of population tested within the past: 30 days", 
-        "Incarcerated population cases (total)", 
-        'Incarcerated population cases ("active")',
-        "1-day change in 'active' cases",
-        "Incarcerated population hospitalizations (total)",
-        "Staff cases (total)",
-        "1-day change in staff cases",
-        "Red patients (current)",
-        "Dark Red patients (current)",
-        "Orange patients (current)",
-        "1-day change in Orange patients",
-        "Percent of Orange patients in population",
-        "Total Resolved Cases",
-        "Released while Active",
-        "Percentage of total cases released while active",
-        "Released after Resolved",
-        "Percentage of total cases released after resolved",
-        "Resolved in Custody",
-        "Percentage of total cases resolved in custody",
-        "Deaths",
-        "Current staff cases",
-        "Offered Vaccine (Incarcerated Population, total)",
-        "Offered Vaccine (Incarcerated Population, 1-day diff)",
-        "1st Dose Janssen Vaccine Accepted (Incarcerated Population)",
-        "1st Dose Janssen Vaccine Accepted (Incarcerated Population, 1-day diff)",
-        "1st Dose Moderna Accepted (Incarcerated Population, total)",
-        "1st Dose Moderna Accepted (Incarcerated Population, 1-day diff)",
-        "2nd Dose Moderna Accepted (Incarcerated Population)",
-        "Percent of Population Vaccinated w/ First Dose",
-        "Percent of First Dose Vaccines Accepted"))
-    
     x %>%
         select(
-            Residents.Confirmed = `Incarcerated population cases (total)`,
-            Residents.Active = `Incarcerated population cases ("active")`,
-            Residents.Recovered = `Total Resolved Cases`,
-            Residents.Deaths = Deaths,
-            Residents.Tadmin = `Tests (Incarcerated population, total)`,
-            Residents.Pending = `Pending tests`,
-            Residents.Population = `SRJ Population (total)`,
-            Staff.Confirmed = `Staff cases (total)`,
-            Residents.Initiated_Janssen = `1st Dose Janssen Vaccine Accepted (Incarcerated Population)`,
-            Residents.Initiated_Moderna = `1st Dose Moderna Accepted (Incarcerated Population, total)`,
-            Residents.Completed_Moderna = `2nd Dose Moderna Accepted (Incarcerated Population)`
-            ) %>%
-        mutate(Name = "SANTA RITA JAIL",
-               Residents.Initiated = Residents.Initiated_Janssen + Residents.Initiated_Moderna,
-               Residents.Completed = Residents.Initiated_Janssen + Residents.Completed_Moderna,
-               Residents.Vadmin = Residents.Initiated_Janssen + 
-                                    Residents.Initiated_Moderna + Residents.Completed_Moderna) %>%
-        select(-ends_with("Janssen"), -ends_with("Moderna"))
+            Name = `Facility Name`,
+            Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
+            Residents.Active = `Active Cases Incarcerated Population Current`,
+            Residents.Recovered = `Resolved Cases Incarcerated Population Cumulative`,
+            Residents.Deaths = `Deaths Incarcerated Population Cumulative`,
+            Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
+            Residents.Pending = `Pending Tests Incarcerated Population Current`,
+            Residents.Population = `Population Incarcerated Population Current`,
+            Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
+            Staff.Active = `Active Cases Staff Current`, 
+            Residents.Partial.Drop = `Partially Vaccinated Total Incarcerated Population Current`,
+            Residents.Completed = `Fully Vaccinated Total Incarcerated Population Cumulative`, 
+            ) %>% 
+        rowwise() %>% 
+        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        mutate(Residents.Initiated = ifelse(
+            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate_all(as.numeric) %>%
+        select(-ends_with("Drop")) %>% 
+        mutate(Name = "SANTA RITA JAIL") 
 }
 
 #' Scraper class for general santa_rita_jail COVID data
@@ -100,6 +65,7 @@ santa_rita_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = santa_rita_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -109,13 +75,15 @@ santa_rita_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     santa_rita_jail <- santa_rita_jail_scraper$new(log=TRUE)
+    santa_rita_jail$run_check_date()
     santa_rita_jail$raw_data
     santa_rita_jail$pull_raw()
     santa_rita_jail$raw_data

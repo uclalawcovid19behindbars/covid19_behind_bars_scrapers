@@ -29,9 +29,11 @@ north_carolina_vaccine_restruct <- function(x){
 }
 
 north_carolina_vaccine_extract <- function(x){
-    x %>%
+    x %>% 
         mutate(Name = "STATEWIDE") %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>% 
+        mutate(Residents.Initiated = Residents.Initiated + Residents.Completed, 
+               Staff.Initiated = Staff.Initiated + Staff.Completed)
 }
 
 #' Scraper class for North Carolina vaccine data 
@@ -62,6 +64,7 @@ north_carolina_vaccine_scraper <- R6Class(
             type = "html",
             state = "NC",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = north_carolina_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -71,13 +74,15 @@ north_carolina_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     north_carolina_vaccine <- north_carolina_vaccine_scraper$new(log=TRUE)
+    north_carolina_vaccine$run_check_date()
     north_carolina_vaccine$raw_data
     north_carolina_vaccine$pull_raw()
     north_carolina_vaccine$raw_data

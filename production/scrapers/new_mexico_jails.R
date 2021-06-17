@@ -15,7 +15,7 @@ new_mexico_jails_restruct <- function(x){
 
 new_mexico_jails_extract <- function(x, exp_date = Sys.Date()){
     
-    error_on_date(first(x$Date), exp_date, days = 10)
+    error_on_date(first(x$Date), exp_date, days = 100)
     
     check_names(x, c(
         "Date", 
@@ -31,7 +31,8 @@ new_mexico_jails_extract <- function(x, exp_date = Sys.Date()){
             Residents.Confirmed = Detainee,
             Staff.Confirmed = Staff,
         ) %>%
-        filter(!str_detect(Name, "(?i)all")) # remove sum total
+        filter(!str_detect(Name, "(?i)all")) %>%  # remove sum total
+        mutate(Name = str_c(Name, " Jail"))
 }
 
 #' Scraper class for general new_mexico_jails COVID data
@@ -55,6 +56,7 @@ new_mexico_jails_scraper <- R6Class(
             type = "csv",
             state = "NM",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = new_mexico_jails_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -64,13 +66,15 @@ new_mexico_jails_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     new_mexico_jails <- new_mexico_jails_scraper$new(log=TRUE)
+    new_mexico_jails$run_check_date()
     new_mexico_jails$raw_data
     new_mexico_jails$pull_raw()
     new_mexico_jails$raw_data

@@ -26,7 +26,7 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(first(x$Date), exp_date)
     
     check_names(x, c(
-        "Date", 
+        "Date",
         "Name", 
         "Staff Positive Cases", 
         "Staff Vaccinations")
@@ -36,7 +36,7 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
         select(
             Name = `Name`,
             Staff.Confirmed = `Staff Positive Cases`,
-            Staff.Vadmin = `Staff Vaccinations`) %>% 
+            Staff.Initiated = `Staff Vaccinations`) %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         clean_scraped_df()
@@ -50,7 +50,7 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Staff Positive}{Staff Confirmed from the right most orange column.}
-#'   \item{Staff Vaccinations}{Total vaccinations given to staff.}
+#'   \item{Staff Vaccinations}{Total staff with 1+ vaccinations.}
 #' }
 
 colorado_staff_manual_scraper <- R6Class(
@@ -83,6 +83,7 @@ colorado_staff_manual_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     colorado_staff_manual <- colorado_staff_manual_scraper$new(log=TRUE)
+    colorado_staff_manual$run_check_date()
     colorado_staff_manual$raw_data
     colorado_staff_manual$pull_raw()
     colorado_staff_manual$raw_data

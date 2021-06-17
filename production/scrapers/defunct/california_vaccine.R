@@ -10,9 +10,7 @@ california_vaccine_check_date <- function(x, date = Sys.Date()){
 }
 
 california_vaccine_pull <- function(x){
-    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "CA Vaccine", 
-                                  col_types = "Dccc")
+    stop_defunct_scraper(x)
 }
 
 california_vaccine_restruct <- function(x){

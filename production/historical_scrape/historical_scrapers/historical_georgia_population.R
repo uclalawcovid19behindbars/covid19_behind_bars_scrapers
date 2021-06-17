@@ -54,7 +54,7 @@ historical_ga_pop_restruct <- function(x, date = NULL){
     # Page numbers are hard-coded, will throw errors if this changes though 
     bind_rows(
         x %>% 
-            magick::image_read_pdf(pages = 26) %>% 
+            magick::image_read_pdf(pages = 26) %>%  
             magick::image_crop("2500x1200+0+700") %>% 
             ExtractTable() %>% 
             check_ga_pop_table(type_str = "Institution Type - Trans. Centers"),
@@ -123,13 +123,15 @@ historical_ga_pop_scraper <- R6Class(
             type = "pdf",
             state = "GA",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = historical_ga_pop_pull,
             restruct_func = historical_ga_pop_restruct,
             extract_func = historical_ga_pop_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )

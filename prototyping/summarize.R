@@ -1,22 +1,25 @@
 #!/usr/bin/Rscript
-remotes::install_github("uclalawcovid19behindbars/behindbarstools", upgrade = "never")
+remotes::install_github(
+    "uclalawcovid19behindbars/behindbarstools", upgrade = "never")
 library(tidyverse)
+library(data.table)
+library(behindbarstools)
 
 ind_vars <- c("Date", "Name", "State")
-    
+
 # Update aggregated_data.csv
-list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = TRUE) %>%
+list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = T) %>%
     lapply(function(x){
-        df_ <- read_csv(x, col_types = cols())
+        df_ <- fread(x)
+        if(nrow(df_) == 0){
+            df_ <- data.table()
+        }
         if("Date" %in% names(df_)){
-            df_ <- df_ %>%
-                mutate(Date = lubridate::as_date(Date)) %>%
-		mutate_at(vars(starts_with("Residents")), as.numeric) %>%
-		mutate_at(vars(starts_with("Staff")), as.numeric)
+            df_[,Date := lubridate::as_date(Date)]
         }
         df_
     }) %>%
-    bind_rows() %>%
+    rbindlist(fill=TRUE, use.names = TRUE) %>%
     select(-Resident.Deaths) %>%
     # remove values if they are missing a data name or state
     filter(!is.na(Date) & !is.na(Name) & State != "") %>%
@@ -28,5 +31,6 @@ list.files("/srv/shiny-server/scraper_data/extracted_data", full.names = TRUE) %
     write_csv("/srv/shiny-server/scraper_data/summary_data/aggregated_data.csv")
 
 # Update time series scraped data 
-behindbarstools::read_scrape_data(all_dates = TRUE, coalesce = TRUE) %>% 
-    write_csv("/srv/shiny-server/scraper_data/summary_data/scraped_time_series.csv")
+read_scrape_data(all_dates = TRUE) %>% 
+    write_csv(
+        "/srv/shiny-server/scraper_data/summary_data/scraped_time_series.csv")

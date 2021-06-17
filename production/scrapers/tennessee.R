@@ -34,7 +34,9 @@ tennessee_extract <- function(x){
         filter(!str_detect(Name, "(?i)region|managed|location|total")) %>%
         filter(Name != "") %>%
         clean_scraped_df() %>%
-        as_tibble()
+        as_tibble() %>% 
+        mutate(Residents.Deaths = ifelse(
+            is.na(Residents.Deaths), 0, Residents.Deaths)) 
     
     col_name_mat2 <- matrix(c(
         "Name", "V1", "TESTING NUMBERS",
@@ -54,8 +56,6 @@ tennessee_extract <- function(x){
         clean_scraped_df() %>%
         as_tibble() %>%
         full_join(fac_df, by = "Name") %>%
-        mutate(Residents.Deaths = ifelse(
-            is.na(Residents.Deaths), 0, Residents.Deaths)) %>%
         mutate(Residents.Confirmed = Residents.Active + Residents.Deaths +
                    Residents.Recovered)
 }
@@ -90,6 +90,7 @@ tennessee_scraper <- R6Class(
             type = "pdf",
             state = "TN",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = tennessee_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -99,13 +100,15 @@ tennessee_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     tennessee <- tennessee_scraper$new(log=TRUE)
+    tennessee$run_check_date()
     tennessee$raw_data
     tennessee$pull_raw()
     tennessee$raw_data

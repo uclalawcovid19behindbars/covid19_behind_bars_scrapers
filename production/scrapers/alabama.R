@@ -47,7 +47,9 @@ alabama_extract <- function(x){
             Staff.Confirmed = Employee_Positive,
             Staff.Deaths = Employee_Death,
             Staff.Recovered = Employee_Recovered, 
-            Staff.Vadmin = Employee_Vaccinations
+            Staff.Active = Employee_Active_Cases, 
+            Staff.Initiated = Employee_Vaccinations, 
+            Residents.Initiated = Inmate_Vaccinations
         )
 }
 
@@ -91,7 +93,7 @@ alabama_scraper <- R6Class(
             pull_func = alabama_pull,
             # restructuring the data means pulling out the data portion of the json
             restruct_func = alabama_restruct,
-            check_date = alabama_date_check, 
+            check_date = alabama_check_date, 
             # Rename the columns to appropriate database names
             extract_func = alabama_extract){
             super$initialize(
@@ -105,6 +107,7 @@ alabama_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     alabama <- alabama_scraper$new(log=TRUE)
+    alabama$run_check_date()
     alabama$raw_data
     alabama$pull_raw()
     alabama$raw_data

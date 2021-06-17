@@ -22,7 +22,7 @@ texas_jails_restruct <- function(x){
     )
     
     staff_exp <- c(
-        Drop.Staff.Active = 
+        Staff.Active = 
             "Number of jailers with active positive test confirmation",
         Drop.Staff.Quarantine =
             "Number of jailers quarantined/isolated pending test results"
@@ -126,6 +126,7 @@ texas_jails_scraper <- R6Class(
             type = "pdf",
             state = "TX",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = texas_jails_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -135,13 +136,15 @@ texas_jails_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     texas_jails <- texas_jails_scraper$new(log=TRUE)
+    texas_jails$run_check_date()
     texas_jails$raw_data
     texas_jails$pull_raw()
     texas_jails$raw_data

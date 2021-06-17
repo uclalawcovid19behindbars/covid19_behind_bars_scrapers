@@ -21,6 +21,8 @@ vermont_extract <- function(x, exp_date = Sys.Date()){
         filter(!is.na(Name)) %>% 
         select(Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, Residents.Deaths, 
                Residents.Recovered, Residents.Tested) %>% 
+        mutate(Residents.Confirmed =
+                   ifelse(str_detect(Name, "(?i)state-wide|statewide"), NA, Residents.Confirmed)) %>%
         clean_scraped_df()
 }
 
@@ -45,6 +47,7 @@ vermont_scraper <- R6Class(
             type = "manual",
             state = "VT",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = vermont_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -54,13 +57,15 @@ vermont_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     vermont <- vermont_scraper$new(log=TRUE)
+    vermont$run_check_date()
     vermont$raw_data
     vermont$pull_raw()
     vermont$raw_data

@@ -17,7 +17,7 @@ kansas_extract <- function(x){
     
     exp_names <- c(
         Name = "Facility",
-        Drop.Staff.Active = "CurrentStaff Cases",
+        Staff.Active = "CurrentStaff Cases",
         Residents.Active = "Current ResidentCases",
         Drop.Resident.At = "Current PositiveResidents Housedat thisFacility",
         Staff.Confirmed = "Cumulative Staff Cases",
@@ -55,6 +55,7 @@ kansas_scraper <- R6Class(
             type = "html",
             state = "KS",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = kansas_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -64,13 +65,15 @@ kansas_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     kansas <- kansas_scraper$new(log=TRUE)
+    kansas$run_check_date()
     kansas$raw_data
     kansas$pull_raw()
     kansas$raw_data

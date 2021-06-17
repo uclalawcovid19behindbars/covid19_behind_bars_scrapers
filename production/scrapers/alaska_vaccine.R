@@ -92,7 +92,7 @@ alaska_vaccine_extract <- function(x){
     x %>%
         rename(
             Name = Facility,
-            Residents.Vadmin = `Vax given`,
+            Residents.Vadmin = `Vaccinations given`,
             Residents.Initiated = `# individual inmates`,
             Residents.Completed = `# completed series`) %>%
         filter(!str_detect(Name, "(?i)total")) %>%
@@ -143,6 +143,7 @@ alaska_vaccine_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     alaska_vaccine <- alaska_vaccine_scraper$new(log=TRUE)
+    alaska_vaccine$run_check_date()
     alaska_vaccine$perma_save()
     alaska_vaccine$raw_data
     alaska_vaccine$pull_raw()

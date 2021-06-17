@@ -5,7 +5,7 @@ library(behindbarstools)
 library(futile.logger)
 source("R/generic_scraper.R")
 
-basic_check <- function(true_names, expected_names){
+basic_check <- function(true_names, expected_names, detect = FALSE){
     if(length(true_names) != length(expected_names)){
         warning("Length of expected names does not match actual names")
     }
@@ -19,19 +19,32 @@ basic_check <- function(true_names, expected_names){
             else{
                 cexp <- clean_fac_col_txt(expected_names[i])
                 ctrue <- clean_fac_col_txt(true_names[i])
-                if(cexp != ctrue){
-                    warning(str_c(
-                        "Extracted column ", i, " does not match expected ",
-                        "name. Expected: ", cexp, " Received: ", ctrue))
+                
+                # Exact match 
+                if (!detect){
+                    if(cexp != ctrue){
+                        warning(str_c(
+                            "Extracted column ", i, " does not match expected ",
+                            "name. Expected: ", cexp, " Received: ", ctrue))
+                    }
+                }
+                
+                # Case-insensitive string contains match 
+                if (detect){
+                    if(!str_detect(ctrue, paste0("(?i)", cexp))){
+                          warning(str_c(
+                            "Extracted column ", i, " does not contain expected string. ",
+                            "Expected: ", cexp, " Received: ", ctrue))
+                    }
                 }
             }
         }
     }
 }
 
-check_names <- function(DF, expected_names){
+check_names <- function(DF, expected_names, detect = FALSE){
     true_names <- names(DF)
-    basic_check(true_names, expected_names)
+    basic_check(true_names, expected_names, detect)
 }
 
 check_names_extractable <- function(df_, col_name_df){
@@ -184,8 +197,8 @@ string_to_clean_numeric <- function(column) {
     if (is.factor(column)) { column <- as.character(column) }
     # check if there are any nonnumeric characters we didn't expect
     expected.nonnumeric.values <- 
-        c("-", "N/A", "na", "n/a", "NA", "", " +",
-          NA, "T", "[", "]", "o", "O",
+        c("-", "N/A", "na", "n/a", "NA", "", " +", "n/a*",
+          NA, "T", "[", "]", "o", "O", "Unknown",
           "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "", "PENDING")
     
     unexpected.nonnumeric.values <- column[
@@ -260,7 +273,7 @@ info_scraper <- function(scraper){
 
 get_scraper_vec <- function(){
     # initiate all scrapers in the production folders
-    sc_vec <- list.files("production/scrapers", full.names = FALSE) %>%
+    sc_vec <- list.files("production/scrapers", full.names = FALSE, pattern = ".R") %>%
         str_replace(".R", "_scraper")
 
     names(sc_vec) <- str_remove(sc_vec, "_scraper")
@@ -538,10 +551,8 @@ write_agg_data <- function(...){
   sel_vars <- c(
     "Residents.Confirmed", "Staff.Confirmed",
     "Residents.Deaths", "Staff.Deaths",
-    "Residents.Recovered", "Staff.Recovered", "Residents.Tadmin",
-    #"Residents.Initiated", "Staff.Initiated",
-    #"Residents.Completed", "Staff.Completed",
-    "Residents.Vadmin", "Staff.Vadmin"
+    "Residents.Tadmin",
+    "Residents.Initiated", "Staff.Initiated"
   )
   
   raw_agg %>%
@@ -552,23 +563,40 @@ write_agg_data <- function(...){
     write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
 }
 
-write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 60, agg_window = 60){
-  
-    out_df <- read_scrape_data(all_dates = FALSE, coalesce = TRUE, window = fac_window)
+write_state_agg_data <- function(...){
+    full_var_df <- calc_aggregate_counts(...)
+    aggregate_pop_df <- read_aggregate_pop_data()
     
     covid_suffixes <- c(
-      ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
-      ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
+      ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
+      ".Initiated", ".Completed", ".Vadmin")
+    
+    full_var_df %>%
+        # Pivot wide 
+        filter(!is.na(Val)) %>%
+        select(State, Measure, Val) %>%
+        pivot_wider(names_from = "Measure", values_from = "Val") %>%
+        arrange(State) %>%
+        select(State, ends_with(covid_suffixes)) %>% 
+        select(-Staff.Tested) %>% 
+        # Join with population anchors 
+        left_join(aggregate_pop_df, by = "State") %>% 
+        write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
+}
+
+write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, agg_window = 31){
+  
+    out_df <- read_scrape_data(all_dates = FALSE, window = fac_window)
+    
+    covid_suffixes <- c(
+      ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
+      ".Initiated", ".Completed", ".Vadmin")
     
     rowAny <- function(x) rowSums(x) > 0
     
     out_df %>%
         # Drop rows missing COVID data (e.g. only with population data)
         filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-        # drop rows related to statewide counts after notifying CDC and hobject
-        # filter(Name != "STATEWIDE") %>%
-        # filter(Name != "ALL BOP FACILITIES") %>%
-        # filter(Name != "ALL ICE FACILITIES") %>%
         select(all_of(ends_with(covid_suffixes))) %>%
         summarize_all(sum_na_rm) %>%
         pivot_longer(
@@ -577,37 +605,29 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 60, ag
             values_to = "Count") %>%
         print()
     
+    # Write facility-level data 
     out_df %>%
         # Drop rows missing COVID data (e.g. only with population data)
         filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-        # drop rows related to statewide counts after notifying CDC and hobject
-        # filter(Name != "STATEWIDE") %>%
-        # filter(Name != "ALL BOP FACILITIES") %>%
-        # filter(Name != "ALL ICE FACILITIES") %>%
         select(
             Facility.ID, Jurisdiction, State, Name, Date, source,
             Residents.Confirmed, Staff.Confirmed,
-            Residents.Deaths, Staff.Deaths, Residents.Recovered,
-            Staff.Recovered, Residents.Tadmin, Staff.Tested, Residents.Negative,
-            Staff.Negative, Residents.Pending, Staff.Pending,
-            Residents.Quarantine, Staff.Quarantine, Residents.Active,
-            Population.Feb20, Residents.Population, Residents.Tested, 
-            Residents.Initiated, Staff.Initiated, Residents.Completed, Staff.Completed, 
-            Residents.Vadmin, Staff.Vadmin, Address, Zipcode, City, County, Latitude,
+            Residents.Deaths, Staff.Deaths, 
+            Residents.Tadmin, Residents.Tested, 
+            Residents.Active, Staff.Active,
+            Population.Feb20, Residents.Population, 
+            Residents.Initiated, Staff.Initiated, 
+            Residents.Completed, Staff.Completed, 
+            Residents.Vadmin, Staff.Vadmin, 
+            Address, Zipcode, City, County, Latitude,
             Longitude, County.FIPS, HIFLD.ID, ICE.Field.Office) %>% 
         write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
                   na="")
 
-    full_var_df <- behindbarstools::calc_aggregate_counts(
-        state = TRUE, window = agg_window)
-
-    full_var_df %>%
-        filter(!is.na(Val)) %>%
-        select(State, Measure, Val) %>%
-        pivot_wider(names_from = "Measure", values_from = "Val") %>%
-        arrange(State) %>%
-        write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
+    # Write state-level data 
+    write_state_agg_data(state = TRUE, window = agg_window)
     
+    # Write national-level data 
     write_agg_data(window = agg_window)
 }
 

@@ -33,7 +33,7 @@ california_staff_extract <- function(x){
         Name = "Locations",
         Staff.Confirmed = "Cumulative Confirmed",
         Staff.Recovered = "Staff Returned to Work",
-        Drop.Staff.Active = "Active Cases",
+        Staff.Active = "Active Cases",
         Drop.New = "New Cases in Last 14 Days"
     )
     
@@ -90,6 +90,7 @@ california_staff_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     california_staff <- california_staff_scraper$new(log=TRUE)
+    california_staff$run_check_date()
     california_staff$raw_data
     california_staff$pull_raw()
     california_staff$raw_data

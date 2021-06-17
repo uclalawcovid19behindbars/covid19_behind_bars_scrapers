@@ -24,7 +24,7 @@ massachusetts_extract <- function(x){
                 Name = "DOC Facility",
                 Residents.Population = "Total Population",
                 Residents.Active = "Active Prisoner Cases",
-                Residents.Tested = "N Tested - Detainees/Inmates",
+                Residents.Tadmin = "N Tested - Detainees/Inmates",
                 Residents.Confirmed = "N Positive - Detainees/Inmates",
                 Residents.Deaths = "N Deaths",
                 Staff.Tested = "N Tested - COs",
@@ -37,7 +37,7 @@ massachusetts_extract <- function(x){
                 Name = "DOC Facility",
                 Residents.Population = "Total Population",
                 Residents.Active = "Active Prisoner Cases",
-                Residents.Tested = "N Tested - Detainees/Inmates",
+                Residents.Tadmin = "N Tested - Detainees/Inmates",
                 Residents.Confirmed = "N Positive - Detainees/Inmates",
                 Residents.Deaths = "N Deaths")
     }
@@ -87,6 +87,7 @@ massachusetts_scraper <- R6Class(
             type = "csv",
             state = "MA",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = massachusetts_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -96,13 +97,15 @@ massachusetts_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction, 
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     massachusetts <- massachusetts_scraper$new(log=TRUE)
+    massachusetts$run_check_date()
     massachusetts$raw_data
     massachusetts$pull_raw()
     massachusetts$raw_data

@@ -1,6 +1,6 @@
 source("./R/generic_scraper.R")
 
-dc_check_date <- function(x, date = Sysy){
+dc_check_date <- function(x, date = Sys.Date()){
     stringr::str_c(
         "https://em.dcgis.dc.gov/dcgis/rest/services/COVID_19/",
         "OpenData_COVID19/FeatureServer/10/query?where=1%3D1&",
@@ -121,6 +121,7 @@ dc_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     dc <- dc_scraper$new(log=FALSE)
+    dc$run_check_date()
     dc$raw_data
     dc$pull_raw()
     dc$raw_data

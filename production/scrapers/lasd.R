@@ -30,7 +30,7 @@ lasd_crop <- function(img, crop, detect = "", rimg = FALSE){
 
 lasd_pull <- function(x, wait = 5){
    get_src_by_attr(
-       x, "img", attr = "src", attr_regex = "(?i)covid.?fact.?sheet") %>%
+       x, "img", attr = "src", attr_regex = "(?i)fact.?sheet") %>%
         magick::image_read()
 }
 
@@ -54,6 +54,21 @@ lasd_restruct <- function(x){
     }
     
     else if(abs(1463 - h_) <= 8 & w_ == 1200){
+        out <- tibble(
+            Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+740", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1035", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "500x25+620+518", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+600", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
+    }
+    
+    else if(abs(1473 - h_) <= 3 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
             Residents.Recovered = lasd_crop(x, "570x30+620+670", "(?i)recover"),
@@ -111,6 +126,20 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
+    else if(abs(1515 - h_) <= 19 & w_ == 1200){
+        out <- tibble(
+            Residents.Confirmed = lasd_crop(x, "570x30+620+435", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+715", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+790", "(?i)deaths"),
+            Residents.Quarantine = lasd_crop(x, "570x30+620+1055", "(?i)total"),
+            drop.neg.asymp = lasd_crop(x, "570x25+620+612", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+612", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "545x25+625+558", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+558", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+640", "(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+640", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+233", "(?i)jail pop"))
+    }
     else{
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+405", "(?i)total pos"),
@@ -129,12 +158,18 @@ lasd_restruct <- function(x){
 }
 
 lasd_extract <- function(x){
-    x %>%
+    out_df <- x %>%
         mutate(Residents.Negative = drop.neg.asymp + drop.neg.symp) %>%
         mutate(Residents.Active = drop.pos.asymp + drop.pos.symp) %>%
         mutate(Residents.Tadmin = drop.test.asymp + drop.test.symp) %>% 
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
+    
+    if(out_df$Residents.Deaths != 13){
+        warning("You sure LA shouldnt be 13???")
+    }
+    
+    out_df
 }
 
 #' Scraper class for general LASD staff COVID data
@@ -167,6 +202,7 @@ lasd_scraper <- R6Class(
             type = "img",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = lasd_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -176,13 +212,15 @@ lasd_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     lasd <- lasd_scraper$new(log=TRUE)
+    lasd$run_check_date()
     lasd$raw_data
     lasd$pull_raw()
     lasd$raw_data

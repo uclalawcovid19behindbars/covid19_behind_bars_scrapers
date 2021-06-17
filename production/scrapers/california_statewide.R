@@ -76,7 +76,7 @@ california_statewide_restruct <- function(x){
 }
 
 california_statewide_extract <- function(x){
-    tibble(Name = "State-Wide", Residents.Tadmin = x)
+    tibble(Name = "State-Wide", Residents.Tested = x)
 }
 
 #' Scraper class for general california_statewide COVID data
@@ -125,6 +125,7 @@ california_statewide_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     california_statewide <- california_statewide_scraper$new(log=TRUE)
+    california_statewide$run_check_date()
     california_statewide$raw_data
     california_statewide$pull_raw()
     california_statewide$raw_data

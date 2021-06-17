@@ -16,26 +16,51 @@ new_hampshire_restruct <- function(x){
     staff_idx <- which(stringr::str_detect(captions, "(?i)staff testing"))
     rez_idx <- which(stringr::str_detect(captions, "(?i)residents testing"))
     
+    res_pop <- x %>%
+        rvest::html_node(xpath="/html/body/div[2]/div/main/div/div/div/div[2]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[1]/p[5]/strong") %>%
+        rvest::html_text()
+    
+    if(!str_detect(res_pop, "(?i)total resident population")){
+        warning("Resident population value expected but not detected. Please inspect")
+    }
+    
+    staff_pop <- x %>%
+        rvest::html_node(xpath = "/html/body/div[2]/div/main/div/div/div/div[2]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[2]/p[2]") %>% 
+        rvest::html_text()
+    
+    if(!str_detect(staff_pop, "(?i)total number of nhdoc staff")){
+        warning("Staff population value expected but not detected. Please inspect")
+    }
+    
     list(
         staff = tab_set[[staff_idx]] %>%
             rvest::html_table(header = TRUE) %>%
             as_tibble(),
         resident = tab_set[[rez_idx]] %>%
             rvest::html_table(header = TRUE) %>%
-            as_tibble()
+            as_tibble(),
+        staff.pop = staff_pop,
+        res.pop = res_pop
     )
 }
 
 new_hampshire_extract <- function(x){
     staff_df <- x$staff
-    rez_df <- x$resident
+    rez_df <- x$resident 
+    ## pull out population numbers from paragraph text
+    staff_pop <- x$staff.pop %>%
+        str_extract('\\d+') %>% 
+        as.numeric()
+    res_pop <- x$res.pop %>%
+        str_extract('\\d+') %>%
+        as.numeric()
     
     names(staff_df) <- clean_fac_col_txt(names(staff_df))
     names(rez_df) <- clean_fac_col_txt(names(rez_df))
     
     rez_exp <- c(
         Name = "Facility",
-        Residents.Tested = "Residents COVID-19 Tests Administered",
+        Residents.Tadmin = "Residents COVID-19 Tests Administered",
         Residents.Active = "Active Residents Positive",
         Residents.Confirmed =
             "Total Residents who have tested positive since March 2020",
@@ -45,7 +70,7 @@ new_hampshire_extract <- function(x){
     staff_exp <- c(
         Name = "Worksite",
         Staff.Confirmed = "Staff Positive - Total",
-        Drop.Staff.Active = "Staff Positive - Active")
+        Staff.Active = "Staff Positive - Active")
     
     check_names(staff_df, staff_exp)
     check_names(rez_df, rez_exp)
@@ -63,6 +88,11 @@ new_hampshire_extract <- function(x){
             mutate(Name = ifelse(Name == "SPU / RTU", "SPU & RTU", Name)) %>%
             filter(!str_detect(Name, "(?i)total|current|other|request")),
         by = "Name") %>%
+        mutate(Residents.Population = NA,
+               Staff.Population = NA) %>% 
+        add_row(Name = "State-Wide", 
+                Residents.Population = res_pop,
+                Staff.Population = staff_pop) %>%
         select(-starts_with("Drop")) %>%
         clean_scraped_df()
 }
@@ -77,9 +107,10 @@ new_hampshire_extract <- function(x){
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Num Staff Positive}{The staff number testing positive}
-#'   \item{Num Residents tested}{Not the number of tests administered}
+#'   \item{Num Residents tested}{Number of tests administered}
 #'   \item{Num Residents Positive}{Number of residents confirmed}
 #'   \item{NHDOC Staff}{State wide staff population}
+#'   \item{Total resident population}{State wide incarcerated population}
 #' }
 
 new_hampshire_scraper <- R6Class(
@@ -94,6 +125,7 @@ new_hampshire_scraper <- R6Class(
             type = "html",
             state = "NH",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = new_hampshire_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -103,13 +135,15 @@ new_hampshire_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     new_hampshire <- new_hampshire_scraper$new(log=TRUE)
+    new_hampshire$run_check_date()
     new_hampshire$raw_data
     new_hampshire$pull_raw()
     new_hampshire$raw_data

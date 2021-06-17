@@ -107,6 +107,7 @@ arizona_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     arizona <- arizona_scraper$new(log=TRUE)
+    arizona$run_check_date()
     arizona$raw_data
     arizona$pull_raw()
     arizona$raw_data
