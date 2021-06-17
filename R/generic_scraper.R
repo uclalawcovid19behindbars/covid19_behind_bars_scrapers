@@ -300,6 +300,14 @@ generic_scraper <- R6Class(
         },
         
         perma_save = function(tries = 3){
+            if(file.exists(self$err_log)){
+                if(str_detect(read_file(self$err_log), "ERROR ")){
+                    tryLog(warning(
+                        "Log file with errors exists.",
+                        "Not going to perma save data."))
+                    return()
+                }
+            }
             if(self$date != Sys.Date()){
                 stop("Can't perma save for a date that is not today.")
             }

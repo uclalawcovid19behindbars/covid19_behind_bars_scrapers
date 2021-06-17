@@ -161,6 +161,7 @@ minnesota_scraper <- R6Class(
             type = "html",
             state = "MN",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = minnesota_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -170,13 +171,15 @@ minnesota_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     minnesota <- minnesota_scraper$new(log=TRUE)
+    minnesota$run_check_date()
     minnesota$raw_data
     minnesota$pull_raw()
     minnesota$raw_data
