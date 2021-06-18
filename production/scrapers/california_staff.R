@@ -8,9 +8,10 @@ california_staff_check_date <- function(x, date = Sys.Date()){
         rvest::html_node(".page-standard__content") %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>%
-        {.[str_starts(., "(?i)updated")]} %>%
-        str_remove("\\([^)]*\\)") %>%
-        str_remove("(?i)updated") %>%
+        {.[str_detect(., "(?i)as of")]} %>%
+        str_split("(?i)as of") %>% 
+        unlist() %>% 
+        .[2] %>% 
         str_squish() %>%
         lubridate::mdy() %>%
         error_on_date(date)
@@ -31,10 +32,7 @@ california_staff_restruct <- function(x){
 california_staff_extract <- function(x){
     ext <- c(
         Name = "Locations",
-        Staff.Confirmed = "Cumulative Confirmed",
-        Staff.Recovered = "Staff Returned to Work",
-        Staff.Active = "Active Cases",
-        Drop.New = "New Cases in Last 14 Days"
+        Staff.Confirmed = "Cumulative Confirmed"
     )
     
     check_names(x, ext)
