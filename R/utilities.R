@@ -565,11 +565,11 @@ write_agg_data <- function(...){
 
 write_state_agg_data <- function(...){
     full_var_df <- calc_aggregate_counts(...)
-    aggregate_pop_df <- read_aggregate_pop_data()
+    aggregate_pop_df <- read_aggregate_pop_data() 
     
     covid_suffixes <- c(
-      ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
-      ".Initiated", ".Completed", ".Vadmin")
+        ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
+        ".Initiated", ".Completed", ".Vadmin")
     
     full_var_df %>%
         # Pivot wide 
@@ -581,6 +581,7 @@ write_state_agg_data <- function(...){
         select(-Staff.Tested) %>% 
         # Join with population anchors 
         left_join(aggregate_pop_df, by = "State") %>% 
+        select(-Date) %>% 
         write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
 }
 
