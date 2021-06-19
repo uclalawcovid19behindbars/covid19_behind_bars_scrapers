@@ -7,12 +7,14 @@ wisconsin_staff_pull <- function(x){
 
 wisconsin_staff_restruct <- function(x){
     df_ <- x %>%
-        rvest::html_node("table") %>%
-        rvest::html_table() %>%
-        unname() %>%
-        janitor::row_to_names(row_number = 1)
+        rvest::html_nodes("table") %>%
+        .[[2]] %>% 
+        rvest::html_table() 
     
-    df_[,1:2]
+    out <- df_[,1:2]
+    
+    out %>% 
+        janitor::row_to_names(row_number = 1)
 }
 
 wisconsin_staff_extract <- function(x){

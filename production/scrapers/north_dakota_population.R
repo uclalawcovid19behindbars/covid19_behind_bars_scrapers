@@ -80,7 +80,7 @@ north_dakota_population_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    nd_pop <- nd_pop_scraper$new(log=TRUE)
+    nd_pop <- north_dakota_population_scraper$new(log=TRUE)
     nd_pop$raw_data
     nd_pop$pull_raw()
     nd_pop$raw_data

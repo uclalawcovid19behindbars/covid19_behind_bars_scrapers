@@ -16,10 +16,7 @@ california_staff_restruct <- function(x){
 california_staff_extract <- function(x){
     ext <- c(
         Name = "Locations",
-        Staff.Confirmed = "Cumulative Confirmed",
-        Staff.Recovered = "Staff Returned to Work",
-        Staff.Active = "Active Cases",
-        Drop.New = "New Cases in Last 14 Days"
+        Staff.Confirmed = "Cumulative Confirmed"
     )
     
     check_names(x, ext)

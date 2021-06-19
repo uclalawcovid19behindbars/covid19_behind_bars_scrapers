@@ -43,7 +43,7 @@ west_virginia_vaccine_extract <- function(x){
     res_df <- x[1:(emp_idx-1),] %>%
         select(!starts_with("Drop")) %>%
         clean_scraped_df() %>% 
-        mutate(Residents.Completed = vector_sum_na_rm(Moderna.Completed, Johnson)) %>% 
+        mutate(Residents.Initiated = vector_sum_na_rm(Moderna.Completed, Johnson)) %>% 
         filter(!across(c(Moderna.Completed, Johnson), ~ is.na(.x))) %>% 
         filter(!str_detect(Name, "(?i)total")) 
     
@@ -53,7 +53,7 @@ west_virginia_vaccine_extract <- function(x){
         rename(Staff.Population = Drop.Population) %>% 
         select(!starts_with("Drop")) %>%
         clean_scraped_df() %>% 
-        mutate(Staff.Completed = vector_sum_na_rm(Moderna.Completed, Johnson))
+        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Completed, Johnson))
     
     if(nrow(res_df) != 34){
         warning(stringr::str_c(
