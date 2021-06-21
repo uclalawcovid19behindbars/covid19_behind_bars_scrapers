@@ -21,11 +21,11 @@ san_diego_jails_extract <- function(x) {
     
     if(str_detect(x[[1]][["0"]][1], "(?i)population")){
         col_name <- matrix(c(
-            "Residents.Population", "0", "CURRENT INMATE POPULATION", 
+            "Residents.Population", "0", "CURRENT JAIL POPULATION", 
             "Residents.Active", "1", "ACTIVE COVID-19 CASES IN CUSTODY",
             "Drop.Residents.pact", "2", "% ACTIVE CASES IN CUSTODY", 
-            "Residents.Quarantine", "3", "INMATES IN ISOLATION FOR PRECAUTIONS", 
-            "Drop.Residents.pquar", "4", "% INMATES IN ISOLATION"
+            "Residents.Quarantine", "3", "INDIVIDUALS IN ISOLATION FOR PRECAUTIONS", 
+            "Drop.Residents.pquar", "4", "% INDIVIDUALS IN ISOLATION"
         ), ncol = 3, nrow = 5, byrow = TRUE)
         
         colnames(col_name) <- c("clean", "raw", "check")

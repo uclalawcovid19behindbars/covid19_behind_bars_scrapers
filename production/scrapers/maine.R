@@ -61,7 +61,7 @@ maine_extract <- function(x){
     
     colnames(vax_col_name_mat) <- c("check", "raw", "clean")
     vax_col_name_df <- as_tibble(vax_col_name_mat)
-    check_names_extractable(vaccines_, vax_col_name_df)
+    check_names_extractable(vaccines_ %>% slice(-1), vax_col_name_df)
     
     vaccines_df <- rename_extractable(vaccines_, vax_col_name_df) %>%
         as_tibble() %>% 
