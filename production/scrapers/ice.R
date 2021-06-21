@@ -128,19 +128,22 @@ ice_scraper <- R6Class(
             type = "html",
             state = "federal",
             jurisdiction = "immigration",
+            check_date = NULL,
             pull_func = ice_pull,
             restruct_func = ice_restruct,
             extract_func = ice_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     ice <- ice_scraper$new(log=TRUE)
+    ice$run_check_date()
     ice$perma_save()
     ice$raw_data
     ice$pull_raw()

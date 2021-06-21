@@ -92,6 +92,7 @@ michigan_scraper <- R6Class(
             type = "img",
             state = "MI",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = michigan_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -101,13 +102,15 @@ michigan_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     michigan <- michigan_scraper$new(log=TRUE)
+    michigan$run_check_date()
     michigan$raw_data
     michigan$pull_raw()
     michigan$raw_data

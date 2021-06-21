@@ -125,6 +125,7 @@ new_hampshire_scraper <- R6Class(
             type = "html",
             state = "NH",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = new_hampshire_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -134,13 +135,15 @@ new_hampshire_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     new_hampshire <- new_hampshire_scraper$new(log=TRUE)
+    new_hampshire$run_check_date()
     new_hampshire$raw_data
     new_hampshire$pull_raw()
     new_hampshire$raw_data

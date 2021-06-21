@@ -196,19 +196,22 @@ wisconsin_population_scraper <- R6Class(
             type = "pdf",
             state = "WI",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = wisconsin_population_pull,
             restruct_func = wisconsin_population_restruct,
             extract_func = wisconsin_population_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     wisconsin_population <- wisconsin_population_scraper$new(log=TRUE)
+    wisconsin_population$run_check_date()
     wisconsin_population$raw_data
     wisconsin_population$pull_raw()
     wisconsin_population$raw_data

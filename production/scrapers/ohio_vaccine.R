@@ -56,6 +56,7 @@ ohio_vaccine_scraper <- R6Class(
             type = "manual",
             state = "OH",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = ohio_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -65,13 +66,15 @@ ohio_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     ohio_vaccine <- ohio_vaccine_scraper$new(log=TRUE)
+    ohio_vaccine$run_check_date()
     ohio_vaccine$raw_data
     ohio_vaccine$pull_raw()
     ohio_vaccine$raw_data

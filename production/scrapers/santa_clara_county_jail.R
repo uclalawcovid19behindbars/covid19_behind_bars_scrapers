@@ -61,6 +61,7 @@ santa_clara_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = santa_clara_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -70,13 +71,15 @@ santa_clara_county_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     santa_clara_county_jail <- santa_clara_county_jail_scraper$new(log=TRUE)
+    santa_clara_county_jail$run_check_date()
     santa_clara_county_jail$raw_data
     santa_clara_county_jail$pull_raw()
     santa_clara_county_jail$raw_data

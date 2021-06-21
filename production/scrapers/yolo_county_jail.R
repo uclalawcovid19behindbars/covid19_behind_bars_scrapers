@@ -50,6 +50,7 @@ yolo_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = yolo_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -59,13 +60,15 @@ yolo_county_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     yolo_county_jail <- yolo_county_jail_scraper$new(log=TRUE)
+    yolo_county_jail$run_check_date()
     yolo_county_jail$raw_data
     yolo_county_jail$pull_raw()
     yolo_county_jail$raw_data

@@ -57,7 +57,7 @@ michigan_vaccine_extract <- function(x){
 #' state's DHS website. 
 #' \describe{
 #'   \item{Name}{}
-#'   \item{Total population}{}
+#'   \item{Total population}{} 
 #'   \item{# refusals}{}
 #'   \item{Cumulative 1st doses}{}
 #'   \item{Cumulative 2nd doses}{}
@@ -81,6 +81,7 @@ michigan_vaccine_scraper <- R6Class(
             type = "html",
             state = "MI",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = michigan_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -90,13 +91,15 @@ michigan_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                 check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     michigan_vaccine <- michigan_vaccine_scraper$new(log=TRUE)
+    michigan_vaccine$run_check_date()
     michigan_vaccine$raw_data
     michigan_vaccine$pull_raw()
     michigan_vaccine$raw_data

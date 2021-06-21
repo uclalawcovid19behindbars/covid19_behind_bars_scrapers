@@ -82,6 +82,7 @@ minnesota_vaccine_scraper <- R6Class(
             type = "manual",
             state = "MN",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = minnesota_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -91,13 +92,15 @@ minnesota_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     minnesota_vaccine <- minnesota_vaccine_scraper$new(log=TRUE)
+    minnesota_vaccine$run_check_date()
     minnesota_vaccine$raw_data
     minnesota_vaccine$pull_raw()
     minnesota_vaccine$raw_data

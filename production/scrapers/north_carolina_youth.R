@@ -58,19 +58,22 @@ north_carolina_youth_scraper <- R6Class(
             type = "html",
             state = "NC",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = north_carolina_youth_pull,
             restruct_func = north_carolina_youth_restruct,
             extract_func = north_carolina_youth_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     north_carolina_youth <- north_carolina_youth_scraper$new(log=TRUE)
+    north_carolina_youth$run_check_date()
     north_carolina_youth$raw_data
     north_carolina_youth$pull_raw()
     north_carolina_youth$raw_data

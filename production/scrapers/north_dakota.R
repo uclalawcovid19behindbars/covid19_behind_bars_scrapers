@@ -142,6 +142,7 @@ north_dakota_scraper <- R6Class(
             type = "html",
             state = "ND",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = north_dakota_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -151,13 +152,15 @@ north_dakota_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     north_dakota <- north_dakota_scraper$new(log=TRUE)
+    north_dakota$run_check_date()
     north_dakota$raw_data
     north_dakota$pull_raw()
     north_dakota$raw_data

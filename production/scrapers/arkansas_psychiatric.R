@@ -40,18 +40,21 @@ arkansas_psychiatric_scraper <- R6Class(
             pull_func = arkansas_psychiatric_pull,
             # restructuring the data means pulling out the data portion of the json
             restruct_func = arkansas_psychiatric_restruct,
+            check_date = NULL,
             # Rename the columns to appropriate database names
             extract_func = arkansas_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     arkansas_psychiatric <- arkansas_psychiatric_scraper$new(log=TRUE)
+    arkansas_psychiatric$run_check_date()
     arkansas_psychiatric$raw_data
     arkansas_psychiatric$pull_raw()
     arkansas_psychiatric$raw_data
