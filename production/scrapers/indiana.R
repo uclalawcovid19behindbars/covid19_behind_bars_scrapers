@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+indiana_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)last updated")]} %>% 
+        str_split("updated") %>% 
+        unlist() %>% 
+        {.[str_detect(., "21")]} %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 indiana_pull <- function(x){
     in_img <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID")
     
@@ -93,7 +107,7 @@ indiana_scraper <- R6Class(
             type = "img",
             state = "IN",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = indiana_date_check,
             pull_func = indiana_pull,
             restruct_func = indiana_restruct,
             # Rename the columns to appropriate database names

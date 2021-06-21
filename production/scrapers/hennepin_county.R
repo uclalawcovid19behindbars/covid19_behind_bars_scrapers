@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+hennepin_county_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_node(".aside-content__main") %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)update")]} %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 hennepin_county_pull <- function(x){
     xml2::read_html(x)
 }
@@ -64,7 +76,7 @@ hennepin_county_scraper <- R6Class(
             type = "html",
             state = "MN",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = hennepin_county_date_check,
             # pull the JSON data directly from the API
             pull_func = hennepin_county_pull,
             # restructuring the data means pulling out the data portion of the json

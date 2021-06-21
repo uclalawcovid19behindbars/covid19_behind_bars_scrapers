@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+illinois_youth_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)as of")]} %>% 
+        {.[str_detect(., "21")]} %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 illinois_youth_pull <- function(x){
     xml2::read_html(x)
 }
@@ -55,7 +67,7 @@ illinois_youth_scraper <- R6Class(
             type = "html",
             state = "IL",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = illinois_youth_date_check,
             # pull the JSON data directly from the API
             pull_func = illinois_youth_pull,
             # restructuring the data means pulling out the data portion of the json
