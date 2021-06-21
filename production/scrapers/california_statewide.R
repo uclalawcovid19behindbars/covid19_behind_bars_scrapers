@@ -1,16 +1,16 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-california_statewide_pull <- function(x, wait = 15){
+california_statewide_pull <- function(x, wait = 25){
     tf <- tempfile(fileext = ".png")
     
     # scrape from the power bi iframe directly
     y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(
-            "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI",
-            "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
-            "pageName=ReportSection90204f76f18a02b19c96&",
-            "pageName=ReportSection5125b4fa2c9a288b050a")
+            "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI", 
+            "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&", 
+            "pageName=ReportSectionc5f6f269bd82e37ccad7"
+        )
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -29,20 +29,33 @@ california_statewide_pull <- function(x, wait = 15){
 }
 
 california_statewide_restruct <- function(x){
-    sub_txt <- x %>%
-        magick::image_crop("690x30+375+150") %>%
+    tadmin_txt <- x %>%
+        magick::image_crop("340x140+375+130") %>%
         magick::image_ocr() %>%
         clean_fac_col_txt()
     
-    if(!str_detect(sub_txt, "(?i)test")){
+    if(!str_detect(tadmin_txt, "(?i)tests performed")){
         warning("Field does mot match expected text")
     }
     
-    as.numeric(str_c(unlist(str_extract_all(sub_txt, "[0-9]+")), collapse = ""))
-}
-
-california_statewide_extract <- function(x){
-    tibble(Name = "State-Wide", Residents.Tested = x)
+    tadmin_num <- as.numeric(
+        str_c(unlist(str_extract_all(tadmin_txt, "[0-9]+")), collapse = ""))
+    
+    tested_txt <- x %>%
+        magick::image_crop("340x140+705+130") %>%
+        magick::image_ocr() %>%
+        clean_fac_col_txt()
+    
+    if(!str_detect(tested_txt, "(?i)patients tested")){
+        warning("Field does mot match expected text")
+    }
+    
+    tested_num <- as.numeric(
+        str_c(unlist(str_extract_all(tested_txt, "[0-9]+")), collapse = ""))
+    
+    tibble(Residents.Tested = tested_num, 
+           Residents.Tadmin = tadmin_num, 
+           Name = "State-Wide")
 }
 
 #' Scraper class for general california_statewide COVID data
@@ -51,6 +64,7 @@ california_statewide_extract <- function(x){
 #' @description california_statewide data scraped from rendered power BI iframe. Testing
 #' data is also available at the facility level but will need to be scraped
 #' separately. Note that time series data for the state exists for comparison.
+#' Added Tadmin around June 18 2021. 
 #' \describe{
 #'   \item{Institution Name}{The facility name.}
 #'   \item{Confirmed}{The number of confimed cases among residents.}
@@ -78,7 +92,7 @@ california_statewide_scraper <- R6Class(
             # restructuring the data means pulling out the data portion of the json
             restruct_func = california_statewide_restruct,
             # Rename the columns to appropriate database names
-            extract_func = california_statewide_extract){
+            extract_func = function(x){x}){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
