@@ -1,6 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+montana_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_check_txt <- rvest::html_nodes(base_html, xpath = "//*[@id=\"content-wrapper\"]/main/div/div[2]/div/p[4]/em/text()") %>%
+        rvest::html_text()
+
+    date_check_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split("Data last updated at") %>%
+        unlist() %>%
+        .[2] %>%
+        str_split("on") %>%
+        unlist() %>%
+        .[2] %>%
+        str_remove("\\.") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 montana_pull <- function(x){
     xml2::read_html(x)
 }
@@ -90,8 +108,7 @@ montana_scraper <- R6Class(
             type = "html",
             state = "MT",
             jurisdiction = "state",
-            check_date = NULL,
-            # pull the JSON data directly from the API
+            check_date = montana_check_date, 
             pull_func = montana_pull,
             restruct_func = montana_restruct,
             # Rename the columns to appropriate database names
