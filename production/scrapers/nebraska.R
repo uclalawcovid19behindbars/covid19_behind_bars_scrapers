@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+nebraska_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, xpath="//*[@id=\"node-1516\"]/div/div/div[2]/div/div/h2[1]/span/span") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)Updated")]} %>%
+        str_split("Updated ") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
+
 nebraska_pull <- function(x){
     xml2::read_html(x)
 }
@@ -66,7 +81,7 @@ nebraska_scraper <- R6Class(
             type = "html",
             state = "NE",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = nebraska_check_date,
             # pull the JSON data directly from the API
             pull_func = nebraska_pull,
             # restructuring the data means pulling out the data portion of the json
