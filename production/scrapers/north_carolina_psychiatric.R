@@ -38,6 +38,7 @@ north_carolina_psychiatric_scraper <- R6Class(
             type = "pdf",
             state = "NC",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = north_carolina_psychiatric_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -47,13 +48,15 @@ north_carolina_psychiatric_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     north_carolina_psychiatric <- north_carolina_psychiatric_scraper$new(log=TRUE)
+    north_carolina_psychiatric$run_check_date()
     north_carolina_psychiatric$raw_data
     north_carolina_psychiatric$pull_raw()
     north_carolina_psychiatric$raw_data

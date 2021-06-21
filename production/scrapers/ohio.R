@@ -101,18 +101,21 @@ ohio_scraper <- R6Class(
             type = "pdf",
             state = "OH",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = ohio_pull,
             restruct_func = ohio_restruct,
             extract_func = ohio_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         })
 )
 
 if(sys.nframe() == 0){
     ohio <- ohio_scraper$new(log=TRUE)
+    ohio$run_check_date()
     ohio$raw_data
     ohio$pull_raw()
     ohio$save_raw()

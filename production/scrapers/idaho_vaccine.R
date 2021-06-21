@@ -67,6 +67,7 @@ idaho_vaccine_scraper <- R6Class(
             type = "html",
             state = "ID",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = idaho_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -76,13 +77,15 @@ idaho_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     idaho_vaccine <- idaho_vaccine_scraper$new(log=T)
+    idaho_vaccine$run_check_date()
     idaho_vaccine$raw_data
     idaho_vaccine$pull_raw()
     idaho_vaccine$raw_data

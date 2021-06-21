@@ -202,6 +202,7 @@ california_vaccine_bi_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = california_vaccine_bi_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -211,13 +212,15 @@ california_vaccine_bi_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     california_bi_vaccine <- california_vaccine_bi_scraper$new(log=TRUE)
+    california_bi_vaccine$run_check_date()
     california_bi_vaccine$raw_data
     california_bi_vaccine$pull_raw()
     california_bi_vaccine$raw_data

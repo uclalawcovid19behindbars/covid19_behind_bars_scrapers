@@ -68,6 +68,7 @@ florida_deaths_scraper <- R6Class(
             state = "FL",
             type = "pdf",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = function(x) x,
             restruct_func = florida_deaths_restruct,
             # Rename the columns to appropriate database names and do some minor
@@ -76,13 +77,15 @@ florida_deaths_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     florida_deaths <- florida_deaths_scraper$new(log=TRUE)
+    florida_deaths$run_check_date()
     florida_deaths$perma_save()
     florida_deaths$raw_data
     florida_deaths$pull_raw()

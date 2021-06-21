@@ -74,6 +74,7 @@ santa_barbara_jails_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             pull_func = santa_barbara_jails_pull,
             restruct_func = santa_barbara_jails_restruct,
             # Rename the columns to appropriate database names
@@ -81,13 +82,15 @@ santa_barbara_jails_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     santa_barbara_jails <- santa_barbara_jails_scraper$new(log=TRUE)
+    santa_barbara_jails$run_check_date()
     santa_barbara_jails$raw_data
     santa_barbara_jails$pull_raw()
     santa_barbara_jails$raw_data

@@ -1,6 +1,40 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+california_statewide_check_date <- function(x, date = Sys.Date()){
+    # scrape from the power bi iframe directly
+    y <- "https://app.powerbigov.us/view?r=" %>%
+        str_c(
+            "eyJrIjoiODBjZjExNDktYWUxNi00NmM1LTllODMtY2VkMDM1MjlkODRiIiwidCI",
+            "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
+            "pageName=ReportSection90204f76f18a02b19c96&",
+            "pageName=ReportSection5125b4fa2c9a288b050a")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(y)
+    
+    Sys.sleep(15)
+    
+    base_page <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    site_date <- base_page %>%
+        rvest::html_nodes("title") %>%
+        rvest::html_text() %>%
+        {.[str_starts(., "(?i)data last updated")]} %>%
+        str_remove("(?i)data last updated: ") %>%
+        lubridate::mdy_hm() %>%
+        lubridate::floor_date(unit="day") %>%
+        as.Date()
+    
+    error_on_date(site_date, date)
+}
+
 california_statewide_pull <- function(x, wait = 15){
     tf <- tempfile(fileext = ".png")
     
@@ -73,6 +107,7 @@ california_statewide_scraper <- R6Class(
             type = "img",
             state = "CA",
             jurisdiction = "state",
+            check_date = california_statewide_check_date,
             # pull the JSON data directly from the API
             pull_func = california_statewide_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -82,13 +117,15 @@ california_statewide_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     california_statewide <- california_statewide_scraper$new(log=TRUE)
+    california_statewide$run_check_date()
     california_statewide$raw_data
     california_statewide$pull_raw()
     california_statewide$raw_data

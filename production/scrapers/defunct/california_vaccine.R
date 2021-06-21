@@ -1,6 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+california_vaccine_check_date <- function(x, date = Sys.Date()){
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "CA Vaccine", col_types = "Dccc") %>%
+        pull(Date) %>%
+        max(na.rm = TRUE) %>%
+        error_on_date(date)
+}
+
 california_vaccine_pull <- function(x){
     stop_defunct_scraper(x)
 }
@@ -12,9 +20,7 @@ california_vaccine_restruct <- function(x){
 }
 
 california_vaccine_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(first(x$Date), exp_date)
-    
+
     check_names(x, c(
         "Date", 
         "Facility", 
@@ -54,6 +60,7 @@ california_vaccine_scraper <- R6Class(
             type = "manual",
             state = "CA",
             jurisdiction = "state",
+            check_date = california_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = california_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -63,7 +70,8 @@ california_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

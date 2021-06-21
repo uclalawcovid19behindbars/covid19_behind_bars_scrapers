@@ -38,19 +38,22 @@ indiana_psychiatric_scraper <- R6Class(
             type = "html",
             state = "IN",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             pull_func = indiana_psychiatric_pull,
             restruct_func = indiana_psychiatric_restruct,
             extract_func = indiana_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     indiana_psychiatric <- indiana_psychiatric_scraper$new(log=TRUE)
+    indiana_psychiatric$run_check_date()
     indiana_psychiatric$perma_save()
     indiana_psychiatric$raw_data
     indiana_psychiatric$pull_raw()

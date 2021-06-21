@@ -119,6 +119,7 @@ wisconsin_deaths_scraper <- R6Class(
             type = "pdf",
             state = "WI",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = wisconsin_deaths_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -128,17 +129,19 @@ wisconsin_deaths_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     wisconsin_deaths <- wisconsin_deaths_scraper$new(log=TRUE)
+    wisconsin_deaths$run_check_date()
     wisconsin_deaths$raw_data
     wisconsin_deaths$pull_raw()
     wisconsin_deaths$raw_data
-    wisconsin_deaths$save_raw()
+    wisconsin_deaths$save_raw() 
     wisconsin_deaths$restruct_raw()
     wisconsin_deaths$restruct_data
     wisconsin_deaths$extract_from_raw()

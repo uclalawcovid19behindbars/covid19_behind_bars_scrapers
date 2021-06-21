@@ -93,6 +93,7 @@ indiana_scraper <- R6Class(
             type = "img",
             state = "IN",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = indiana_pull,
             restruct_func = indiana_restruct,
             # Rename the columns to appropriate database names
@@ -100,13 +101,15 @@ indiana_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     indiana <- indiana_scraper$new(log=TRUE)
+    indiana$run_check_date()
     indiana$raw_data
     indiana$pull_raw()
     indiana$raw_data

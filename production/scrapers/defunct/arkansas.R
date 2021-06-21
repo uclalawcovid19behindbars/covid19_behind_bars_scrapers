@@ -138,6 +138,7 @@ arkansas_scraper <- R6Class(
             state = "AR",
             type = "img",
             jurisdiction = "state",
+            check_date = NULL,
             # restructuring the data means pulling out the data portion of the json
             pull_func = arkansas_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -147,7 +148,8 @@ arkansas_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction, 
+                check_date = check_date)
         }
     )
 )

@@ -74,6 +74,7 @@ new_york_scraper <- R6Class(
             type = "pdf",
             state = "NY",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = new_york_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -83,13 +84,15 @@ new_york_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     new_york <- new_york_scraper$new(log=TRUE)
+    new_york$run_check_date()
     new_york$raw_data
     new_york$pull_raw()
     new_york$raw_data
