@@ -4,7 +4,7 @@ source("./R/utilities.R")
 arizona_vaccine_manual_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "AZ Vaccine", 
-                                  col_types = "Dccc")
+                                  col_types = "Dcc")
 }
 
 arizona_vaccine_manual_restruct <- function(x){
@@ -20,9 +20,14 @@ arizona_vaccine_manual_extract <- function(x, exp_date = Sys.Date()){
     check_names(x, c(
         "Date",
         "Name", 
-        "Res.Anchor.Pop", 
         "Res.Pct.Completed")
     )
+    
+    # Pull latest population denominator 
+    agg_pop <- read_aggregate_pop_data()
+    denom <- agg_pop %>% 
+        filter(State == "Arizona") %>% 
+        pull("Residents.Population")
     
     if (as.numeric(x$Res.Pct.Completed) > 1.0){
         stop(str_c("Vaccination percentage ", x$Res.Pct.Completed, 
@@ -31,7 +36,8 @@ arizona_vaccine_manual_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
-        mutate(Residents.Completed = round(Res.Anchor.Pop * Res.Pct.Completed)) %>% 
+        # Estimate Residents.Completed based on reported rate 
+        mutate(Residents.Completed = round(denom * Res.Pct.Completed)) %>% 
         select(
             Name = `Name`,
             Residents.Completed 
@@ -47,7 +53,6 @@ arizona_vaccine_manual_extract <- function(x, exp_date = Sys.Date()){
 #' which we back out the number of people (based on the population).  
 #' \describe{
 #'   \item{Name}{The facility name.}
-#'   \item{Res.Anchor.Pop}{Population denominator used for Arizona.}
 #'   \item{Res.Pct.Completed{Percentage of people fully vaccinated.}
 #' }
 
