@@ -40,7 +40,7 @@ get_ms_pop_table <- function(x){
                      values_to = "Residents.Population")
 }
 
-historical_ms_pop_restruct <- function(x){
+historical_ms_pop_restruct <- function(x, date = NULL){
     bind_rows(
         x %>% 
             tabulizer::extract_tables(pages = 1) %>% 
@@ -60,6 +60,7 @@ historical_ms_pop_extract <- function(x, date = NULL){
         "TRANSITIONAL HOUSING", 
         "TOTALS", 
         "RESTITUTION CENTERS",
+        "REGIONAL CORRECTIONAL FACILITIE", 
         ""
     )
     
@@ -88,7 +89,7 @@ historical_ms_pop_extract <- function(x, date = NULL){
         pull(Residents.Population)
     
     if (total != sum_na_rm(out$Residents.Population)){
-        stop(str_c("Total population ", total, " different from facility sum ", 
+        warning(str_c("Total population ", total, " different from facility sum ",
                    sum_na_rm(out$Residents.Population), ". Inspect raw file."))
     }
     
@@ -118,20 +119,22 @@ historical_ms_pop_scraper <- R6Class(
             type = "pdf",
             state = "MS",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = historical_ms_pop_pull,
             restruct_func = historical_ms_pop_restruct,
             extract_func = historical_ms_pop_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction, 
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     historical_ms_pop <- historical_ms_pop_scraper$new(log=TRUE)
-    historical_ms_pop$reset_date("2020-01-15")
+    historical_ms_pop$reset_date("DATE")
     historical_ms_pop$raw_data
     historical_ms_pop$pull_raw(date = historical_ms_pop$date, .dated_pull = TRUE)
     historical_ms_pop$raw_data
