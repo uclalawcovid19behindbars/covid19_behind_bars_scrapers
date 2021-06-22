@@ -126,6 +126,8 @@ range_flood(ss = youth_sheet_destination,
             range = "A2:M800", 
             cell = "")
 
+gs4_auth("ucla.law.covid.staff@gmail.com")
+
 ## write new data
 range_write(
     data = all_youth_out, 
