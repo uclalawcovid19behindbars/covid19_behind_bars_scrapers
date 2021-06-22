@@ -137,7 +137,7 @@ south_dakota_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://doc.sd.gov/about/Coronavirus.aspx",
+            url = "https://doc.sd.gov/about/Coronavirus2.aspx",
             id = "south_dakota",
             type = "pdf",
             state = "SD",

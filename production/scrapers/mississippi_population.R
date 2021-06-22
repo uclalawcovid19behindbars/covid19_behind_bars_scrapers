@@ -118,19 +118,22 @@ mississippi_population_scraper <- R6Class(
             type = "pdf",
             state = "MS",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = mississippi_pop_pull,
             restruct_func = mississippi_pop_restruct,
             extract_func = mississippi_pop_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     mississippi_population <- mississippi_population_scraper$new(log=TRUE)
+    mississippi_population$run_check_date()
     mississippi_population$raw_data
     mississippi_population$pull_raw()
     mississippi_population$raw_data
