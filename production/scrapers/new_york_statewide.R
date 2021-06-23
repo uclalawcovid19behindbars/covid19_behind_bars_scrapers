@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-new_york_check_date <- function(x, date = Sys.Date()){
+new_york__statewide_check_date <- function(x, date = Sys.Date()){
     base_html <- xml2::read_html(x)
     date_txt <- rvest::html_nodes(base_html, "h4") %>%
         rvest::html_text()
@@ -81,7 +81,7 @@ new_york_statewide_scraper <- R6Class(
             type = "html",
             state = "NY",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = new_york__statewide_check_date,
             # pull the JSON data directly from the API
             pull_func = new_york_statewide_pull,
             # restructuring the data means pulling out the data portion of the json

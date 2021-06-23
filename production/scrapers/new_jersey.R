@@ -9,7 +9,6 @@ new_jersey_check_date <- function(x, date = Sys.Date()){
     
     date_txt %>%
         {.[str_detect(., "(?i)21")]} %>%
-        # str_split(., "(?i)last updated: ") %>%
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
