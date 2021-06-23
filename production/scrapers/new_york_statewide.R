@@ -1,6 +1,17 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+new_york_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, "h4") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 new_york_statewide_pull <- function(x, wait = 5){
     
     remDr <- RSelenium::remoteDriver(
