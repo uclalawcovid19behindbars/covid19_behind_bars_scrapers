@@ -1,6 +1,30 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+strsplits <- function(x, splits, ...)
+{
+    for (split in splits)
+    {
+        x <- unlist(strsplit(x, split, ...))
+    }
+    return(x[!x == ""]) # Remove empty values
+}
+
+new_hampshire_vaccine_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="//*[@id=\"block-state-of-nh-core-content\"]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[1]/p[1]/strong") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split(., "(?i)table data updated |\\*") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 new_hampshire_pull <- function(x){
     xml2::read_html(x)
 }
@@ -125,7 +149,7 @@ new_hampshire_scraper <- R6Class(
             type = "html",
             state = "NH",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = new_hampshire_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = new_hampshire_pull,
             # restructuring the data means pulling out the data portion of the json
