@@ -1,6 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+new_jersey_statewide_check_date <- function(x, date = Sys.Date()){
+    png <- get_src_by_attr(x, "img", attr = "src", attr_regex = "COVID_Chart") %>%
+        last()
+    
+    png %>% 
+        magick::image_read() %>% 
+        magick::image_crop("200x800+0+400") %>% 
+        magick::image_ocr() %>% 
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split(., "(?i)updated as of |\nPercent") %>%
+        unlist() %>%
+        .[2]
+        lubridate::mdy() %>% 
+        error_on_date(date, days = 30)
+}
+
 new_jersey_statewide_pull <- function(x){
     xml2::read_html(x)
 }
@@ -74,6 +90,11 @@ new_jersey_statewide_extract <- function(x){
 #' distributed for incarcerated people and staff. Definitions for variables were
 #' confirmed from calling the DOC. The agency said this will be updated bi-weekly. 
 #' 
+#' NB: For this scraper, we set the date check error_on_date parameter to 30 days
+#' rather than the usual 7 because the data is not often updated. Important also 
+#' to note that the "date last updated" is usually associated with data that is a 
+#' week old.
+#' 
 #' \describe{
 #'   \item{Incarcerated Population Test Completed}{Tadmin since 7/27/20}
 #'   \item{Incarcerated Population Cumulative Positives}{Confirmed since 7/27/20}
@@ -96,7 +117,7 @@ new_jersey_statewide_scraper <- R6Class(
             type = "html",
             state = "NJ",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = new_jersey_statewide_check_date,
             # pull the JSON data directly from the API
             pull_func = new_jersey_statewide_pull,
             # restructuring the data means pulling out the data portion of the json
