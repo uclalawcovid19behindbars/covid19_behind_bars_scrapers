@@ -73,7 +73,7 @@ check_names_extractable <- function(df_, col_name_df){
     }
 }
 
-error_on_date <- function(date, expected_date, days = 7, warning = FALSE){
+error_on_date <- function(date, expected_date, days = 30, warning = FALSE){
     fail <- abs(as.numeric(date - expected_date)) > days
     
     if(fail & warning){

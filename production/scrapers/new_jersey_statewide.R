@@ -14,7 +14,7 @@ new_jersey_statewide_check_date <- function(x, date = Sys.Date()){
         unlist() %>%
         .[2]
         lubridate::mdy() %>% 
-        error_on_date(date, days = 30)
+        error_on_date(date)
 }
 
 new_jersey_statewide_pull <- function(x){
