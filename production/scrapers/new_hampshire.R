@@ -1,15 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-strsplits <- function(x, splits, ...)
-{
-    for (split in splits)
-    {
-        x <- unlist(strsplit(x, split, ...))
-    }
-    return(x[!x == ""]) # Remove empty values
-}
-
 new_hampshire_vaccine_check_date <- function(x, date = Sys.Date()){
     base_html <- xml2::read_html(x)
     date_txt <- rvest::html_nodes(base_html, 

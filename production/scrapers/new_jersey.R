@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+new_jersey_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="/html/body/div[3]/div[4]/div[1]/div/div[2]/p[1]") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        # str_split(., "(?i)last updated: ") %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 new_jersey_pull <- function(x){
     xml2::read_html(x)
 }
@@ -73,7 +87,7 @@ new_jersey_scraper <- R6Class(
             type = "html",
             state = "NJ",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = new_jersey_check_date,
             # pull the JSON data directly from the API
             pull_func = new_jersey_pull,
             # restructuring the data means pulling out the data portion of the json
