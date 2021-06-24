@@ -92,9 +92,9 @@ alaska_vaccine_extract <- function(x){
     x %>%
         rename(
             Name = Facility,
-            Residents.Vadmin = `Vaccinations given`,
-            Residents.Initiated = `# individual inmates`,
-            Residents.Completed = `# completed series`) %>%
+            Residents.Initiated = `# inmates at least 1 dose`,
+            Residents.Completed = `# inmates completed series`, 
+            Residents.Population = `# inmates per facility`) %>%
         filter(!str_detect(Name, "(?i)total")) %>%
         clean_scraped_df()
 }
