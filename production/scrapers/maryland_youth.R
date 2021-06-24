@@ -2,30 +2,18 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 maryland_youth_pull <- function(x){
-    srcs <- get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)daily-report")
-    djs_pdf <- srcs %>% .[[1]]
-    return(djs_pdf)
-    ## gotta ask neal about this! saving multiple pdfs 
-    # contract_pdf <- srcs %>% .[[3]]
-    # sub_dir <- str_c(
-    #     "./results/raw_files/", Sys.Date(), "_maryland_youth")
-    # dir.create(sub_dir, showWarnings = FALSE)
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)daily-report") %>%
+        .[[1]]
 }
 
 maryland_youth_restruct <- function(x){
-    djs_tab <- magick::image_read_pdf(x)
-    # djs_tab <- magick::image_read_pdf(x[[1]])
-    # contract_tab <- magick::image_read_pdf(x[[2]])
+    md_tab <- magick::image_read_pdf(x)
     
-    djs_results <- djs_tab %>%
-                         magick::image_crop("1900x16750+200+1600") %>%
-                         ExtractTable()
-    
-    contract_results <- contract_tab %>%
-        magick::image_crop("1900x267+200+1000") %>%
+    restruct_results <- md_tab %>%
+        # magick::image_crop("2550x2350+0+518") %>%
+        magick::image_crop("1900x16750+200+1600") %>%
         ExtractTable()
-    out <- list(djs_results, contract_results)
-    return(out)
+    restruct_results
 }
 
 maryland_youth_extract <- function(x){
@@ -42,8 +30,11 @@ maryland_youth_extract <- function(x){
     col_name_df <- as_tibble(col_name_mat)
     
     # Drop first row (second row is column names)
-    df_ <- as.data.frame(x[[1]]) %>% 
+    df_ <- as.data.frame(x) %>% 
         slice(-1)
+    
+    # check_names_extractable(df_, col_name_df)
+    
     out <- rename_extractable(df_, col_name_df) %>%
         as_tibble() %>%
         filter(!str_detect(Name, "(?i)total")) %>%
