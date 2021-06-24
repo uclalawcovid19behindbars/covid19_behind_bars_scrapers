@@ -15,7 +15,7 @@ youth_manual_restruct <- function(x){
         filter(Date  >= lubridate::today() - lubridate::days(30),
                Date <= lubridate::today()) %>%
         mutate(Name = `County/Name of Facility`,
-               Name = str_glue('{Name} YOUTH FACILITY'),
+               Name = str_glue('{Name} YOUTH FACILITY {State}'),
                Residents.Confirmed = string_to_clean_numeric(`Confirmed Cases (Youth)`),
                Residents.Active = string_to_clean_numeric(`Confirmed Cases (Youth)`),
                Staff.Confirmed = string_to_clean_numeric(`Active Cases (Youth)`),
