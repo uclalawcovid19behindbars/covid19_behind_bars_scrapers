@@ -1,6 +1,23 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+
+colorado_check_date <- function(x, date = Sys.Date()){
+    base_page <- xml2::read_html(x)
+    
+    base_page %>%
+        rvest::html_node("article") %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>%
+        {.[str_detect(., "(?i)last updated") & str_detect(., "(?i)covid")]} %>%
+        str_split("(?i)updated") %>%
+        unlist() %>%
+        last() %>%
+        str_squish() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 colorado_vec_return_white <- function(vec, threshold = 200, buffer = 1){
     start_idx <- first(which(vec < threshold))
     sub_vec <- vec
@@ -31,27 +48,36 @@ colorado_extract_col <- function(sub_col, numeric = TRUE){
     
     idxs <- seq(0, 47*20, by = 47)
     
-    sapply(1:length(idxs), function(idx){
-        if(idx == 21){
-            crp <- "213x40+0+940"
-        }else{
-            crp <- str_c("213x47+0+", idxs[idx])
-        }
-        
-        if(numeric){
-            out <- sub_col %>%
-                magick::image_crop(crp) %>%
-                colorado_extract_cell()
-        }
-        else{
-            out <- sub_col %>%
-                magick::image_crop(crp) %>%
-                magick::image_ocr() %>%
-                str_replace_all("\n", " ") %>%
-                str_squish()
-        }
-        out
-    })
+    extract_vals <- tryCatch(
+            {
+                sapply(1:length(idxs), function(idx){
+                    if(idx == 21){
+                        crp <- "213x40+0+940"
+                    }else{
+                        crp <- str_c("213x47+0+", idxs[idx])
+                    }
+                    
+                    if(numeric){
+                        out <- sub_col %>%
+                            magick::image_crop(crp) %>%
+                            colorado_extract_cell()
+                    }
+                    else{
+                        out <- sub_col %>%
+                            magick::image_crop(crp) %>%
+                            magick::image_ocr() %>%
+                            str_replace_all("\n", " ") %>%
+                            str_squish()
+                    }
+                    out
+                })
+            },
+            error=function(cond) {
+                warning("Column failed to extract returning NA")
+                rep(NA, length(idxs))
+            })
+
+    return(extract_vals)
 }
 
 colorado_pull <- function(x){
@@ -179,7 +205,7 @@ colorado_restruct <- function(x){
     col_vals %>%
         as_tibble() %>%
         mutate(Name =fac_names) %>%
-        bind_rows(tibble(Name = "STATEWIDE", Residents.Vadmin = vac_num))
+        bind_rows(tibble(Name = "STATEWIDE", Residents.Initiated = vac_num))
 }
 
 colorado_extract <- function(x){
@@ -192,7 +218,7 @@ colorado_extract <- function(x){
         Residents.Active = "ACTIVE CASES",
         Residents.Deaths = "DEATHS",
         Name = "Name",
-        Residents.Vadmin = "Residents.Vadmin"
+        Residents.Initiated = "Residents.Initiated"
     )
     
     check_names(df_, exp_names)
@@ -238,6 +264,7 @@ colorado_scraper <- R6Class(
             type = "pdf",
             state = "CO",
             jurisdiction = "state",
+            check_date = colorado_check_date,
             # pull the JSON data directly from the API
             pull_func = colorado_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -247,13 +274,15 @@ colorado_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     colorado <- colorado_scraper$new(log=TRUE)
+    colorado$run_check_date()
     colorado$raw_data
     colorado$pull_raw()
     colorado$raw_data

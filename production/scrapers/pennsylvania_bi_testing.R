@@ -23,7 +23,7 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
     is_covid_testing <- raw_html %>%
-        rvest::html_nodes("div.preTextWithEllipsis") %>%
+        rvest::html_nodes("h3.preTextWithEllipsis") %>%
         rvest::html_text() %>%
         str_detect("(?=.*Inmate)(?=.*Tests)(?=.*Facility)") %>%
         any()
@@ -94,6 +94,7 @@ pennsylvania_bi_testing_scraper <- R6Class(
             type = "html",
             state = "PA",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = pennsylvania_bi_testing_pull,
             # restructuring the data means pulling out the data portion of the 
@@ -103,13 +104,15 @@ pennsylvania_bi_testing_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     pennsylvania_bi_testing <- pennsylvania_bi_testing_scraper$new(log=TRUE)
+    pennsylvania_bi_testing$run_check_date()
     pennsylvania_bi_testing$raw_data
     pennsylvania_bi_testing$pull_raw()
     pennsylvania_bi_testing$raw_data

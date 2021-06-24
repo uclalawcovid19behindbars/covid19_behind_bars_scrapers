@@ -55,6 +55,7 @@ illinois_youth_scraper <- R6Class(
             type = "html",
             state = "IL",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = illinois_youth_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -64,13 +65,15 @@ illinois_youth_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     illinois_youth <- illinois_youth_scraper$new(log=TRUE)
+    illinois_youth$run_check_date()
     illinois_youth$raw_data
     illinois_youth$pull_raw()
     illinois_youth$raw_data

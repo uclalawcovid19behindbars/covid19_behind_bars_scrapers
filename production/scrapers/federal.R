@@ -1,6 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+federal_date_check <- function(x, date = Sys.Date()){
+    "https://www.bop.gov/coronavirus/json/final.json" %>%
+        jsonlite::read_json(simplifyVector = TRUE) %>%
+        {.$other$date} %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 federal_pull <- function(x){
     url_list <- list(
         final = "https://www.bop.gov/coronavirus/json/final.json",
@@ -35,7 +43,10 @@ federal_restruct <- function(x){
                 ),
         
             as_tibble(x$final$rrcData) %>%
-                select(-contractNum) %>%
+                select(-contractNum,
+                       ## not sure why these are here but adding in the de-select
+                       -J,
+                       -K) %>%
                 mutate(id = str_to_upper(id)) %>%
                 group_by(id) %>%
                 summarize_all(function(z) sum(z, na.rm = TRUE))
@@ -55,21 +66,20 @@ federal_restruct <- function(x){
             rename(id = facilityCode) %>%
             full_join(as_tibble(x$final$bopData), by = "id") %>%
             bind_rows(as_tibble(x$final$privateData)) %>%
-            left_join(
-                as_tibble(x$loc$Locations) %>%
-                    select(id = code, Name = nameDisplay),
-                by = "id") %>%
-            select(-id) %>%
             mutate(inmateDeathHcon = 0))
     
     if("vaccine" %in% names(x)){
-        comb_df <- bind_rows(
-            comb_df,
-            tibble(
-                Name = "ALL BOP FACILITIES",
-                Residents.Completed = sum_na_rm(x$vaccine$bopVaccine$inmateCompleted),
-                Staff.Completed = sum_na_rm(x$vaccine$bopVaccine$staffCompleted)
-            ))
+        comb_df <- comb_df %>% 
+            full_join(
+                as_tibble(x$vaccine$bopVaccine) %>% 
+                    rename(id = facility), 
+                by = "id") %>% 
+            left_join(
+                as_tibble(x$loc$Locations) %>%
+                    select(id = code, Name = nameDisplay),
+                by = "id") %>% 
+            mutate(Name = coalesce(Name.x, Name.y)) %>% 
+            select(-id, -Name.x, -Name.y)
     }
     
     comb_df
@@ -87,6 +97,8 @@ federal_extract <- function(x){
             Residents.Pending = pendTest,
             Residents.Active = inmatePositiveAmt,
             Staff.Active = staffPositiveAmt, 
+            Residents.Completed = inmateCompleted, 
+            Staff.Completed = staffCompleted, 
             starts_with("Residents."), starts_with("Staff.")
             ) %>%
         mutate(Name = str_to_upper(clean_fac_col_txt(Name)))
@@ -116,6 +128,9 @@ federal_extract <- function(x){
 #'   \item{inmateCompletedTest}{Tests adminstered, I think not individuals tested}
 #'   \item{inmatePendTest}{Current Pending Cases}
 #'   \item{inmatePosTest}{Cumulative Positive Cases}
+#'   \item{inmateCompleted}{Residents.Completed}
+#'   \item{staffCompleted}{Staff.Completed}
+#'   
 #' }
 
 federal_scraper <- R6Class(
@@ -130,6 +145,7 @@ federal_scraper <- R6Class(
             type = "json",
             state = "federal",
             jurisdiction = "federal",
+            check_date = federal_date_check,
             # pull the JSON data directly from the API
             pull_func = federal_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -139,13 +155,15 @@ federal_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     federal <- federal_scraper$new(log=TRUE)
+    federal$run_check_date()
     federal$raw_data
     federal$pull_raw()
     federal$raw_data

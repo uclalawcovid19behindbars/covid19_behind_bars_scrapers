@@ -1,20 +1,37 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+california_population_check_date <- function(x, date = Sys.Date()){
+    # Extract all URLs
+    url_ <- x %>% 
+        xml2::read_html() %>%
+        rvest::html_nodes("a") %>%
+        rvest::html_attr("href")
+    
+    # Extract all link texts
+    link_ <- x %>%
+        xml2::read_html() %>%
+        rvest::html_nodes("a") %>%
+        rvest::html_text()
+    
+    # Return URL for latest population pdf 
+    stringr::str_c(
+        "https://www.cdcr.ca.gov/", 
+        tibble(link = link_, url = url_) %>% 
+            filter(link == "View Weekly Report (Wednesday Reporting Date)") %>% 
+            pull(url)) %>% 
+        magick::image_read_pdf(pages = 1) %>% 
+        magick::image_crop("400x100+100+250") %>% 
+        magick::image_ocr() %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 california_population_pull <- function(x){
     stop_defunct_scraper(x)
 }
 
-california_population_restruct <- function(x, exp_date = Sys.Date()){
-    
-    # Read date from top-left corner of page 
-    date <- x %>% 
-        magick::image_read_pdf(pages = 1) %>% 
-        magick::image_crop("400x100+100+250") %>% 
-        magick::image_ocr() %>% 
-        lubridate::mdy()
-    
-    error_on_date(date, exp_date)
+california_population_restruct <- function(x){
     
     magick::image_read_pdf(x, pages = 2) %>% 
         ExtractTable()
@@ -78,13 +95,15 @@ california_population_scraper <- R6Class(
             type = "pdf",
             state = "CA",
             jurisdiction = "state",
+            check_date = california_population_check_date,
             pull_func = california_population_pull,
             restruct_func = california_population_restruct,
             extract_func = california_population_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )

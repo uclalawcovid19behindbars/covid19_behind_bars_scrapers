@@ -23,12 +23,6 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
         "total_doses"
     ))
     
-    # Use earliest date if rows differ 
-    date <- min(x_$as_of_date_vaccine) %>% 
-        lubridate::mdy()
-
-    error_on_date(date, exp_date)
-    
     x_
 }
 
@@ -71,6 +65,7 @@ wisconsin_vaccine_scraper <- R6Class(
             type = "manual",
             state = "WI",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = wisconsin_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -80,13 +75,15 @@ wisconsin_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     wisconsin_vaccine <- wisconsin_vaccine_scraper$new(log=TRUE)
+    wisconsin_vaccine$run_check_date()
     wisconsin_vaccine$raw_data
     wisconsin_vaccine$pull_raw()
     wisconsin_vaccine$raw_data

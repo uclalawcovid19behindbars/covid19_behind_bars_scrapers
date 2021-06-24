@@ -22,6 +22,7 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
     
     x %>%
         select(
+            Name = `Facility Name`,
             Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
             Residents.Active = `Active Cases Incarcerated Population Current`,
             Residents.Recovered = `Resolved Cases Incarcerated Population Cumulative`,
@@ -31,8 +32,8 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Population = `Population Incarcerated Population Current`,
             Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
             Staff.Active = `Active Cases Staff Current`, 
-            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Cumulative`, 
-            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
+            Residents.Partial.Drop = `Partially Vaccinated Total Incarcerated Population Current`,
+            Residents.Completed = `Fully Vaccinated Total Incarcerated Population Cumulative`, 
             ) %>% 
         rowwise() %>% 
         mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
@@ -64,6 +65,7 @@ santa_rita_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = santa_rita_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -73,13 +75,15 @@ santa_rita_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     santa_rita_jail <- santa_rita_jail_scraper$new(log=TRUE)
+    santa_rita_jail$run_check_date()
     santa_rita_jail$raw_data
     santa_rita_jail$pull_raw()
     santa_rita_jail$raw_data

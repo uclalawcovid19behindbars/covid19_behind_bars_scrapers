@@ -1,6 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+connecticut_vaccine_check_date <- function(x, date = Sys.Date()){
+    ct_img2 <- xml2::read_html(x) %>%
+        rvest::html_nodes("img") %>%
+        rvest::html_attr("src") %>%
+        .[3] %>%
+        {str_c(x, .)} %>%
+        magick::image_read()
+    
+    ct_img2 %>%
+        magick::image_ocr() %>%
+        str_split("\n") %>%
+        unlist() %>%
+        {.[str_detect(., "(?i)posted")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 connecticut_vaccine_pull <- function(x){
     ct_img2 <- xml2::read_html(x) %>%
         rvest::html_nodes("img") %>%
@@ -13,7 +31,7 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    in_txt <- magick::image_crop(x, "150x120+10+750") %>%
+    in_txt <- magick::image_crop(x, "150x120+10+720") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -21,7 +39,7 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    st_txt <- magick::image_crop(x, "180x110+240+730") %>%
+    st_txt <- magick::image_crop(x, "190x110+270+710") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -30,12 +48,12 @@ connecticut_vaccine_restruct <- function(x){
     }
     
     tibble(
-        Res = magick::image_crop(x, "150x80+28+852") %>%
+        Res = magick::image_crop(x, "150x80+28+842") %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric(),
     
-        Staff = magick::image_crop(x, "180x110+250+850") %>%
+        Staff = magick::image_crop(x, "180x110+260+840") %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric()
@@ -75,6 +93,7 @@ connecticut_vaccine_scraper <- R6Class(
             type = "img",
             state = "CT",
             jurisdiction = "state",
+            check_date = connecticut_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = connecticut_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -84,13 +103,15 @@ connecticut_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     connecticut_vaccine <- connecticut_vaccine_scraper$new(log=TRUE)
+    connecticut_vaccine$run_check_date()
     connecticut_vaccine$raw_data
     connecticut_vaccine$pull_raw()
     connecticut_vaccine$raw_data

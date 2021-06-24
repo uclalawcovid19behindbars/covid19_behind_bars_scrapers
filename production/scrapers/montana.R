@@ -28,9 +28,9 @@ montana_extract <- function(x){
     )
     
     exp_names2 <- c(
-        Name = "Location",
-        Residents.Confirmed = "Offenders confirmed",
-        Staff.Confirmed = "Staff confirmed"
+        Name = "Locations",
+        Residents.Confirmed = "Offenders Confirmed",
+        Staff.Confirmed = "Staff Confirmed"
     )
     
     check_names(x$tables[[1]], exp_names1)
@@ -90,6 +90,7 @@ montana_scraper <- R6Class(
             type = "html",
             state = "MT",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = montana_pull,
             restruct_func = montana_restruct,
@@ -98,13 +99,15 @@ montana_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     montana <- montana_scraper$new(log=TRUE)
+    montana$run_check_date()
     montana$raw_data
     montana$pull_raw()
     montana$raw_data

@@ -92,19 +92,22 @@ new_hampshire_vaccine_scraper <- R6Class(
             type = "html",
             state = "NH",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = new_hampshire_vaccine_pull,
             restruct_func = new_hampshire_vaccine_restruct,
             extract_func = new_hampshire_vaccine_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     new_hampshire_vaccine <- new_hampshire_vaccine_scraper$new(log=TRUE)
+    new_hampshire_vaccine$run_check_date()
     new_hampshire_vaccine$raw_data
     new_hampshire_vaccine$pull_raw()
     new_hampshire_vaccine$raw_data

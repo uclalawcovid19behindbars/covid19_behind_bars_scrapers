@@ -56,6 +56,7 @@ north_carolina_deaths_scraper <- R6Class(
             type = "html",
             state = "NC",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = north_carolina_deaths_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -65,13 +66,15 @@ north_carolina_deaths_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     north_carolina_deaths <- north_carolina_deaths_scraper$new(log=TRUE)
+    north_carolina_deaths$run_check_date()
     north_carolina_deaths$raw_data
     north_carolina_deaths$pull_raw()
     north_carolina_deaths$raw_data

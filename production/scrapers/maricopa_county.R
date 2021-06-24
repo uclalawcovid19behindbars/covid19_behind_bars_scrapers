@@ -21,7 +21,8 @@ maricopa_county_restruct <- function(x){
         "Positive Results" = "Residents.Confirmed",
         "Active Cases In Custody" = "Residents.Active",
         "Hospitalizations" = "Drop3",
-        "Deaths" = "Residents.Deaths", 
+        "COVID-19 - Cause of Death" = "Residents.Deaths", 
+        "COVID-19 - Contributory Cause of Death" = "Drop.Residents.Deaths.Contribute", 
         "Total Number of Vaccines Administered" = "Residents.Vadmin", 
         "Total Number of Vaccine Refusals" = "Drop.Refusals", 
         "Johnson & Johnson Vaccines Administered" = "Drop.Johnson.Vadmin", 
@@ -92,6 +93,7 @@ maricopa_county_scraper <- R6Class(
             type = "html",
             state = "AZ",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = xml2::read_html,
             # restructuring the data
@@ -101,13 +103,15 @@ maricopa_county_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     maricopa_county <- maricopa_county_scraper$new(log=TRUE)
+    maricopa_county$run_check_date()
     maricopa_county$raw_data
     maricopa_county$pull_raw()
     maricopa_county$raw_data

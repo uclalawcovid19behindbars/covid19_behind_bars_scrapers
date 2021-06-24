@@ -1,6 +1,25 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+connecticut_check_date <- function(x, date = Sys.Date()){
+    ct_img2 <- xml2::read_html(x) %>%
+        rvest::html_nodes("img") %>%
+        rvest::html_attr("src") %>%
+        .[4] %>%
+        {str_c(x, .)} %>%
+        magick::image_read()
+    
+    ct_img2 %>%
+        magick::image_ocr() %>%
+        str_split("\n") %>%
+        unlist() %>%
+        {.[str_detect(., "(?i)posted")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+        
+}
+
 connecticut_pull <- function(x){
     ct_img2 <- xml2::read_html(x) %>%
         rvest::html_nodes("img") %>%
@@ -90,6 +109,7 @@ connecticut_scraper <- R6Class(
             type = "img",
             state = "CT",
             jurisdiction = "state",
+            check_date = connecticut_check_date,
             # pull the JSON data directly from the API
             pull_func = connecticut_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -99,13 +119,15 @@ connecticut_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     connecticut <- connecticut_scraper$new(log=TRUE)
+    connecticut$run_check_date()
     connecticut$raw_data
     connecticut$pull_raw()
     connecticut$raw_data

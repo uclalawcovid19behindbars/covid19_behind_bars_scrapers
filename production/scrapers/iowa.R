@@ -70,18 +70,21 @@ iowa_scraper <- R6Class(
             state = "IA",
             type = "html",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = xml2::read_html,
             restruct_func = iowa_restruct,
             extract_func = iowa_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
             })
 )
 
 if(sys.nframe() == 0){
     iowa <- iowa_scraper$new(log = FALSE)
+    iowa$run_check_date()
     iowa$raw_data
     iowa$pull_raw()
     iowa$raw_data

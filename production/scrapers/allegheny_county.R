@@ -1,6 +1,23 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+allegheny_county_check_date <- function(x, date = Sys.Date()){
+    base_page <- xml2::read_html(x)
+    
+    site_date <- base_page %>%
+        rvest::html_node("table") %>%
+        rvest::html_table(header = T) %>%
+        names() %>%
+        .[1] %>%
+        str_extract_all("\\([^()]+\\)") %>%
+        unlist() %>%
+        str_remove_all("\\(|\\)") %>%
+        str_remove("(?i)as of ") %>%
+        lubridate::mdy()
+
+    error_on_date(site_date, date)
+}
+
 allegheny_county_pull <- function(x){
     xml2::read_html(x)
 }
@@ -8,7 +25,7 @@ allegheny_county_pull <- function(x){
 allegheny_county_restruct <- function(x){
     tabs <- x %>%
         rvest::html_nodes("table") %>%
-        .[1:2] %>%
+        .[c(1, 3)] %>%
         rvest::html_table()
     
     if(!any(str_detect(tabs[[1]][,1], "(?i)inmate"))){
@@ -92,6 +109,7 @@ allegheny_county_scraper <- R6Class(
             type = "html",
             state = "PA",
             jurisdiction = "county",
+            check_date = allegheny_county_check_date,
             # pull the JSON data directly from the API
             pull_func = allegheny_county_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -101,13 +119,15 @@ allegheny_county_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     allegheny_county <- allegheny_county_scraper$new(log=TRUE)
+    allegheny_county$run_check_date()
     allegheny_county$raw_data
     allegheny_county$pull_raw()
     allegheny_county$raw_data

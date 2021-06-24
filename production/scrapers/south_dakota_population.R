@@ -74,19 +74,22 @@ south_dakota_population_scraper <- R6Class(
             type = "pdf",
             state = "SD",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = south_dakota_population_pull,
             restruct_func = south_dakota_population_restruct,
             extract_func = south_dakota_population_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction  = jurisdiction)
+                log = log, state = state, jurisdiction  = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     south_dakota_population <- south_dakota_population_scraper$new(log=TRUE)
+    south_dakota_population$run_check_date()
     south_dakota_population$raw_data
     south_dakota_population$pull_raw()
     south_dakota_population$raw_data

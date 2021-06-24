@@ -92,6 +92,7 @@ lasd_staff_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = lasd_staff_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -101,13 +102,15 @@ lasd_staff_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     lasd_staff <- lasd_staff_scraper$new(log=TRUE)
+    lasd_staff$run_check_date()
     lasd_staff$raw_data
     lasd_staff$pull_raw()
     lasd_staff$raw_data
