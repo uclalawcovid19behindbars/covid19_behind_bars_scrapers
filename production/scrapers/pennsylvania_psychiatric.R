@@ -6,11 +6,34 @@ pennsylvania_psychiatric_pull <- function(x){
 }
 
 pennsylvania_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://www.dhs.pa.gov/providers/Providers/Pages/Coronavirus-State-Facility-Data.aspx")
+    table1 <- x %>% 
+        rvest::html_nodes("table") %>%
+        .[[2]] %>% 
+        rvest::html_table(header= TRUE)
+    
+    exp_names <- c(
+        "State Hospital", "Current Census of Clients",
+        "Current Positive Cases Among Clients",
+        "Cumulative Positive Cases Among Clients", "Deaths of Clients",
+        "Current Census of Staff", "Current Positive Cases Among Staff",
+        "Cumulative Positive Cases Among Staff"
+    )
+    
+    check_names(table1, exp_names)
+
+    table1 <- table1[-c(7)] 
+    table1[table1 == "Less than 5"] <- NA
+    
+    colnames(table1) <- c(
+        "Name", "Residents.Population", "Residents.Active", "Residents.Confirmed",
+        "Residents.Deaths", "Staff.Population", "Staff.Confirmed")
+    table1[,2:7] <- sapply(table1[,2:7], as.numeric)
+    
+    table1
 }
 
 pennsylvania_psychiatric_extract <- function(x){
-    NULL
+    x
 }
 
 #' Scraper class for general pennsylvania_psychiatric COVID data
@@ -43,19 +66,22 @@ pennsylvania_psychiatric_scraper <- R6Class(
             type = "html",
             state = "PA",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             pull_func = pennsylvania_psychiatric_pull,
             restruct_func = pennsylvania_psychiatric_restruct,
             extract_func = pennsylvania_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     pennsylvania_psychiatric <- pennsylvania_psychiatric_scraper$new(log=TRUE)
+    pennsylvania_psychiatric$run_check_date()
     pennsylvania_psychiatric$perma_save()
     pennsylvania_psychiatric$raw_data
     pennsylvania_psychiatric$pull_raw()

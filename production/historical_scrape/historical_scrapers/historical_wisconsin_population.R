@@ -174,13 +174,15 @@ historical_wi_pop_scraper <- R6Class(
             type = "pdf",
             state = "WI",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = historical_wi_pop_pull,
             restruct_func = historical_wi_pop_restruct,
             extract_func = historical_wi_pop_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )

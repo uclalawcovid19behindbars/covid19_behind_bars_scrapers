@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+arizona_check_date <- function(x, date = Sys.Date()){
+    base_page <- xml2::read_html(x)
+    
+    site_date <- base_page %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>%
+        {.[str_starts(., "(?i)last updated")]} %>%
+        str_remove("(?i)last updated ") %>%
+        lubridate::mdy()
+    
+    error_on_date(site_date, date)
+}
+
 arizona_pull <- function(x){
     xml2::read_html(x)
 }
@@ -76,6 +89,7 @@ arizona_scraper <- R6Class(
             type = "html",
             state = "AZ",
             jurisdiction = "state",
+            check_date = arizona_check_date,
             # pull the JSON data directly from the API
             pull_func = arizona_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -85,13 +99,15 @@ arizona_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     arizona <- arizona_scraper$new(log=TRUE)
+    arizona$run_check_date()
     arizona$raw_data
     arizona$pull_raw()
     arizona$raw_data

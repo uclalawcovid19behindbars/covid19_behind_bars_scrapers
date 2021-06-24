@@ -1,6 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+colorado_staff_check_date <- function(x, date = Sys.Date()){
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "CO Staff", col_types = "Dccc") %>%
+        pull(Date) %>%
+        max(na.rm = TRUE) %>%
+        error_on_date(date)
+}
+
 colorado_staff_manual_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "CO Staff", 
@@ -18,7 +26,7 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
     error_on_date(first(x$Date), exp_date)
     
     check_names(x, c(
-        "Date", 
+        "Date",
         "Name", 
         "Staff Positive Cases", 
         "Staff Vaccinations")
@@ -28,7 +36,7 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
         select(
             Name = `Name`,
             Staff.Confirmed = `Staff Positive Cases`,
-            Staff.Vadmin = `Staff Vaccinations`) %>% 
+            Staff.Initiated = `Staff Vaccinations`) %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         clean_scraped_df()
@@ -42,7 +50,7 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
 #' \describe{
 #'   \item{Name}{The facility name.}
 #'   \item{Staff Positive}{Staff Confirmed from the right most orange column.}
-#'   \item{Staff Vaccinations}{Total vaccinations given to staff.}
+#'   \item{Staff Vaccinations}{Total staff with 1+ vaccinations.}
 #' }
 
 colorado_staff_manual_scraper <- R6Class(
@@ -57,6 +65,7 @@ colorado_staff_manual_scraper <- R6Class(
             type = "manual",
             state = "CO",
             jurisdiction = "state",
+            check_date = colorado_staff_check_date,
             # pull the JSON data directly from the API
             pull_func = colorado_staff_manual_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -66,13 +75,15 @@ colorado_staff_manual_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     colorado_staff_manual <- colorado_staff_manual_scraper$new(log=TRUE)
+    colorado_staff_manual$run_check_date()
     colorado_staff_manual$raw_data
     colorado_staff_manual$pull_raw()
     colorado_staff_manual$raw_data

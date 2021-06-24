@@ -72,6 +72,7 @@ hawaii_staff_scraper <- R6Class(
             state = "HI",
             type = "img",
             jurisdiction = "state",
+            check_date = NULL,
             # restructuring the data means pulling out the data portion of the json
             pull_func = hawaii_staff_pull,
             # TODO: we are not currently extracting the last updated section
@@ -83,13 +84,15 @@ hawaii_staff_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     hawaii_staff <- hawaii_staff_scraper$new(log=TRUE)
+    hawaii_staff$run_check_date()
     hawaii_staff$raw_data
     hawaii_staff$pull_raw()
     hawaii_staff$save_raw()

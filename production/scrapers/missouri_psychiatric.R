@@ -38,19 +38,22 @@ missouri_psychiatric_scraper <- R6Class(
             type = "html",
             state = "MO",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             pull_func = missouri_psychiatric_pull,
             restruct_func = missouri_psychiatric_restruct,
             extract_func = missouri_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     missouri_psychiatric <- missouri_psychiatric_scraper$new(log=TRUE)
+    missouri_psychiatric$run_check_date()
     missouri_psychiatric$perma_save()
     missouri_psychiatric$raw_data
     missouri_psychiatric$pull_raw()

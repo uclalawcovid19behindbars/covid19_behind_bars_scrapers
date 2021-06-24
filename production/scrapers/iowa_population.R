@@ -63,18 +63,21 @@ iowa_population_scraper <- R6Class(
             state = "IA",
             type = "html",
             jurisdiction = "state",
+            check_date = NULL,
             pull_func = iowa_population_pull,
             restruct_func = iowa_population_restruct,
             extract_func = iowa_population_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         })
 )
 
 if(sys.nframe() == 0){
     iowa_population <- iowa_population_scraper$new(log = FALSE)
+    iowa_population$run_check_date()
     iowa_population$raw_data
     iowa_population$pull_raw()
     iowa_population$raw_data

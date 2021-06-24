@@ -44,19 +44,22 @@ virginia_psychiatric_scraper <- R6Class(
             type = "pdf",
             state = "VA",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             pull_func = virginia_psychiatric_pull,
             restruct_func = virginia_psychiatric_restruct,
             extract_func = virginia_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     virginia_psychiatric <- virginia_psychiatric_scraper$new(log=TRUE)
+    virginia_psychiatric$run_check_date()
     virginia_psychiatric$perma_save()
     virginia_psychiatric$raw_data
     virginia_psychiatric$pull_raw()

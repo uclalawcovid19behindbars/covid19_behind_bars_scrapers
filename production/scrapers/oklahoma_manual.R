@@ -73,6 +73,7 @@ oklahoma_manual_scraper <- R6Class(
             type = "manual",
             state = "OK",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = oklahoma_manual_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -82,13 +83,15 @@ oklahoma_manual_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     oklahoma_manual <- oklahoma_manual_scraper$new(log=TRUE)
+    oklahoma_manual$run_check_date()
     oklahoma_manual$raw_data
     oklahoma_manual$pull_raw()
     oklahoma_manual$raw_data

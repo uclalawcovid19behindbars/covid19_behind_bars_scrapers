@@ -32,7 +32,7 @@ illinois_psychiatric_restruct <- function(x){
     
     table2 <- x %>%
         rvest::html_nodes("table") %>%
-        .[[9]] %>%
+        .[[10]] %>%
         rvest::html_table(fill = TRUE)
     
     table2_expected_names <- c("Facility (City - County)", "Total Staff at Location",
@@ -82,19 +82,22 @@ illinois_psychiatric_scraper <- R6Class(
             type = "html",
             state = "IL",
             jurisdiction = "psychiatric",
+            check_date = NULL,
             pull_func = illinois_psychiatric_pull,
             restruct_func = illinois_psychiatric_restruct,
             extract_func = illinois_psychiatric_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     illinois_psychiatric <- illinois_psychiatric_scraper$new(log=TRUE)
+    illinois_psychiatric$run_check_date()
     illinois_psychiatric$perma_save()
     illinois_psychiatric$raw_data
     illinois_psychiatric$pull_raw()

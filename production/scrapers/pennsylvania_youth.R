@@ -68,6 +68,7 @@ pennsylvania_youth_scraper <- R6Class(
             type = "html",
             state = "PA",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = pennsylvania_youth_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -77,13 +78,15 @@ pennsylvania_youth_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     pennsylvania_youth <- pennsylvania_youth_scraper$new(log=TRUE)
+    pennsylvania_youth$run_check_date()
     pennsylvania_youth$raw_data
     pennsylvania_youth$pull_raw()
     pennsylvania_youth$raw_data

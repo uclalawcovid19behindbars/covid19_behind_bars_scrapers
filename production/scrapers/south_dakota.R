@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 south_dakota_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)positivecase")
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases")
 }
 
 south_dakota_restruct <- function(x){
@@ -96,7 +96,8 @@ south_dakota_extract <- function(x){
                 filter(!str_detect(Name, "(?i)facility|total")),
             by = "Name") %>%
         select(-starts_with("Drop")) %>%
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        mutate(Residents.Tadmin = Residents.Confirmed + Residents.Negative)
     
     # legacy code
     sd_df$Name[sd_df$Name=="Jameson Annex"] <- 
@@ -136,11 +137,12 @@ south_dakota_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://doc.sd.gov/about/Coronavirus.aspx",
+            url = "https://doc.sd.gov/about/Coronavirus2.aspx",
             id = "south_dakota",
             type = "pdf",
             state = "SD",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = south_dakota_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -150,13 +152,15 @@ south_dakota_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     south_dakota <- south_dakota_scraper$new(log=TRUE)
+    south_dakota$run_check_date()
     south_dakota$raw_data
     south_dakota$pull_raw()
     south_dakota$raw_data

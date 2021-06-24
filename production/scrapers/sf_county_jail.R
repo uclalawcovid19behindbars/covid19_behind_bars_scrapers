@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 sf_county_jail_pull <- function(x){
-    z = "1hOBU6510jHZbxN3c3nVwXKGEUfyI9mlkv0vg2LiEJAA" %>%
+    z = "1F2iSIveA0jglb2SILgN4fobYozSMNS_Ff-7x8OGs7tM" %>%
         googlesheets4::read_sheet()
     
     # for some reason this is saved weird and we need to do some
@@ -73,6 +73,7 @@ sf_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = sf_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -82,13 +83,15 @@ sf_county_jail_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     sf_county_jail <- sf_county_jail_scraper$new(log=F)
+    sf_county_jail$run_check_date()
     sf_county_jail$raw_data
     sf_county_jail$pull_raw()
     sf_county_jail$raw_data

@@ -6,21 +6,28 @@ kansas_vaccine_pull <- function(x){
 }
 
 kansas_vaccine_restruct <- function(x){
-    x %>%
-        rvest::html_node("table") %>%
-        rvest::html_table() %>%
-        as_tibble()
+    
+    tables <- x %>%
+        rvest::html_nodes("table") 
+
+    list(res = rvest::html_table(tables[[1]]), 
+         staff = rvest::html_table(tables[[2]]))
 }
 
 kansas_vaccine_extract <- function(x){
-    x %>%
-        select(
-            Name = Facility, 
-            Residents.Initiated = `Total Residents Vaccinated`
-        ) %>% 
-        mutate(Name = clean_fac_col_txt(Name), 
-               Residents.Initiated = stringr::str_replace(Residents.Initiated, '\\*', '')) %>%
-        clean_scraped_df() 
+    
+   x <- full_join(x$res, x$staff, by = "Facility") 
+   
+   # Remove spaces in column names which are inconsistent 
+   names(x) <- gsub(" ", "", names(x))
+   
+   x %>% 
+       select(Name = Facility, 
+              Residents.Initiated = `TotalResidentsVaccinated`, 
+              Staff.Initiated = `TotalStaffVaccinated`) %>% 
+       mutate(Name = clean_fac_col_txt(Name)) %>% 
+       mutate(across(ends_with("Initiated"), ~ stringr::str_replace(.x, '\\*', ''))) %>% 
+       clean_scraped_df() 
 }
 
 #' Scraper class for Kansas vaccine data
@@ -37,6 +44,8 @@ kansas_vaccine_extract <- function(x){
 #'   \item{Facility}{The faciilty name}
 #'   \item{Residents Vaccinated Week of: ...}{}
 #'   \item{Total Residents Vaccinated}{}
+#'   \item{Staff Vaccinated Week of: ...}{}
+#'   \item{Total Staff Vaccinated}{}
 #' }
 
 kansas_vaccine_scraper <- R6Class(
@@ -51,6 +60,7 @@ kansas_vaccine_scraper <- R6Class(
             type = "html",
             state = "KS",
             jurisdiction = "state",
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = kansas_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
@@ -60,13 +70,15 @@ kansas_vaccine_scraper <- R6Class(
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction,
+                check_date = check_date)
         }
     )
 )
 
 if(sys.nframe() == 0){
     kansas_vaccine <- kansas_vaccine_scraper$new(log=TRUE)
+    kansas_vaccine$run_check_date()
     kansas_vaccine$raw_data
     kansas_vaccine$pull_raw()
     kansas_vaccine$raw_data
