@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-alaska_vaccine_check_date <- function(x){
+alaska_vaccine_check_date <- function(x, date = Sys.Date()){
     fprof <- RSelenium::makeFirefoxProfile(list(
         browser.startup.homepage = "about:blank",
         startup.homepage_override_url = "about:blank",
@@ -41,7 +41,7 @@ alaska_vaccine_check_date <- function(x){
         str_remove("(?i)as of ") %>%
         lubridate::mdy()
     
-    error_on_date(site_date, date)
+    error_on_date(date, site_date)
 }
 
 alaska_vaccine_pull <- function(x){

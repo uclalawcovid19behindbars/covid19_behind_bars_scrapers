@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 kentucky_pull <- function(x){
     # KY changes the name of the image fairly often, update the regex accordingly  
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID-19/") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID") %>%
         magick::image_read()
 }
 

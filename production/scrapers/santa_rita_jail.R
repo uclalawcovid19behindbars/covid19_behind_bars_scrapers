@@ -30,8 +30,8 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
             Residents.Pending = `Pending Tests Incarcerated Population Current`,
             Residents.Population = `Population Incarcerated Population Current`,
-            Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
-            Staff.Active = `Active Cases Staff Current`, 
+            # Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
+            # Staff.Active = `Active Cases Staff Current`, 
             Residents.Partial.Drop = `Partially Vaccinated Total Incarcerated Population Current`,
             Residents.Completed = `Fully Vaccinated Total Incarcerated Population Cumulative`, 
             ) %>% 

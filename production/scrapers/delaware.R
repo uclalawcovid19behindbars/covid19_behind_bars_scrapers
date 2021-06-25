@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 delaware_check_date <- function(x, date = Sys.Date()){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "DE", col_types = "Dcccccccccccc") %>%
+        googlesheets4::read_sheet(sheet = "DE", col_types = "Dccccccccccccccc") %>%
         pull(Date) %>%
         max(na.rm=TRUE) %>%
         error_on_date(date)

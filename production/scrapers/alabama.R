@@ -6,14 +6,15 @@ alabama_check_date <- function(x, date = Sys.Date()){
     headers <- rvest::html_nodes(base_html, "h3") %>%
         rvest::html_text()
     
-    headers %>%
+    site_date <- headers %>%
         {.[str_detect(., "(?i)update ")]} %>%
         str_split("\\(Update ") %>%
         unlist() %>%
         .[2] %>%
         str_remove("\\)") %>%
-        lubridate::mdy() %>%
-        error_on_date(expected_date = date)
+        lubridate::mdy() 
+    
+    error_on_date(date, site_date)
 }
 
 alabama_pull <- function(x){

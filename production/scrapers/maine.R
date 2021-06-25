@@ -45,9 +45,6 @@ maine_extract <- function(x){
     )
     
     # Vaccines 
-    doses_idx <- which(sapply(x$vaccines, function(z){
-        any(str_detect(z[,2], "(?i)administered"))}))
-    
     people_idx <- which(sapply(x$vaccines, function(z){
         any(str_detect(z[,1], "(?i)juvenile"))}))
     
@@ -55,9 +52,8 @@ maine_extract <- function(x){
     
     vax_col_name_mat <- matrix(c(
         "", "0", "Name",
-        "First Doses", "1", "Residents.First.Drop",
-        "Final Doses", "2", "Residents.Completed"
-    ), ncol = 3, nrow = 3, byrow = TRUE)
+        "Fully Vaccinated", "1", "Perc.Fully.Vax"
+    ), ncol = 3, nrow = 2, byrow = TRUE)
     
     colnames(vax_col_name_mat) <- c("check", "raw", "clean")
     vax_col_name_df <- as_tibble(vax_col_name_mat)
@@ -65,9 +61,10 @@ maine_extract <- function(x){
     
     vaccines_df <- rename_extractable(vaccines_, vax_col_name_df) %>%
         as_tibble() %>% 
-        clean_scraped_df() %>% 
-        filter(!is.na(Residents.Completed)) %>% 
-        filter(Name != "")
+        filter(Name != "",
+               Name != "All Facilities - Resident") %>%
+        mutate(Perc.Fully.Vax.Cln = as.numeric(gsub("[\\%,]", "", Perc.Fully.Vax)) / 100) %>%
+        select(-Perc.Fully.Vax)
     
     # Tests and cases 
     tests_idx <- which(sapply(x$tests, function(z){
@@ -93,7 +90,9 @@ maine_extract <- function(x){
         filter(!str_detect(Name, "(?i)total")) %>% 
         full_join(pop_df, by = "Name") %>% 
         full_join(vaccines_df, by = "Name") %>% 
-        select(-ends_with("Drop")) %>% 
+        mutate(Residents.Completed = Residents.Population * Perc.Fully.Vax.Cln) %>%
+        select(-ends_with("Drop"),
+               -Perc.Fully.Vax.Cln) %>% 
         clean_scraped_df()
 }
 
