@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("R/utilities.R")
 
+maricopa_county_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        max() %>% 
+        error_on_date(date)
+}
+
 maricopa_county_restruct <- function(x){
     df_ <- x %>%
         rvest::html_nodes(".dataNumber") %>%
@@ -93,7 +106,7 @@ maricopa_county_scraper <- R6Class(
             type = "html",
             state = "AZ",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = maricopa_county_date_check,
             # pull the JSON data directly from the API
             pull_func = xml2::read_html,
             # restructuring the data
