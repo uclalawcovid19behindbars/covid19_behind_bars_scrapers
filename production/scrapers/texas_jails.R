@@ -2,6 +2,8 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 texas_jails_pull <- function(x){
+    stop_defunct_scraper(x)
+    
     get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)report.pdf") %>%
         first()
 }
