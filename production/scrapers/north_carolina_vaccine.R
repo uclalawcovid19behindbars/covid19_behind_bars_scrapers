@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+north_carolina_vaccine_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="//*[@id=\"node-15019\"]/div/div/div/div/div[1]/section/section/div[4]/div[2]/div/div/p") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
+
 north_carolina_vaccine_pull <- function(x){
     x %>%
         xml2::read_html()
