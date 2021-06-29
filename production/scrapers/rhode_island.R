@@ -1,6 +1,52 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+rhode_island_check_date <- function(x, date = Sys.Date()){
+    app_source <- xml2::read_html(x) %>%
+        rvest::html_element("iframe") %>% 
+        rvest::html_attr("src")
+    
+    
+    fprof <- RSelenium::makeFirefoxProfile(list(
+        browser.startup.homepage = "about:blank",
+        startup.homepage_override_url = "about:blank",
+        startup.homepage_welcome_url = "about:blank",
+        startup.homepage_welcome_url.additional = "about:blank",
+        browser.download.dir = "/home/seluser/Downloads",
+        browser.download.folderList = 2L,
+        browser.download.manager.showWhenStarting = FALSE,
+        browser.download.manager.focusWhenStarting = FALSE,
+        browser.download.manager.closeWhenDone = TRUE,
+        browser.helperApps.neverAsk.saveToDisk = 
+            "text/csv",
+        pdfjs.disabled = TRUE,
+        plugin.scan.plid.all = FALSE,
+        plugin.scan.Acrobat = 99L))
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox",
+        extraCapabilities=fprof
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_source)
+    Sys.sleep(6)
+    
+    base_html <- remDr$getPageSource()
+    
+    base_page <- xml2::read_html(base_html[[1]])
+    
+    base_page %>%
+        rvest::html_node(xpath="//div[contains(text(),'cases as of')]") %>%
+        rvest::html_text() %>%
+        str_remove("(?i)all cases as of") %>%
+        str_remove(":") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 rhode_island_pull <- function(x){
     
     app_source <- xml2::read_html(x) %>%
@@ -96,7 +142,7 @@ rhode_island_scraper <- R6Class(
             type = "csv",
             state = "RI",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = rhode_island_check_date,
             # pull the JSON data directly from the API
             pull_func = rhode_island_pull,
             # restructuring the data means pulling out the data portion of the json

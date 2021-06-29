@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+polk_county_check_date <- function(x, date = Sys.Date()){
+    raw_html <- xml2::read_html(x)
+    
+    raw_html %>%
+        rvest::html_node(xpath="//img[@alt='COVID-19 Quick Stats']/..") %>%
+        rvest::html_node("p.card-text") %>%
+        rvest::html_text() %>%
+        str_remove("(?i)as of") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 polk_county_pull <- function(x){
     get_src_by_attr(x, "img", attr = "src", attr_regex = "covid-19-stats") %>%
         magick::image_read()
@@ -58,7 +70,7 @@ polk_county_scraper <- R6Class(
             type = "img",
             state = "IA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = polk_county_check_date,
             # pull the JSON data directly from the API
             pull_func = polk_county_pull,
             # restructuring the data means pulling out the data portion of the json
