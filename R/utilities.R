@@ -74,7 +74,8 @@ check_names_extractable <- function(df_, col_name_df){
 }
 
 error_on_date <- function(date, expected_date, days = 7, warning = FALSE){
-    fail <- abs(as.numeric(date - expected_date)) > days
+  days_late <- abs(as.numeric(date - expected_date))
+  fail <- days_late > days
     
     if(fail & warning){
         warning(str_c("Date is more than ", days, " different from expected"))
@@ -83,6 +84,8 @@ error_on_date <- function(date, expected_date, days = 7, warning = FALSE){
     else if(fail){
         stop(str_c("Date is more than ", days, " different from expected"))
     }
+  
+    return(days_late)
 }
 
 rename_extractable <- function(df_, col_name_df){

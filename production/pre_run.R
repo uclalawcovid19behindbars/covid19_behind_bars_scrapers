@@ -25,7 +25,9 @@ if(length(missing_packages) != 0){
 }
 
 # delete local folders if they exist
-sc_dirs <- paste0("results/", c("log_files/", "extracted_data/", "raw_files/"))
+sc_dirs <- paste0(
+    "results/",
+    c("log_files/", "extracted_data/", "raw_files/", "last_update/"))
 for(di in sc_dirs){
     if(dir.exists(di)){
         unlink(di, recursive = TRUE)
