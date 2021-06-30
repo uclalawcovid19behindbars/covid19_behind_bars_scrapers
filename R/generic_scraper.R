@@ -491,6 +491,7 @@ generic_scraper <- R6Class(
             self$pull_raw()
             self$save_raw()
             self$run_check_date()
+            self$write_days_late()
             self$restruct_raw()
             self$extract_from_raw()
             self$validate_extract()
