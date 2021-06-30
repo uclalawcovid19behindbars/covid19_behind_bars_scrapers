@@ -630,6 +630,15 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, ag
     
     # Write national-level data 
     write_agg_data(window = agg_window)
+    
+    # Write state-jurisdiction-level data 
+    agg <- alt_aggregate_counts(window = agg_window)
+    
+    agg %>% 
+      filter(str_detect(Measure, paste(covid_suffixes, collapse = "|"))) %>% 
+      select(State, Web.Group, Measure, Val, Rate, Date) %>% 
+      write_csv("./data/latest-data/state_jurisdiction_aggregate_counts.csv", 
+                na="")
 }
 
 get_latest_manual <- function(state){
