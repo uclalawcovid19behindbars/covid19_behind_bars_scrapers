@@ -657,7 +657,11 @@ sync_remote_files <- function(raw = FALSE){
     system(str_c(
         "rsync --perms --chmod=u+rwx -rtvu --progress results/log_files/ ",
         "ucla:/srv/shiny-server/scraper_data/log_files/"))
-    
+
+    system(str_c(
+      "rsync --perms --chmod=u+rwx -rtvu --progress results/last_update/ ",
+      "ucla:/srv/shiny-server/scraper_data/last_update/"))
+
     if(raw){
         system(str_c(
             "rsync --perms --chmod=u+rwx -rtvu --progress results/raw_files/ ",
