@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+ohio_vaccine_check_date <- function(x, date = Sys.Date()){
+    dat <-  "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "OH Vaccine", 
+                                  col_types = "Dccc")
+
+    dat %>%
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date)) %>%
+        pull(Date) %>%
+        error_on_date(expected_date = date)
+}
+
 ohio_vaccine_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "OH Vaccine", 
@@ -56,7 +68,7 @@ ohio_vaccine_scraper <- R6Class(
             type = "manual",
             state = "OH",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = ohio_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = ohio_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

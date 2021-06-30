@@ -1,6 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+pennsylvania_psychiatric_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="//*[@id=\"ctl00_PlaceHolderMain_PageContent__ControlWrapper_RichHtmlField\"]/p[14]/span/em") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split(., "(?i)Updated: |at") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
+
 pennsylvania_psychiatric_pull <- function(x){
     xml2::read_html(x)
 }
@@ -66,7 +82,7 @@ pennsylvania_psychiatric_scraper <- R6Class(
             type = "html",
             state = "PA",
             jurisdiction = "psychiatric",
-            check_date = NULL,
+            check_date = pennsylvania_psychiatric_check_date,
             pull_func = pennsylvania_psychiatric_pull,
             restruct_func = pennsylvania_psychiatric_restruct,
             extract_func = pennsylvania_psychiatric_extract){

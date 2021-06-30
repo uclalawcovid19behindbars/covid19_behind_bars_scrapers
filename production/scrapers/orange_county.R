@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+orange_county_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, xpath = "//*[@id=\"block-countyoc-content\"]/article/div/div/div/div/h3[1]") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split(., "(?i)Updated ") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
+
 orange_county_pull <- function(x){
     xml2::read_html(x)
 }
@@ -60,7 +75,7 @@ orange_county_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = orange_county_check_date,
             # pull the JSON data directly from the API
             pull_func = orange_county_pull,
             # restructuring the data means pulling out the data portion of the json

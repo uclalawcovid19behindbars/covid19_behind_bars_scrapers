@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+
+north_carolina_youth_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="//*[@id=\"node-13727\"]/div/div/div/div/div[2]/section/section/div[2]/div/div/div/p[1]") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 north_carolina_youth_pull <- function(x){
     xml2::read_html(x)
 }
@@ -58,7 +72,7 @@ north_carolina_youth_scraper <- R6Class(
             type = "html",
             state = "NC",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = north_carolina_youth_check_date,
             pull_func = north_carolina_youth_pull,
             restruct_func = north_carolina_youth_restruct,
             extract_func = north_carolina_youth_extract){

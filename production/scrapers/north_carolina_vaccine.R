@@ -78,7 +78,7 @@ north_carolina_vaccine_scraper <- R6Class(
             type = "html",
             state = "NC",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = north_carolina_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = north_carolina_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
