@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+oregon_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="//*[@id=\"ctl00_MainContentPlaceHolder_PageContentPlaceHolder_RichHtmlField1__ControlWrapper_OregonRichHtmlField\"]/ul/li[1]") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split(., "(?i)as of:") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 oregon_pull <- function(x){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -84,7 +99,7 @@ oregon_scraper <- R6Class(
             type = "html",
             state = "OR",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = oregon_check_date,
             # pull the JSON data directly from the API
             pull_func = oregon_pull,
             # restructuring the data means pulling out the data portion of the json
