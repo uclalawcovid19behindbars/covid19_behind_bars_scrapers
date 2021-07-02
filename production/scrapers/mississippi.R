@@ -1,20 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+mississippi_date_check <- function(x, date = Sys.Date()){
+    pdf <- get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases") %>%
+        first()
+    
+    magick::image_read_pdf(pdf, pages = 1) %>% 
+        magick::image_crop("1000x200+400+2700") %>% 
+        magick::image_ocr() %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 mississippi_pull <- function(x){
     get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases") %>%
         first()
 }
 
-mississippi_restruct <- function(x, exp_date = Sys.Date()){
+mississippi_restruct <- function(x){
     ms_pgs <- magick::image_read_pdf(x[[1]])
-    
-    date <- magick::image_crop(ms_pgs, "1000x200+400+2700") %>% 
-        magick::image_ocr() %>% 
-        lubridate::mdy()
-    
-    error_on_date(date, exp_date)
-    
     ExtractTable(ms_pgs)
 }
 
@@ -65,7 +69,7 @@ mississippi_scraper <- R6Class(
             type = "pdf",
             state = "MS",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = mississippi_date_check,
             # pull the JSON data directly from the API
             pull_func = mississippi_pull,
             # restructuring the data means pulling out the data portion of the json

@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+michigan_date_check <- function(x, date = Sys.Date()){
+    base_html <- rvest::read_html(x)
+    
+    base_html %>% 
+        rvest::html_nodes("h2") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        last() %>% 
+        str_split("–") %>% 
+        unlist() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 michigan_pull <- function(x){
     mi_html <- xml2::read_html(x)
     

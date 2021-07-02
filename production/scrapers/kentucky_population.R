@@ -120,7 +120,7 @@ kentucky_population_scraper <- R6Class(
             type = "pdf",
             state = "KY",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = kentucky_pop_date_check,
             pull_func = kentucky_population_pull,
             restruct_func = kentucky_population_restruct,
             extract_func = kentucky_population_extract){
