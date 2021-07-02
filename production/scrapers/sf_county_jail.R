@@ -39,14 +39,14 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Tadmin = `Tests Incarcerated Population Cumulative`, 
             Staff.Population = `Total Sfso Employees`, 
             Staff.Confirmed = `Sfso Employees Total Positive Results`, 
-            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
-            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
+            # Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
+            # Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
             Residents.Deaths = `Deaths Incarcerated Population Cumulative`
             ) %>% 
         rowwise() %>% 
-        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
-        mutate(Residents.Initiated = ifelse(
-            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        # mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
+        # mutate(Residents.Initiated = ifelse(
+        #     is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
         mutate_all(as.numeric) %>%
         select(-ends_with("Drop")) %>% 
         mutate(Name = "SF COUNTY JAIL") 

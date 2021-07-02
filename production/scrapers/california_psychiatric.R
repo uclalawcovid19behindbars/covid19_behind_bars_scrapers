@@ -24,13 +24,13 @@ california_psychiatric_extract <- function(x){
     
     staff_expected_names <- c(
         "DSH COVID-19", 
-        "Testing: 5/4/2021", 
+        "Testing:", 
         "Staff: Positive for COVID-19 Confirmed by Public Health or medical facility (Cumulative # since 3/20/2020)", 
         "Staff: Newly Positive for COVID-19 in the last 14 days", 
         "Other¹: Positive for COVID- 19 Confirmed by Public Health or medical facility (Cumulative # since 5/26/2020)", 
         "Other¹: Newly Positive for COVID-19 in the last 14 days")
     
-    check_names(staff, staff_expected_names)
+    check_names(staff, staff_expected_names, detect = T)
     names(staff) <- c("Drop.Header", "Name", "Staff.Confirmed", "Staff.Active", "Drop.OtherStaffConfirmed", "Drop.OtherStaffActive")
     
     staff <- staff %>%
@@ -44,7 +44,7 @@ california_psychiatric_extract <- function(x){
     
     resident_expected_names <- c(
         "DSH COVID-19" ,
-        "Testing: 5/4/2021",
+        "Testing:",
         "",
         "Patients: Positive for COVID-19 (Cumulative # since 5/16/2020)",
         "Patients: Newly Positive for COVID-19 in the last 14 days",
@@ -53,7 +53,7 @@ california_psychiatric_extract <- function(x){
         "",
         "Tests: Total # of tests administered (Cumulative # since 3/23/2020, includes retesting)")
     
-    check_names(resident, resident_expected_names)
+    check_names(resident, resident_expected_names, detect = T)
     names(resident) <- c("Drop.Header1", "Name", "Drop.Header2", "Residents.Confirmed", "Residents.Active", 
                          "Drop.Hospitalization", "Residents.Deaths", "Drop.Header3", "Residents.Tadmin")
     

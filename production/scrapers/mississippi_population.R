@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-mississippi_pop_pull <- function(x, date = Sys.Date()){
+mississippi_pop_pull <- function(x, date = "2021-06-30"){
     # Extract all urls 
     url_ <- x %>% 
         xml2::read_html() %>%

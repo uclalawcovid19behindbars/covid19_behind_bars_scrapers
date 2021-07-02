@@ -35,9 +35,10 @@ nd_pop_restruct <- function(x){
         tibble(Name = "MRCC", 
                Residents.Population = nd_pop_crop(img, "700x140+20+1010", "MRCC")), 
         tibble(Name = "DWCRC", 
-               Residents.Population = nd_pop_crop(img, "700x140+20+1230", "DWCRC")), 
-        tibble(Name = "TRC", 
-               Residents.Population = nd_pop_crop(img, "700x140+20+1440", "TRC"))
+               Residents.Population = nd_pop_crop(img, "700x140+20+1230", "DWCRC")) 
+        # Not reported on 7/2/21 - commented out in case that changes 
+        # tibble(Name = "TRC", 
+        #        Residents.Population = nd_pop_crop(img, "700x140+20+1440", "TRC"))
     )
 }
 
