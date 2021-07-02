@@ -35,10 +35,7 @@ youth_manual_restruct <- function(x){
 youth_manual_extract <- function(x){
     x %>%
         select(
-            Date, 
             Name,
-            State, 
-            Jurisdiction, 
             Residents.Confirmed,
             Residents.Active,
             Residents.Population,
@@ -71,11 +68,13 @@ youth_manual_scraper <- R6Class(
             jurisdiction = "youth",
             pull_func = youth_manual_pull,
             restruct_func = youth_manual_restruct,
+            check_date = NULL, 
             extract_func = youth_manual_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
-                log = log, state = state, jurisdiction = jurisdiction)
+                log = log, state = state, jurisdiction = jurisdiction, 
+                check_date = check_date)
         }
     )
 )
@@ -92,4 +91,3 @@ if(sys.nframe() == 0){
     youth_manual$validate_extract()
     youth_manual$save_extract()
 }
-
