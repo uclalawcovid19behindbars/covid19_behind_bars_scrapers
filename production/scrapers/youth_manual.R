@@ -33,7 +33,7 @@ youth_manual_restruct <- function(x){
 }
 
 youth_manual_extract <- function(x){
-    x %>%
+    out_data <- x %>%
         select(
             Name,
             Residents.Confirmed,
@@ -43,6 +43,12 @@ youth_manual_extract <- function(x){
             Staff.Active,
             Staff.Deaths
         ) 
+    
+    if (nrow(out_data) == 0) {
+        warning("No manual youth data reported within the past 30 days!")
+    }
+    
+    return(out_data)
 }
 
 #' Scraper class for general youth_manual COVID data
@@ -61,7 +67,7 @@ youth_manual_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "Youth team manual data collection",
+            url = "Manual data collection",
             id = "youth_manual",
             type = "csv",
             state = "",
