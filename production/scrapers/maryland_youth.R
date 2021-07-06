@@ -10,9 +10,9 @@ maryland_youth_restruct <- function(x){
     md_tab <- magick::image_read_pdf(x)
     
     restruct_results <- md_tab %>%
-                         # magick::image_crop("2550x2350+0+518") %>%
-                         magick::image_crop("1900x16750+200+1600") %>%
-                         ExtractTable()
+        # magick::image_crop("2550x2350+0+518") %>%
+        magick::image_crop("1900x16750+200+1600") %>%
+        ExtractTable()
     restruct_results
 }
 
