@@ -7,7 +7,7 @@ michigan_staff_pull <- function(x){
     img2 <- mi_html %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>%
-        .[9] %>%
+        .[11] %>%      #src="https://miro.medium.com/max/1210/1*rmlt07ZUHyPh0MkrayUqoA.png"
         magick::image_read()
     
     img2

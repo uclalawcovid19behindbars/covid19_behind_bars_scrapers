@@ -26,9 +26,9 @@ santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
             Residents.Tadmin = `Tests Incarcerated Population Cumulative`,
             Residents.Population = `Population Incarcerated Population Current`,
-            Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
-            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`,
-            Staff.Completed = `Fully Vaccinated Custody Staff Cumulative`, 
+            Residents.Partial.Drop = `Partially Vaccinated Total Incarcerated Population Current`, 
+            Residents.Completed = `Fully Vaccinated Total Incarcerated Population Cumulative`,
+            # Staff.Completed = `Fully Vaccinated Custody Staff Cumulative`, 
         ) %>% 
         rowwise() %>% 
         mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
