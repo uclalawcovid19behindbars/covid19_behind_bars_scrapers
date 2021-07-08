@@ -103,7 +103,7 @@ south_carolina_extract <- function(x){
         select(-ends_with("Drop"))
 }
 
-#' Scraper class for general south_NOTE: This information is current as of 9:46 a.m. on July 06, 2021 carolina COVID data
+#' Scraper class for general south_carolina COVID data
 #' 
 #' @name south_carolina_scraper
 #' @description SC data is pulled from two HTML tables one for staff and one
