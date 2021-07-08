@@ -187,15 +187,6 @@ generic_scraper <- R6Class(
             )
             
             if(self$log){
-
-                if(file.exists(self$err_log)){
-                    if(str_detect(read_file(self$err_log), "ERROR ")){
-                        tryLog(warning(
-                            "Log file with errors exists.",
-                            "Not going to pull data."))
-                        return()
-                    }
-                }
                 
                 if(self$date != Sys.Date() & !.dated_pull){
                     tryLog(self$raw_data <- valid_types[[self$type]](url))
