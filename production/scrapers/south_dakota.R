@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+south_dakota_check_date <- function(x, date = Sys.Date()){
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases") %>%
+        magick::image_read_pdf() %>% 
+        magick::image_crop("800x43+2700+320") %>% 
+        magick::image_ocr() %>%
+        str_split(" ") %>%
+        unlist() %>%
+        first() %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 south_dakota_pull <- function(x){
     get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases")
 }
@@ -142,7 +154,7 @@ south_dakota_scraper <- R6Class(
             type = "pdf",
             state = "SD",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = south_dakota_check_date,
             # pull the JSON data directly from the API
             pull_func = south_dakota_pull,
             # restructuring the data means pulling out the data portion of the json

@@ -1,6 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+virginia_beach_check_date <- function(x, date = Sys.Date()){
+    z <- xml2::read_html(x)
+    
+    z %>%
+        rvest::html_nodes(xpath = str_c(
+            "//strong[contains(text(),'VBSO COVID-19 TEST RESULTS')]/",
+            "parent::p")) %>%
+        rvest::html_text() %>%
+        str_match("(?<=\\().+?(?=\\))") %>%
+        c() %>%
+        str_remove("(?i)updated") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
+
 virginia_beach_pull <- function(x){
     xml2::read_html(x)
 }
@@ -87,7 +103,7 @@ virginia_beach_scraper <- R6Class(
             type = "html",
             state = "VA",
             jurisdiction = "county",
-            check_date = NULL, 
+            check_date = virginia_beach_check_date, 
             # pull the JSON data directly from the API
             pull_func = virginia_beach_pull,
             # restructuring the data means pulling out the data portion of the json

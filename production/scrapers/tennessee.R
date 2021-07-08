@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+tennessee_check_date <- function(x, date = Sys.Date()){
+    z <- get_src_by_attr(
+        x, "a", attr = "href", attr_regex = "TDOCInmatesCOVID19.pdf$") %>% 
+        magick::image_read_pdf(pages = 1)
+    
+    z %>%
+        magick::image_crop("500x90+480+280") %>%
+        magick::image_ocr() %>%
+        str_remove("(?i)updated") %>%
+        str_remove_all("\\||\n") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 tennessee_pull <- function(x){
     get_src_by_attr(
         x, "a", attr = "href", attr_regex = "TDOCInmatesCOVID19.pdf$")
@@ -90,7 +104,7 @@ tennessee_scraper <- R6Class(
             type = "pdf",
             state = "TN",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = tennessee_check_date,
             # pull the JSON data directly from the API
             pull_func = tennessee_pull,
             # restructuring the data means pulling out the data portion of the json

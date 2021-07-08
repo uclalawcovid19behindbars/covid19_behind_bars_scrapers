@@ -1,10 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+wyoming_check_date <- function(x, date = Sys.Date()){
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "WY", col_types = "Dccc") %>%
+        filter(!is.na(Date)) %>% 
+        filter(Date == max(Date)) %>%
+        pull(Date) %>%
+        first() %>%
+        error_on_date(date)
+}
+
 wyoming_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "WY", 
-                                  col_types = "Dccc")
+        googlesheets4::read_sheet(sheet = "WY", col_types = "Dccc")
 }
 
 wyoming_restruct <- function(x){
@@ -60,7 +69,7 @@ wyoming_scraper <- R6Class(
             type = "manual",
             state = "WY",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = wyoming_check_date,
             # pull the JSON data directly from the API
             pull_func = wyoming_pull,
             # restructuring the data means pulling out the data portion of the json

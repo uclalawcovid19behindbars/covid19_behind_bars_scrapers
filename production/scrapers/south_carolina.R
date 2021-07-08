@@ -1,6 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+south_carolina_check_date <- function(x, date = Sys.Date()){
+    sc_page <- xml2::read_html(x)
+    
+    sc_page %>%
+        rvest::html_node(xpath="//p") %>%
+        rvest::html_text() %>%
+        str_split("\n") %>%
+        unlist() %>%
+        .[.!=""] %>%
+        last() %>%
+        str_remove_all("\r") %>%
+        str_split("(?i)on ") %>%
+        unlist() %>%
+        last() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 south_carolina_pull <- function(x){
     xml2::read_html(x)
 }
@@ -85,7 +103,7 @@ south_carolina_extract <- function(x){
         select(-ends_with("Drop"))
 }
 
-#' Scraper class for general south_carolina COVID data
+#' Scraper class for general south_NOTE: This information is current as of 9:46 a.m. on July 06, 2021 carolina COVID data
 #' 
 #' @name south_carolina_scraper
 #' @description SC data is pulled from two HTML tables one for staff and one
@@ -118,7 +136,7 @@ south_carolina_scraper <- R6Class(
             type = "html",
             state = "SC",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = south_carolina_check_date,
             # pull the JSON data directly from the API
             pull_func = south_carolina_pull,
             # restructuring the data means pulling out the data portion of the json

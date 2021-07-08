@@ -1,6 +1,16 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+yolo_county_jail_check_date <- function(x, date = Sys.Date()){
+    "1FwW5oaUWmzmvzw4BXvrUYoCf4LBNCIGtUo5RbR_ZldA" %>%
+        googlesheets4::read_sheet() %>%
+        mutate(Date = lubridate::mdy(`As of Date`)) %>%
+        filter(Date == max(Date, na.rm = TRUE)) %>%
+        pull(Date) %>%
+        first() %>%
+        error_on_date(date)
+}
+
 yolo_county_jail_pull <- function(x){
     "1FwW5oaUWmzmvzw4BXvrUYoCf4LBNCIGtUo5RbR_ZldA" %>%
         googlesheets4::read_sheet()
@@ -12,9 +22,7 @@ yolo_county_jail_restruct <- function(x){
         filter(Date == max(Date, na.rm = TRUE))
 }
 
-yolo_county_jail_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(x$Date, exp_date)
+yolo_county_jail_extract <- function(x){
     
     x %>%
         select(
@@ -50,7 +58,7 @@ yolo_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = yolo_county_jail_check_date,
             # pull the JSON data directly from the API
             pull_func = yolo_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json

@@ -1,6 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+washington_vaccine_check_date <- function(x, date = Sys.Date()){
+    z <- xml2::read_html(x)
+    
+    z %>%
+        rvest::html_node(xpath = "//p[contains(text(),'Current as of')]") %>%
+        rvest::html_text() %>%
+        str_split("\\.") %>%
+        unlist() %>%
+        first() %>%
+        str_split_fixed(",", 2) %>%
+        c() %>%
+        last() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 washington_vaccine_pull <- function(x){
     xml2::read_html(x)
 }
@@ -58,7 +74,7 @@ washington_vaccine_scraper <- R6Class(
             type = "html",
             state = "WA",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = washington_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = washington_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

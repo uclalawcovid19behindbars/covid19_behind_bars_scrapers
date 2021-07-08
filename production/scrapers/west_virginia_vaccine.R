@@ -1,6 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+west_virginia_vaccine_check_date <- function(x, date = Sys.Date()){
+    
+    z <- xml2::read_html(x)
+    
+    z %>%
+        rvest::html_node(xpath =
+            "//span[contains(text(),'or week ending')]") %>%
+        rvest::html_text() %>%
+        str_split("ending") %>%
+        unlist() %>%
+        last() %>%
+        str_split(";") %>%
+        unlist() %>%
+        first() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 west_virginia_vaccine_pull <- function(x){
     tsv_src <- get_src_by_attr(
         x, "a", attr = "href", attr_regex = "txt$") %>%
@@ -97,7 +115,7 @@ west_virginia_vaccine_scraper <- R6Class(
             type = "csv",
             state = "WV",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = west_virginia_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = west_virginia_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
