@@ -115,7 +115,8 @@ historical_youth_manual_validate_save <- function(x){
 #' @name historical_youth_manual_scraper
 #' @description Reads google sheet with back-log of youth manual data, cleans it lightly, and 
 #' saves it in a CSV. Note that the output contains a mix of states, which get resolved in 
-#' `clean_facility_name()`
+#' `clean_facility_name()`. Note that this script needs to be run manually rather than through 
+#' the historical pipeline script. 
 #' \describe{
 #'   \item{Name}{The facility name}
 #' }
@@ -158,6 +159,6 @@ if(sys.nframe() == 0){
     historical_youth_manual$restruct_data
     historical_youth_manual$extract_from_raw() 
     historical_youth_manual$extract_data
-    historical_youth_manual$historical_youth_manual_validate_save()
+    historical_youth_manual_validate_save(historical_youth_manual$extract_data)
 }
 
