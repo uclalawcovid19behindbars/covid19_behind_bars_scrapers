@@ -24,15 +24,19 @@ texas_statewide_restruct <- function(x){
 
 texas_statewide_extract <- function(x){
     x %>%
-        mutate(Unit = "State-Wide") %>%
-        mutate(Residents.Deaths = Offender_Deceased__Presumed_COVID + 
-                   Offender_Deceased_Confirmed_COVID) %>%
-        select(
-            Name = Unit,
-            Residents.Deaths,
-            Staff.Tested = Employee_Total_Tests,
-            Staff.Deaths = Employee_Deceased__COVID
-        )
+        mutate(Name = "State-Wide", 
+               Residents.Deaths = Offender_Deceased__Presumed_COVID + 
+                   Offender_Deceased_Confirmed_COVID, 
+               Residents.Confirmed = Offender_Total_Positive_Cases, 
+               Residents.Tadmin = Offender_Total_Tests, 
+               Residents.Active = Offender_Active_Cases, 
+               Residents.Recovered = Offender_Recovered, 
+               Staff.Confirmed = Employee_Total_Positive_Cases, 
+               Staff.Active = Employee_Active_Cases, 
+               Staff.Recovered = Employee_Recovered, 
+               Staff.Deaths = Employee_Deceased__COVID, 
+               Staff.Tested = Employee_Total_Tests) %>% 
+        select(Name, starts_with("Residents."), starts_with("Staff."))
 }
 
 #' Scraper class for general texas_statewide COVID data
