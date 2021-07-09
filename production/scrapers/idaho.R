@@ -7,7 +7,7 @@ idaho_date_check <- function(x, date = Sys.Date()){
     base_html %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>% 
-        {.[str_detect(., "(?i)idaho facilities")]} %>% 
+        {.[which(str_detect(., "(?i)idaho facilities"))+2]} %>% 
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
         lubridate::mdy() %>%
         error_on_date(date)
