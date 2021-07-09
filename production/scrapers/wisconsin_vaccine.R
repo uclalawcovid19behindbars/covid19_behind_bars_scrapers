@@ -1,6 +1,41 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
+    app_src <- "https://public.tableau.com/views/WIDOCCOVID19/" %>%
+        str_c(
+            "COVID-19Vaccinations?%3Aembed=y&%3AshowVizHome=no&%3A",
+            "host_url=https%3A%2F%2Fpublic.tableau.com%2F&%3A",
+            "embed_code_version=3&%3Atabs=yes&%3Atoolbar=no&%3A",
+            "animate_transition=yes&%3Adisplay_static_image=no&%3A",
+            "display_spinner=no&%3Adisplay_overlay=yes&%3A",
+            "display_count=yes&%3Alanguage=en&%3AloadOrderID=0")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_src)
+    Sys.sleep(6)
+    
+    base_html <- remDr$getPageSource()
+    
+    base_page <- xml2::read_html(base_html[[1]])
+    
+    base_page %>%
+        rvest::html_node(xpath ="//span[contains(text(),'Updated')]") %>%
+        rvest::html_text() %>%
+        str_split("as of") %>%
+        unlist() %>%
+        last() %>% 
+        str_remove_all("\\)|\\*") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 # Tableau downloads from Firefox aren't working  
 # Download the csv file manually in Chrome and save it in this location 
 wisconsin_vaccine_pull <- function(x){
@@ -65,7 +100,7 @@ wisconsin_vaccine_scraper <- R6Class(
             type = "manual",
             state = "WI",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = wisconsin_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = wisconsin_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

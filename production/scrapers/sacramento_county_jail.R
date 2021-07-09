@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+sacramento_county_jail_check_date <- function(x, date = Sys.Date()){
+    "1a4iXz_MHMvzanwnCbcE1m5xLwQ4_Ut0sAlm4gE4EDKA" %>%
+        googlesheets4::read_sheet() %>%
+        janitor::clean_names(case = "title") %>%
+        mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
+        mutate(Date = as.Date(Date)) %>%
+        pull(Date) %>%
+        max(na.rm = TRUE) %>%
+        error_on_date(date)
+        
+}
+
 sacramento_county_jail_pull <- function(x){
     "1a4iXz_MHMvzanwnCbcE1m5xLwQ4_Ut0sAlm4gE4EDKA" %>%
         googlesheets4::read_sheet()
@@ -13,12 +25,10 @@ sacramento_county_jail_restruct <- function(x){
         mutate(Date = as.Date(Date)) %>%
         # Pull most recent date with non-NA Residents.Confirmed 
         filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
-        filter(Date == max(Date))
+        filter(Date == max(Date, na.rm = TRUE))
 }
 
 sacramento_county_jail_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(x$Date, exp_date)
     
     x %>%
         select(
@@ -61,7 +71,7 @@ sacramento_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = sacramento_county_jail_check_date,
             # pull the JSON data directly from the API
             pull_func = sacramento_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json

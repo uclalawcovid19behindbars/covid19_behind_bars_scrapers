@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+santa_clara_county_jail_check_date <- function(x, date=Sys.Date()){
+    "1-Z4rttjVPf4gplH59Qdr0hhMHnDnZZr7rAmO1BAp5ls" %>%
+        googlesheets4::read_sheet() %>%
+        janitor::clean_names(case = "title") %>%
+        mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
+        mutate(Date = as.Date(Date)) %>%
+        # Pull most recent date with non-NA Residents.Confirmed 
+        filter(!is.na(`Confirmed Cases Incarcerated Population Cumulative`)) %>% 
+        filter(Date == max(Date, na.rm = T)) %>%
+        pull(Date) %>%
+        first() %>%
+        error_on_date(date)
+}
+
 santa_clara_county_jail_pull <- function(x){
     "1-Z4rttjVPf4gplH59Qdr0hhMHnDnZZr7rAmO1BAp5ls" %>%
         googlesheets4::read_sheet()
@@ -17,8 +31,6 @@ santa_clara_county_jail_restruct <- function(x){
 }
 
 santa_clara_county_jail_extract <- function(x, exp_date = Sys.Date()){
-    
-    error_on_date(x$Date, exp_date)
     
     x %>% 
         select(
@@ -60,7 +72,7 @@ santa_clara_county_jail_scraper <- R6Class(
             type = "csv",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = santa_clara_county_jail_check_date,
             # pull the JSON data directly from the API
             pull_func = santa_clara_county_jail_pull,
             # restructuring the data means pulling out the data portion of the json

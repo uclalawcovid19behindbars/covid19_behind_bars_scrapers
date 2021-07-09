@@ -1,21 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+south_dakota_population_check_date <- function(x, date = Sys.Date()){
+    get_src_by_attr(x, "a", attr = "href", 
+                    attr_regex = "(?i)documents/AdultPopulation.*.pdf") %>%
+        magick::image_read_pdf() %>% 
+        magick::image_crop("800x200+50+100") %>% 
+        magick::image_ocr() %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 south_dakota_population_pull <- function(x){
     get_src_by_attr(x, "a", attr = "href", 
                     attr_regex = "(?i)documents/AdultPopulation.*.pdf")
 }
 
-south_dakota_population_restruct <- function(x, exp_date = Sys.Date()){
-    
-    pdf_date <- x %>% 
-        magick::image_read_pdf() %>% 
-        magick::image_crop("800x200+50+100") %>% 
-        magick::image_ocr() %>% 
-        lubridate::mdy()
-    
-    error_on_date(pdf_date, exp_date)
-    
+south_dakota_population_restruct <- function(x){
     x %>% 
         magick::image_read_pdf() %>% 
         ExtractTable() 
@@ -74,7 +75,7 @@ south_dakota_population_scraper <- R6Class(
             type = "pdf",
             state = "SD",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = south_dakota_population_check_date,
             pull_func = south_dakota_population_pull,
             restruct_func = south_dakota_population_restruct,
             extract_func = south_dakota_population_extract){

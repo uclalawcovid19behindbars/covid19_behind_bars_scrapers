@@ -1,6 +1,15 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+phil_jails_check_date <- function(x, date = Sys.Date()){
+    "https://api.phila.gov/inmate-locator/census/covid?" %>%
+        str_c("gatekeeperKey=ad0050d3c6e40064546a18af371f7826") %>%
+        jsonlite::read_json(simplifyVector = TRUE) %>%
+        .$reportDate %>%
+        lubridate::as_date() %>%
+        error_on_date(expected_date = date)
+}
+
 phil_jails_pull <- function(x){
     "https://api.phila.gov/inmate-locator/census/covid?" %>%
         str_c("gatekeeperKey=ad0050d3c6e40064546a18af371f7826") %>%
@@ -48,7 +57,7 @@ phil_jails_scraper <- R6Class(
             type = "json",
             state = "PA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = phil_jails_check_date,
             # pull the JSON data directly from the API
             pull_func = phil_jails_pull,
             # restructuring the data means pulling out the data portion of the json

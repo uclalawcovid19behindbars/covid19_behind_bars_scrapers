@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+utah_check_date <- function(x, date = Sys.Date()){
+    z <- xml2::read_html(x)
+    
+    z %>%
+        rvest::html_node(
+            xpath="//span[contains(text(),'COVID-19 case')]/parent::em") %>%
+        rvest::html_node("span") %>% 
+        rvest::html_text() %>%
+        str_remove("(?i)updated") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 utah_pull <- function(x){
     get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)screen_shot") %>%
         .[[1]] %>%
@@ -86,7 +99,7 @@ utah_scraper <- R6Class(
             type = "img",
             state = "UT",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = utah_check_date,
             # pull the JSON data directly from the API
             pull_func = utah_pull,
             # restructuring the data means pulling out the data portion of the json

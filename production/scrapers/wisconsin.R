@@ -1,6 +1,38 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+wisconsin_check_date <- function(x, date = Sys.Date()){
+    app_src <- "https://public.tableau.com/views/WIDOCCOVID19/COVID-19Table?" %>%
+        str_c(
+            "%3Aembed=y&%3AshowVizHome=no&%3Ahost_url=https%3A%2F%2F",
+            "public.tableau.com%2F&%3Aembed_code_version=3&%3Atabs=yes",
+            "&%3Atoolbar=no&%3Aanimate_transition=yes&%3A",
+            "display_static_image=no&%3Adisplay_spinner=no",
+            "&%3Adisplay_overlay=yes&%3Adisplay_count=yes&%3Alanguage=en",
+            "&%3AloadOrderID=0")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_src)
+    Sys.sleep(6)
+    
+    base_html <- remDr$getPageSource()
+    
+    base_page <- xml2::read_html(base_html[[1]])
+    
+    base_page %>%
+        rvest::html_node(xpath ="//span[contains(text(),'Updated')]") %>%
+        rvest::html_text() %>%
+        str_remove_all("Updated: |\\*") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 wisconsin_pull <- function(x){
    app_src <- "https://public.tableau.com/views/WIDOCCOVID19/COVID-19Table?" %>%
        str_c(
@@ -134,7 +166,7 @@ wisconsin_scraper <- R6Class(
             type = "pdf",
             state = "WI",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = wisconsin_check_date,
             # pull the JSON data directly from the API
             pull_func = wisconsin_pull,
             # restructuring the data means pulling out the data portion of the json

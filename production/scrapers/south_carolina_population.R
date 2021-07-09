@@ -1,8 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-south_carolina_population_restruct <- function(x, exp_date = Sys.Date()){
-    
+south_carolina_population_check_date <- function(x, date = Sys.Date()){
+
     # Check date 
     pdf_date <- x %>% 
         magick::image_read_pdf() %>% 
@@ -10,7 +10,10 @@ south_carolina_population_restruct <- function(x, exp_date = Sys.Date()){
         magick::image_ocr() %>% 
         lubridate::mdy()
     
-    error_on_date(pdf_date, exp_date)
+    error_on_date(pdf_date, date)
+}
+
+south_carolina_population_restruct <- function(x){
     
     # Check header (first row)
     exp_header <- c("Institution or Center", "General Housing", 
@@ -120,7 +123,7 @@ south_carolina_population_scraper <- R6Class(
             type = "pdf",
             state = "SC",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = south_carolina_population_check_date,
             pull_func = function(x){x},
             restruct_func = south_carolina_population_restruct,
             extract_func = south_carolina_population_extract){

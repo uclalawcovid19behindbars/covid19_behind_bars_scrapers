@@ -1,6 +1,10 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+texas_statewide_check_date <- function(x, date = Sys.Date()){
+    NULL
+}
+
 texas_statewide_pull <- function(x){
     str_c(
         "https://maps.tdem.texas.gov/koop/googlesheets/tdcjCovidCounts/",
