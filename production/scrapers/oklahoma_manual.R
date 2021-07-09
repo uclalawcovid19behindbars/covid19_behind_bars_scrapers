@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-oklahoma_vaccine_check_date <- function(x, date = Sys.Date()){
+oklahoma_manual_check_date <- function(x, date = Sys.Date()){
     dat <-  "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "OK", col_types = "ccccccccc")
     
@@ -86,7 +86,7 @@ oklahoma_manual_scraper <- R6Class(
             type = "manual",
             state = "OK",
             jurisdiction = "state",
-            check_date = oklahoma_vaccine_check_date,
+            check_date = oklahoma_manual_check_date,
             # pull the JSON data directly from the API
             pull_func = oklahoma_manual_pull,
             # restructuring the data means pulling out the data portion of the json

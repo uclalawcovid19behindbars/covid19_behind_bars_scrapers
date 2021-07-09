@@ -1,6 +1,27 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+ohio_population_check_date <- function(x, date = Sys.Date()){
+    url_ <- x %>% 
+        xml2::read_html() %>%
+        rvest::html_nodes("a") %>%
+        rvest::html_attr("href")
+    
+    # Extract all link texts
+    link_ <- x %>%
+        xml2::read_html() %>%
+        rvest::html_nodes("a") %>%
+        rvest::html_text()
+    
+    # Get url for latest pdf 
+    tbl <- tibble(link = link_, url = url_) %>% 
+        filter(stringr::str_detect(url_, "Portals")) %>% 
+        mutate(Date = lubridate::mdy(link))
+    
+    latest_date <- max(tbl$Date)
+    error_on_date(latest_date, expected_date = date)
+}
+
 ohio_population_pull <- function(x, exp_date = Sys.Date()){
     # Extract all urls 
     url_ <- x %>% 
@@ -20,8 +41,7 @@ ohio_population_pull <- function(x, exp_date = Sys.Date()){
         mutate(Date = lubridate::mdy(link))
     
     latest_date <- max(tbl$Date)
-    error_on_date(latest_date, exp_date)
-    
+
     stringr::str_c(
         "https://drc.ohio.gov", 
         tbl %>% 
@@ -104,7 +124,7 @@ ohio_population_scraper <- R6Class(
             type = "pdf",
             state = "OH",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = ohio_population_check_date,
             pull_func = ohio_population_pull,
             restruct_func = ohio_population_restruct,
             extract_func = ohio_population_extract){
