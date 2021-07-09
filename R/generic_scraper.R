@@ -48,7 +48,9 @@ generic_scraper <- R6Class(
         err_log = NULL,
         raw_dest = NULL,
         extract_dest = NULL,
+        days_late_dest = NULL,
         permalink = NULL,
+        days_late = NULL,
         jurisdiction = NULL,
         initialize = function(
             url, id, pull_func, type, restruct_func, extract_func, log,
@@ -74,6 +76,7 @@ generic_scraper <- R6Class(
             self$restruct_data = NULL
             self$extract_data = NULL
             self$permalink = NULL
+            self$days_late = NULL
             self$pull_func = pull_func
             self$restruct_func = restruct_func
             self$extract_func = extract_func
@@ -90,6 +93,8 @@ generic_scraper <- R6Class(
                 "./results/raw_files/", self$date, "_", id, valid_types[type])
             self$extract_dest = paste0(
                 "./results/extracted_data/", self$date, "_", id, ".csv")
+            self$days_late_dest = paste0(
+                "./results/last_update/", self$date, "_", id, ".csv")
             
             if(!dir.exists("./results/")){
                 dir.create("./results/")
@@ -105,6 +110,10 @@ generic_scraper <- R6Class(
             
             if(!dir.exists("./results/log_files")){
                 dir.create("./results/log_files")
+            }
+            
+            if(!dir.exists("./results/last_update")){
+                dir.create("./results/last_update")
             }
             
             # initiate logger
@@ -148,10 +157,10 @@ generic_scraper <- R6Class(
             }
             
             if(self$log){
-                tryLog(self$check_date(url))
+                tryLog(self$days_late <- self$check_date(url))
             }
             else{
-                self$check_date(url)
+                self$days_late <- self$check_date(url)
             }
         },
         
@@ -180,15 +189,6 @@ generic_scraper <- R6Class(
             )
             
             if(self$log){
-
-                if(file.exists(self$err_log)){
-                    if(str_detect(read_file(self$err_log), "ERROR ")){
-                        tryLog(warning(
-                            "Log file with errors exists.",
-                            "Not going to pull data."))
-                        return()
-                    }
-                }
                 
                 if(self$date != Sys.Date() & !.dated_pull){
                     tryLog(self$raw_data <- valid_types[[self$type]](url))
@@ -289,6 +289,24 @@ generic_scraper <- R6Class(
                     mutate(id = self$id, source = self$url) %>%
                     mutate(jurisdiction = self$jurisdiction) %>%
                     write_csv(self$extract_dest)
+            }
+            invisible(self)
+        },
+        
+        write_days_late = function(){
+            if(self$log){
+                tryLog(tibble(
+                    State = self$state, Date = self$date, id = self$id,
+                    source = self$url, jurisdiction = self$jurisdiction) %>%
+                    mutate(days_late = self$days_late) %>%
+                    write_csv(self$days_late_dest))
+            }
+            else{
+                tibble(
+                    State = self$state, Date = self$date, id = self$id,
+                    source = self$url, jurisdiction = self$jurisdiction) %>%
+                    mutate(days_late = self$days_late) %>%
+                    write_csv(self$days_late_dest)
             }
             invisible(self)
         },
@@ -466,6 +484,7 @@ generic_scraper <- R6Class(
             self$pull_raw()
             self$save_raw()
             self$run_check_date()
+            self$write_days_late()
             self$restruct_raw()
             self$extract_from_raw()
             self$validate_extract()

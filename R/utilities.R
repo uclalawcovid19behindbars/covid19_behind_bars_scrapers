@@ -73,16 +73,16 @@ check_names_extractable <- function(df_, col_name_df){
     }
 }
 
-error_on_date <- function(date, expected_date, days = 30, warning = FALSE){
-    fail <- abs(as.numeric(date - expected_date)) > days
-    
-    if(fail & warning){
+
+error_on_date <- function(date, expected_date, days = 30){
+    days_late <- abs(as.numeric(date - expected_date))
+    fail <- days_late > days
+
+    if(fail){
         warning(str_c("Date is more than ", days, " different from expected"))
     }
 
-    else if(fail){
-        stop(str_c("Date is more than ", days, " different from expected"))
-    }
+    return(days_late)
 }
 
 rename_extractable <- function(df_, col_name_df){
@@ -663,7 +663,11 @@ sync_remote_files <- function(raw = FALSE){
     system(str_c(
         "rsync --perms --chmod=u+rwx -rtvu --progress results/log_files/ ",
         "ucla:/srv/shiny-server/scraper_data/log_files/"))
-    
+
+    system(str_c(
+      "rsync --perms --chmod=u+rwx -rtvu --progress results/last_update/ ",
+      "ucla:/srv/shiny-server/scraper_data/last_update/"))
+
     if(raw){
         system(str_c(
             "rsync --perms --chmod=u+rwx -rtvu --progress results/raw_files/ ",
