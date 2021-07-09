@@ -1,6 +1,29 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+massachusetts_vaccine_check_date <- function(x, date = Sys.Date(), wait = 10){
+    app_src <- "https://data.aclum.org/sjc-12926-tracker/"
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_src)
+    
+    Sys.sleep(wait)
+    
+    base_html <- remDr$getPageSource()
+    
+    xml2::read_html(base_html[[1]]) %>% 
+        rvest::html_nodes("#last_date_str3_DOC") %>% 
+        rvest::html_text() %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 massachusetts_vaccine_pull <- function(x){
     tf <- tempfile(fileext = ".xlsx")
     
@@ -62,12 +85,12 @@ massachusetts_vaccine_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.mass.gov/guides/doc-coronavirus-information-guide",
+            url = "https://data.aclum.org/sjc-12926-tracker/",
             id = "massachusetts_vaccine",
             type = "csv",
             state = "MA",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = massachusetts_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = massachusetts_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
