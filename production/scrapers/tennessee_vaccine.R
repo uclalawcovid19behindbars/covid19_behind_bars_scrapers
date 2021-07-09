@@ -1,6 +1,27 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+tennessee_vaccine_check_date <- function(x, date = Sys.Date()){
+    z <- get_src_by_attr(
+        x, "a", attr = "href", attr_regex = "TDOCInmatesCOVID19.pdf$") %>% 
+        magick::image_read_pdf(pages = 1)
+    
+    z %>%
+        magick::image_crop("2000x175+500+2250") %>%
+        magick::image_ocr() %>%
+        str_split_fixed("\n",2) %>%
+        c() %>%
+        first() %>% 
+        str_split_fixed("OF",3) %>%
+        c() %>%
+        last() %>%
+        str_split_fixed("@",2) %>%
+        c() %>%
+        first() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 tennessee_vaccine_pull <- function(x){
     get_src_by_attr(
         x, "a", attr = "href", attr_regex = "TDOCInmatesCOVID19.pdf$")
@@ -65,7 +86,7 @@ tennessee_vaccine_scraper <- R6Class(
             type = "pdf",
             state = "TN",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = tennessee_vaccine_check_date,
             # pull the JSON data directly from the API
             pull_func = tennessee_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

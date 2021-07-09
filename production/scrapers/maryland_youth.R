@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+maryland_youth_date_check <- function(x, date = Sys.Date()){
+    pdf <- get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)daily-report") %>%
+        .[[1]]
+    
+    magick::image_read_pdf(pdf) %>% 
+        magick::image_crop("1000x200+700+500") %>% 
+        magick::image_ocr() %>% 
+        str_split("(?i)date") %>% 
+        unlist() %>%
+        {.[str_detect(., "21")]} %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 maryland_youth_pull <- function(x){
     get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)daily-report") %>%
         .[[1]]
@@ -10,9 +24,9 @@ maryland_youth_restruct <- function(x){
     md_tab <- magick::image_read_pdf(x)
     
     restruct_results <- md_tab %>%
-                         # magick::image_crop("2550x2350+0+518") %>%
-                         magick::image_crop("1900x16750+200+1600") %>%
-                         ExtractTable()
+        # magick::image_crop("2550x2350+0+518") %>%
+        magick::image_crop("1900x16750+200+1600") %>%
+        ExtractTable()
     restruct_results
 }
 
@@ -67,7 +81,7 @@ maryland_youth_scraper <- R6Class(
             type = "pdf",
             state = "MD",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = maryland_youth_date_check,
             # pull the JSON data directly from the API
             pull_func = maryland_youth_pull,
             # restructuring the data means pulling out the data portion of the json

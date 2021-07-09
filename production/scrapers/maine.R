@@ -90,7 +90,7 @@ maine_extract <- function(x){
         filter(!str_detect(Name, "(?i)total")) %>% 
         full_join(pop_df, by = "Name") %>% 
         full_join(vaccines_df, by = "Name") %>% 
-        mutate(Residents.Completed = Residents.Population * Perc.Fully.Vax.Cln) %>%
+        mutate(Residents.Completed = round(Residents.Population * Perc.Fully.Vax.Cln)) %>%
         select(-ends_with("Drop"),
                -Perc.Fully.Vax.Cln) %>% 
         clean_scraped_df()

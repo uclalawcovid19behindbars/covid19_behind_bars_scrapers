@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+san_diego_jails_check_date <- function(x, date = Sys.Date()){
+    html_obj <- xml2::read_html(x)
+    
+    html_obj %>%
+        rvest::html_nodes("a") %>%
+        .[str_detect(rvest::html_text(.), "(?i)jail daily figures")] %>%
+        rvest::html_text() %>%
+        str_split("(?i)as of") %>%
+        unlist() %>%
+        last() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 san_diego_jails_pull <- function(x) {
     html_obj <- xml2::read_html(x)
     html_obj %>%
@@ -98,7 +112,7 @@ san_diego_jails_scraper <- R6Class(
             type = "img",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = san_diego_jails_check_date,
             # pull the JSON data directly from the API
             pull_func = san_diego_jails_pull,
             # restructuring the data means pulling out the data portion of the json

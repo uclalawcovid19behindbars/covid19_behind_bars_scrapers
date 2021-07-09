@@ -1,6 +1,30 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+minnesota_vaccine_date_check <- function(x, date = Sys.Date(), wait = 10){
+    app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_source)
+    Sys.sleep(wait)
+    
+    base_html <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    base_html %>% 
+        rvest::html_elements("p") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)as of")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 minnesota_vaccine_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "MN Vaccine", 
@@ -82,7 +106,7 @@ minnesota_vaccine_scraper <- R6Class(
             type = "manual",
             state = "MN",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = minnesota_vaccine_date_check,
             # pull the JSON data directly from the API
             pull_func = minnesota_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

@@ -63,7 +63,9 @@ generic_scraper <- R6Class(
             stopifnot(is.character(url), length(url) == 1)
             stopifnot(is.character(id), length(id) == 1)
             stopifnot((type %in% names(valid_types)))
-            stopifnot(jurisdiction %in% c("state", "county", "federal", "immigration", "psychiatric"))
+            stopifnot(jurisdiction %in% c("state", "county", "federal", 
+                                          "immigration", "psychiatric", 
+                                          "youth"))
             
             self$log = log
             self$type = type

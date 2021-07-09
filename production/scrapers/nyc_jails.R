@@ -1,6 +1,26 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+nyc_jails_check_date <- function(x, date = Sys.Date()){
+    html_page <- xml2::read_html(x)
+    
+    pdf_page <- html_page %>%
+        rvest::html_nodes("a") %>%
+        .[str_squish(rvest::html_text(.)) == "CHS COVID-19 Data Snapshot"] %>%
+        rvest::html_attr("href") %>%
+        magick::image_read_pdf(pages = 1)
+    
+    date_box <- magick::image_crop(pdf_page, "1550x485+0+0") %>% 
+        magick::image_ocr() 
+    
+    date_box %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
+
 nyc_jails_pull <- function(x){
     html_page <- xml2::read_html(x)
     
@@ -89,7 +109,7 @@ nyc_jails_scraper <- R6Class(
             type = "pdf",
             state = "NY",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = nyc_jails_check_date,
             # pull the JSON data directly from the API
             pull_func = nyc_jails_pull,
             restruct_func = nyc_jails_restruct,

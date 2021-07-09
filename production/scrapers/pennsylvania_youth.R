@@ -1,6 +1,29 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+pennsylvania_youth_check_date <- function(x, date = Sys.Date()){
+    raw_html <- xml2::read_html(x)
+    
+    update_text <- raw_html %>%
+        rvest::html_nodes("em") %>%
+        rvest::html_text() %>%
+        .[str_detect(., "(?i)update")]
+    
+    if(length(update_text) != 1){
+        stop("Update text is not as expected please inspect")
+    }
+    
+    update_text %>%
+        str_split(":") %>%
+        unlist() %>%
+        last() %>%
+        str_split("at") %>%
+        unlist() %>%
+        first() %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 pennsylvania_youth_pull <- function(x){
     xml2::read_html(x)
 }
@@ -68,7 +91,7 @@ pennsylvania_youth_scraper <- R6Class(
             type = "html",
             state = "PA",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = pennsylvania_youth_check_date,
             # pull the JSON data directly from the API
             pull_func = pennsylvania_youth_pull,
             # restructuring the data means pulling out the data portion of the json

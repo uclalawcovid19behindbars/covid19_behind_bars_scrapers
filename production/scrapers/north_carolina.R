@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+north_carolina_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, ".asOfText") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 north_carolina_pull <- function(x){
     x %>%
         xml2::read_html()
@@ -55,7 +67,7 @@ north_carolina_scraper <- R6Class(
             type = "html",
             state = "NC",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = north_carolina_check_date,
             # pull the JSON data directly from the API
             pull_func = north_carolina_pull,
             # restructuring the data means pulling out the data portion of the json

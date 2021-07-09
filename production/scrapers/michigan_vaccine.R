@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+michigan_vaccine_date_check <- function(x, date = Sys.Date()){
+    base_html <- rvest::read_html(x)
+    
+    base_html %>% 
+        rvest::html_nodes("caption") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)correction")]} %>% 
+        stringr::str_split("(?i)through") %>% 
+        unlist() %>% 
+        {.[str_detect(., "21")]} %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 michigan_vaccine_pull <- function(x){
     xml2::read_html(x)
 }
@@ -81,7 +95,7 @@ michigan_vaccine_scraper <- R6Class(
             type = "html",
             state = "MI",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = michigan_vaccine_date_check,
             # pull the JSON data directly from the API
             pull_func = michigan_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

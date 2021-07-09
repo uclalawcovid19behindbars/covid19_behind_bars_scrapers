@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+iowa_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)last update")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 iowa_restruct <- function(x){
     
     bind_rows(
@@ -70,7 +82,7 @@ iowa_scraper <- R6Class(
             state = "IA",
             type = "html",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = iowa_date_check,
             pull_func = xml2::read_html,
             restruct_func = iowa_restruct,
             extract_func = iowa_extract){

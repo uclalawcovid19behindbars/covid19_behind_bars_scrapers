@@ -24,12 +24,7 @@ kansas_population_restruct <- function(x){
 }
 
 kansas_population_extract <- function(x){
-    
-    # Check table dimensions 
-    if (!all(dim(x[[1]]) == c(38, 17))){
-        warning("Dimensions of table not as expected. Inspect raw file.")
-    }
-    
+
     x_ <- x[[1]] %>% 
         select(seq(0, 16) %>% as.character()) %>% 
         rownames_to_column() %>% 

@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+idaho_vaccine_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)vaccinations")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 idaho_vaccine_pull <- function(x){
     xml2::read_html(x)
 }
@@ -67,7 +79,7 @@ idaho_vaccine_scraper <- R6Class(
             type = "html",
             state = "ID",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = idaho_vaccine_date_check,
             # pull the JSON data directly from the API
             pull_func = idaho_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

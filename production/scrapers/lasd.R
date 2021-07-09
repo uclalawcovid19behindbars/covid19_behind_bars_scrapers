@@ -1,6 +1,17 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+lasd_date_check <- function(x, date = Sys.Date()){
+    get_src_by_attr(
+        x, "img", attr = "src", attr_regex = "(?i)fact.?sheet") %>%
+        magick::image_read() %>% 
+        magick::image_crop("500x50+700+0") %>% 
+        magick::image_ocr() %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 lasd_crop <- function(img, crop, detect = "", rimg = FALSE){
     sub_img <- img %>%
         magick::image_crop(crop)
@@ -217,7 +228,7 @@ lasd_scraper <- R6Class(
             type = "img",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = lasd_date_check,
             # pull the JSON data directly from the API
             pull_func = lasd_pull,
             # restructuring the data means pulling out the data portion of the json

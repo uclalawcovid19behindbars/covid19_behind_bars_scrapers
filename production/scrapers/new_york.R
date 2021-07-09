@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+new_york_check_date <- function(x, date = Sys.Date()){
+  pdf <- get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)facility-")
+  
+  pdf %>% 
+    magick::image_read_pdf(pages = 1) %>% 
+    magick::image_crop("1500x400+200") %>% 
+    magick::image_ocr() %>% 
+    {.[str_detect(., "(?i)21")]} %>%
+    str_split(., "(?i)as of | at") %>%
+    unlist() %>%
+    .[2]
+    lubridate::mdy() %>% 
+    error_on_date(date)
+}
+
 new_york_pull <- function(x){
     get_src_by_attr(
         x, "a", attr = "href", attr_regex = "(?i)facility-")
@@ -74,7 +89,7 @@ new_york_scraper <- R6Class(
             type = "pdf",
             state = "NY",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = new_york_check_date,
             # pull the JSON data directly from the API
             pull_func = new_york_pull,
             # restructuring the data means pulling out the data portion of the json

@@ -1,19 +1,28 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+
+wisconsin_population_check_date <- function(x, date = Sys.Date()){
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)WeeklyPopulationReports/.*.pdf") %>% 
+        first() %>%
+        magick::image_read_pdf(pages = 1) %>% 
+        magick::image_crop("600x100+650+250") %>% 
+        magick::image_ocr() %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 wisconsin_population_pull <- function(x){
     get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)WeeklyPopulationReports/.*.pdf") %>% 
         first()
 }
 
-wisconsin_population_restruct <- function(x, exp_date = Sys.Date()){
+wisconsin_population_restruct <- function(x){
     date <- x %>% 
         magick::image_read_pdf(pages = 1) %>% 
         magick::image_crop("600x100+650+250") %>% 
         magick::image_ocr() %>% 
         lubridate::mdy()
-    
-    error_on_date(date, exp_date)
     
     out1 <- magick::image_read_pdf(x, pages = 1) %>%
         magick::image_crop("2550x1900+0+650") %>%
@@ -196,7 +205,7 @@ wisconsin_population_scraper <- R6Class(
             type = "pdf",
             state = "WI",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = wisconsin_population_check_date,
             pull_func = wisconsin_population_pull,
             restruct_func = wisconsin_population_restruct,
             extract_func = wisconsin_population_extract){

@@ -1,12 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-minnesota_pull <- function(x, wait = 5){
+minnesota_date_check <- function(x, date = Sys.Date()){
+    
+    base_html <- minnesota_pull()
+    
+    base_html %>% 
+        rvest::html_elements("p") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)as of")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
+minnesota_pull <- function(x, wait = 10){
     
     app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
-        # xml2::read_html(x) %>%
-        # rvest::html_elements("iframe") %>%
-        # rvest::html_attr("src")
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -161,7 +171,7 @@ minnesota_scraper <- R6Class(
             type = "html",
             state = "MN",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = minnesota_date_check,
             # pull the JSON data directly from the API
             pull_func = minnesota_pull,
             # restructuring the data means pulling out the data portion of the json

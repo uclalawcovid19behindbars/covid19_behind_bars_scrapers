@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+north_dakota_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, 
+                                  xpath="/html/body/div[1]/div[5]/div/section/div[2]/article/div/div[2]/div/div[2]/div/div/div/div[1]/h3") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_extract("\\d{1,2}-\\d{1,2}-\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 north_dakota_pull <- function(x){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -142,7 +155,7 @@ north_dakota_scraper <- R6Class(
             type = "html",
             state = "ND",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = north_dakota_check_date,
             # pull the JSON data directly from the API
             pull_func = north_dakota_pull,
             # restructuring the data means pulling out the data portion of the json

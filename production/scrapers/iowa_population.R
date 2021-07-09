@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+iowa_population_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("#block-system-main") %>%
+        rvest::html_text() %>% 
+        str_split("\n") %>%
+        unlist() %>% 
+        str_squish() %>%
+        {.[str_detect(., "\\d{1,2}/\\d{1,2}/\\d{2,4}")]} %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 iowa_population_pull <- function(x){
     xml2::read_html(x)
 }
@@ -63,7 +77,7 @@ iowa_population_scraper <- R6Class(
             state = "IA",
             type = "html",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = iowa_population_date_check,
             pull_func = iowa_population_pull,
             restruct_func = iowa_population_restruct,
             extract_func = iowa_population_extract){

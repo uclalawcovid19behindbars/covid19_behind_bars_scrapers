@@ -1,6 +1,16 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+santa_barbara_jails_check_date <- function(x, date=Sys.Date()){
+    raw_html <- xml2::read_html(x)
+    
+    raw_html %>%
+        rvest::html_node("time") %>%
+        rvest::html_attr("datetime") %>%
+        as.Date() %>%
+        error_on_date(date)
+}
+
 santa_barbara_jails_pull <- function(x){
     xml2::read_html(x)
 }
@@ -74,7 +84,7 @@ santa_barbara_jails_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = santa_barbara_jails_check_date,
             pull_func = santa_barbara_jails_pull,
             restruct_func = santa_barbara_jails_restruct,
             # Rename the columns to appropriate database names

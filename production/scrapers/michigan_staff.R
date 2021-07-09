@@ -1,13 +1,28 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+michigan_staff_date_check <- function(x, date = Sys.Date()){
+    base_html <- rvest::read_html(x)
+    
+    base_html %>% 
+        rvest::html_nodes("h2") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        last() %>% 
+        str_split("–") %>% 
+        unlist() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 michigan_staff_pull <- function(x){
     mi_html <- xml2::read_html(x)
     
     img2 <- mi_html %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>%
-        .[9] %>%
+        .[11] %>%      #src="https://miro.medium.com/max/1210/1*rmlt07ZUHyPh0MkrayUqoA.png"
         magick::image_read()
     
     img2
@@ -64,7 +79,7 @@ michigan_staff_scraper <- R6Class(
             type = "img",
             state = "MI",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = michigan_staff_date_check,
             # pull the JSON data directly from the API
             pull_func = michigan_staff_pull,
             # restructuring the data means pulling out the data portion of the json

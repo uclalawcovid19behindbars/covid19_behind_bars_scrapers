@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+nd_pop_check_date <- function(x, date = Sys.Date()){
+    img <- magick::image_read_pdf(x, pages = 1) 
+    
+    date_box <- magick::image_crop(img, "500x240+2000+160") %>% 
+        magick::image_ocr() 
+    
+    date_box %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 nd_pop_crop <- function(img, crop, detect){
 
     sub_txt <- img %>% 
@@ -35,9 +48,10 @@ nd_pop_restruct <- function(x){
         tibble(Name = "MRCC", 
                Residents.Population = nd_pop_crop(img, "700x140+20+1010", "MRCC")), 
         tibble(Name = "DWCRC", 
-               Residents.Population = nd_pop_crop(img, "700x140+20+1230", "DWCRC")), 
-        tibble(Name = "TRC", 
-               Residents.Population = nd_pop_crop(img, "700x140+20+1440", "TRC"))
+               Residents.Population = nd_pop_crop(img, "700x140+20+1230", "DWCRC")) 
+        # Not reported on 7/2/21 - commented out in case that changes 
+        # tibble(Name = "TRC", 
+        #        Residents.Population = nd_pop_crop(img, "700x140+20+1440", "TRC"))
     )
 }
 
@@ -65,7 +79,7 @@ north_dakota_population_scraper <- R6Class(
             type = "pdf",
             state = "ND",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = nd_pop_check_date,
             # pull the JSON data directly from the API
             pull_func = function(x){x}, 
             # restructuring the data means pulling out the data portion of the json

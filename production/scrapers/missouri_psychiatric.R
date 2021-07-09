@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+missouri_psychiatric_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_updated <- rvest::html_nodes(base_html, xpath="/html/body/div/div/div/section/div/article/div/div/div/div/p[65]/em") %>%
+        rvest::html_text()
+    
+    date_updated %>%
+        {.[str_detect(., "21")]} %>%
+        str_split("Updated: ") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 missouri_psychiatric_pull <- function(x){
     xml2::read_html(x)
 }
@@ -38,7 +52,7 @@ missouri_psychiatric_scraper <- R6Class(
             type = "html",
             state = "MO",
             jurisdiction = "psychiatric",
-            check_date = NULL,
+            check_date = missouri_psychiatric_check_date,
             pull_func = missouri_psychiatric_pull,
             restruct_func = missouri_psychiatric_restruct,
             extract_func = missouri_psychiatric_extract){

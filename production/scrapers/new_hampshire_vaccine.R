@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+new_hampshire_vaccine_check_date <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    date_txt <- rvest::html_nodes(base_html, xpath="//*[@id=\"block-state-of-nh-core-content\"]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[3]/p[1]/strong") %>%
+        rvest::html_text()
+    
+    date_txt %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_split(., "(?i)table data as of ") %>%
+        unlist() %>%
+        .[2] %>%
+        lubridate::mdy() %>%
+        error_on_date(expected_date = date)
+}
+
 new_hampshire_vaccine_pull <- function(x){
     xml2::read_html(x)
 }
@@ -92,7 +106,7 @@ new_hampshire_vaccine_scraper <- R6Class(
             type = "html",
             state = "NH",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = new_hampshire_vaccine_check_date,
             pull_func = new_hampshire_vaccine_pull,
             restruct_func = new_hampshire_vaccine_restruct,
             extract_func = new_hampshire_vaccine_extract){

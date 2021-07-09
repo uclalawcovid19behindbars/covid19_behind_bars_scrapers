@@ -1,6 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+kentucky_pop_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)as of")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 kentucky_population_pull <- function(x, date = Sys.Date(), days = 7){
     
     # See if there is a daily count sheet for today, if not check the previous day, etc. 
@@ -108,7 +120,7 @@ kentucky_population_scraper <- R6Class(
             type = "pdf",
             state = "KY",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = kentucky_pop_date_check,
             pull_func = kentucky_population_pull,
             restruct_func = kentucky_population_restruct,
             extract_func = kentucky_population_extract){

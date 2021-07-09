@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+st_luce_county_check_date <- function(x, date = Sys.Date()){
+    z = xml2::read_html(x)
+    
+    z %>%
+        rvest::html_node(xpath = str_c(
+            "//strong[contains(text(),'Status')]/",
+            "parent::h3/following-sibling::p")) %>%
+        rvest::html_text() %>%
+        str_match("(?<=\\().+?(?=\\))") %>%
+        c() %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 st_luce_county_pull <- function(x){
     xml2::read_html(x)
 }
@@ -59,7 +73,7 @@ st_luce_county_scraper <- R6Class(
             type = "html",
             state = "FL",
             jurisdiction = "county",
-            check_date = NULL, 
+            check_date = st_luce_county_check_date, 
             # pull the JSON data directly from the API
             pull_func = st_luce_county_pull,
             # restructuring the data means pulling out the data portion of the json

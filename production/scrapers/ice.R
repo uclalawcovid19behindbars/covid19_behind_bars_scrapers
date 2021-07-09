@@ -1,6 +1,17 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+ice_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_node(".caseStatus") %>%
+        rvest::html_nodes("div") %>%
+        rvest::html_text() %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 ice_str_word_detect <- function(string, pattern){
     str_detect(string, str_c(" ", pattern, " ")) |
         str_starts(string, str_c(pattern, " ")) |
@@ -128,7 +139,7 @@ ice_scraper <- R6Class(
             type = "html",
             state = "federal",
             jurisdiction = "immigration",
-            check_date = NULL,
+            check_date = ice_date_check,
             pull_func = ice_pull,
             restruct_func = ice_restruct,
             extract_func = ice_extract){
