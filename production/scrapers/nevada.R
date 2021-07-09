@@ -1,6 +1,38 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+nevada_check_date <- function(x, date = Sys.Date()){
+    # scrape from the power bi iframe directly
+    y <- str_c(
+            "https://app.powerbigov.us/view?r=",
+            "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
+            "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(y)
+    
+    Sys.sleep(10)
+    
+    base_page <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    site_date <- base_page %>%
+        rvest::html_nodes(xpath="//*[@id=\"pvExplorationHost\"]/div/div/exploration/div/explore-canvas-modern/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container-modern[1]/transform/div/div[3]/div/visual-modern/div/div/div/p[2]/span[1]") %>%
+        rvest::html_text() %>%
+        {.[str_detect(., "(?i)21")]} %>%
+        str_remove("(?i)data were last updated on ") %>%
+        lubridate::mdy_hm() %>%
+        lubridate::floor_date(unit="day") %>%
+        as.Date()
+    
+    error_on_date(site_date, date)
+}
+
 nevada_pull <- function(x){
     app_source <- str_c(
         "https://app.powerbigov.us/view?r=",
@@ -244,10 +276,9 @@ nevada_scraper <- R6Class(
             type = "html",
             state = "NV",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = nevada_check_date,
             # pull the JSON data directly from the API
             pull_func = nevada_pull,
-            # 
             restruct_func = nevada_restruct,
             # Rename the columns to appropriate database names
             extract_func = nevada_extract){
