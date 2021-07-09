@@ -1,6 +1,16 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+ohio_statewide_date_check <- function(x, date = Sys.Date()){
+    x %>% 
+        magick::image_read_pdf() %>% 
+        magick::image_crop("500x50+800+200") %>% 
+        magick::image_ocr() %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 ohio_statewide_manual_pull <- function(x){
     z <- "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "OH Statewide", col_types = "DDciiii")
@@ -66,7 +76,7 @@ ohio_statewide_manual_scraper <- R6Class(
             type = "manual",
             state = "OH",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = ohio_statewide_date_check,
             # pull the JSON data directly from the API
             pull_func = ohio_statewide_manual_pull,
             # restructuring the data means pulling out the data portion of the json
