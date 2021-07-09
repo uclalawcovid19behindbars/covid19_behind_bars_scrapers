@@ -35,12 +35,10 @@ ohio_statewide_manual_extract <- function(x, exp_date = Sys.Date()){
         mutate(
             Name = `Name`,
             Residents.Confirmed = `Month-to-date Positive` + `Barchart positive sum (pink bars)`, 
-            Residents.Tadmin = `Month-to-date Tested` + `Barchart tests sum (purple bars)`, 
-            Residents.Active = `Month-to-date Positive`) %>% 
+            Residents.Tadmin = `Month-to-date Tested` + `Barchart tests sum (purple bars)`) %>% 
         select(Name, 
                Residents.Confirmed,
-               Residents.Tadmin,
-               Residents.Active) %>%
+               Residents.Tadmin) %>%
         clean_scraped_df()
     
     return(out)
@@ -55,7 +53,6 @@ ohio_statewide_manual_extract <- function(x, exp_date = Sys.Date()){
 #'   \item{Name}{The facility name.}
 #'   \item{Inmate Total Tested}{Statewide-level total tests administered}
 #'   \item{Inmate Total Positive}{Statewide-level cumulative COVID cases for inmates}
-#'   \item{Inmate Total Currently Positive}{Statewide-level current active COVID infections}
 
 ohio_statewide_manual_scraper <- R6Class(
     "ohio_statewide_manual_scraper",
