@@ -1,6 +1,22 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+hawaii_date_check <- function(x, date = Sys.Date()){
+    img <- get_src_by_attr(
+        x, "img", attr = "src", attr_regex = "(?i)Inmate-Test-Report") %>%
+        {gsub("-[0-9]+x[0-9]+", "", .)} %>%
+        magick::image_read()
+    
+    img %>% 
+        magick::image_crop("800x100+0+200") %>% 
+        magick::image_ocr() %>% 
+        str_split("Updated|[:space:]") %>% 
+        unlist() %>%
+        {.[str_detect(., "21")]} %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 hawaii_extract <- function(x){
     
     col_name_mat <- matrix(c(
@@ -72,7 +88,7 @@ hawaii_scraper <- R6Class(
             state = "HI",
             type = "img",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = hawaii_date_check,
             # restructuring the data means pulling out the data portion of the json
             pull_func = function(x) {
                 get_src_by_attr(

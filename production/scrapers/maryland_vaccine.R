@@ -1,6 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+maryland_vaccine_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        {.[str_detect(., "21")]} %>% 
+        str_split("(?i)next") %>% 
+        unlist() %>% 
+        {.[!str_detect(., "(?i)schedule")]} %>% 
+        lubridate::mdy() %>% 
+        error_on_date(date)
+}
+
 maryland_vaccine_pull <- function(x){
     src_url <- str_c(
         "https://app.powerbigov.us/view?r=", 
@@ -197,7 +212,7 @@ maryland_vaccine_scraper <- R6Class(
             type = "html",
             state = "MD",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = maryland_vaccine_date_check,
             # pull the JSON data directly from the API
             pull_func = maryland_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

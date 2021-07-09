@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+kansas_vaccine_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)as of")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        # Pull most recent date if staff and residents differ 
+        max() %>% 
+        error_on_date(date)
+}
+
 kansas_vaccine_pull <- function(x){
     xml2::read_html(x)
 }
@@ -60,7 +74,7 @@ kansas_vaccine_scraper <- R6Class(
             type = "html",
             state = "KS",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = kansas_vaccine_date_check,
             # pull the JSON data directly from the API
             pull_func = kansas_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json

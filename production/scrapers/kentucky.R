@@ -1,6 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+kentucky_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("h6") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)as of")]} %>% 
+        str_split("as of") %>% 
+        unlist() %>% 
+        {.[str_detect(., "21")]}%>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 kentucky_pull <- function(x){
     # KY changes the name of the image fairly often, update the regex accordingly  
     get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID") %>%
@@ -63,7 +77,7 @@ kentucky_scraper <- R6Class(
             type = "img",
             state = "KY",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = kentucky_date_check,
             pull_func = kentucky_pull,
             restruct_func = kentucky_restruct,
             # Rename the columns to appropriate database names

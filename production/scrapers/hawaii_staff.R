@@ -1,6 +1,23 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+hawaii_staff_date_check <- function(x, date = Sys.Date()){
+    img <- get_src_by_attr(
+        x, "img", attr = "src", attr_regex = "(?i)active-recovered") %>%
+        {gsub("-[0-9]+x[0-9]+", "", .)} %>%
+        magick::image_read() 
+    
+    img %>% 
+        magick::image_crop("500x100") %>% 
+        magick::image_ocr() %>% 
+        str_split("Updated") %>% 
+        unlist() %>%
+        {.[str_detect(., "(?i)21")]} %>% 
+        str_squish() %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 hawaii_staff_pull <- function(x) {
     get_src_by_attr(
         x, "img", attr = "src", attr_regex = "(?i)active-recovered") %>%
@@ -72,7 +89,7 @@ hawaii_staff_scraper <- R6Class(
             state = "HI",
             type = "img",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = hawaii_staff_date_check,
             # restructuring the data means pulling out the data portion of the json
             pull_func = hawaii_staff_pull,
             # TODO: we are not currently extracting the last updated section

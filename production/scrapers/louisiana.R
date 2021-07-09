@@ -1,6 +1,19 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+louisiana_date_check <- function(x, date = Sys.Date()){
+    base_html <- xml2::read_html(x)
+    
+    base_html %>%
+        rvest::html_nodes("span") %>%
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        max() %>% 
+        error_on_date(date)
+}
+
 louisiana_pull <- function(x){
     xml2::read_html(x) 
 }
@@ -110,7 +123,7 @@ louisiana_scraper <- R6Class(
             type = "html",
             state = "LA",
             jurisdiction = "state",
-            check_date = NULL,
+            check_date = louisiana_date_check,
             # pull the JSON data directly from the API
             pull_func = louisiana_pull,
             # restructuring the data means pulling out the data portion of the json

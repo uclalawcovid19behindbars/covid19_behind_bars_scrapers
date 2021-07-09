@@ -1,6 +1,32 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+lasd_staff_date_check <- function(x, date = Sys.Date()){
+    lasd_html <- xml2::read_html(x)
+    
+    app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
+    
+    remDr <- RSelenium::remoteDriver(
+        remoteServerAddr = "localhost",
+        port = 4445,
+        browserName = "firefox"
+    )
+    
+    del_ <- capture.output(remDr$open())
+    remDr$navigate(app_source)
+    Sys.sleep(6)
+    
+    x <- remDr$getPageSource() %>%
+        {xml2::read_html(.[[1]])}
+    
+    rvest::html_nodes(x, ".visualContainer") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)date")]} %>%
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 lasd_staff_pull <- function(x, wait = 5){
     lasd_html <- xml2::read_html(x)
     
@@ -92,7 +118,7 @@ lasd_staff_scraper <- R6Class(
             type = "html",
             state = "CA",
             jurisdiction = "county",
-            check_date = NULL,
+            check_date = lasd_staff_date_check,
             # pull the JSON data directly from the API
             pull_func = lasd_staff_pull,
             # restructuring the data means pulling out the data portion of the json
