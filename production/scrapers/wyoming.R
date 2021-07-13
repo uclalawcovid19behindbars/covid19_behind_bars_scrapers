@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 wyoming_check_date <- function(x, date = Sys.Date()){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "WY", col_types = "Dccc") %>%
+        googlesheets4::read_sheet(sheet = "WY", col_types = "Dcccc") %>%
         filter(!is.na(Date)) %>% 
         filter(Date == max(Date)) %>%
         pull(Date) %>%
@@ -13,7 +13,7 @@ wyoming_check_date <- function(x, date = Sys.Date()){
 
 wyoming_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "WY", col_types = "Dccc")
+        googlesheets4::read_sheet(sheet = "WY", col_types = "Dcccc")
 }
 
 wyoming_restruct <- function(x){
@@ -30,13 +30,15 @@ wyoming_extract <- function(x, exp_date = Sys.Date()){
         "Date", 
         "Name", 
         "Positive Inmate Cases", 
-        "Inmate Deaths")
+        "Inmate Deaths", 
+        "Positive Staff Cases")
     )
     
     x %>%
         select(
             Name = `Name`,
             Residents.Active = `Positive Inmate Cases`,
+            Staff.Active = `Positive Staff Cases`,
             Residents.Deaths = `Inmate Deaths`) %>% 
         # Only reporting statewide deaths
         # This should just replace 0's with NAs as a fail safe 

@@ -19,68 +19,29 @@ louisiana_pull <- function(x){
 }
 
 louisiana_restruct <- function(x){
-    list(
-        la1 = x %>%
-            rvest::html_nodes('table') %>%
-            .[[1]] %>%
-            rvest::html_table(),
-        la2 = x %>%
-            rvest::html_nodes('table') %>%
-            .[[3]] %>%
-            rvest::html_table())
+    x %>%
+        rvest::html_node('table') %>%
+        rvest::html_table()
 }
 
 louisiana_extract <- function(x){
-    rez_exp <- c(
-        Name = "Prisons", 
-        Drop.Res.Symp = "Current Positive Symptomatic",
-        Drop.Res.Asymp = "Current Positive Asymptomatic",
-        Residents.Confirmed = "Total Tested Positive Cases",
-        Drop.Res.Pos.Symp = "Tested Positive Symptomatic Cases",
-        Drop.Res.Pos.Asymp = "Tested Positive Asymptomatic Cases",
-        Residents.Tested = "Total # of Inmates Tested",
-        Drop.Res.Retests = "# of Inmate Retests Processed",
-        Drop.Res.Stepdown = "Step Down",
-        Residents.Recovered = "Recovered",
-        Drop.Res.Release = "Released",
-        Drop.Res.Death.Und = "COVID-19 Deaths (Underlying Medical Conditions)",
-        Drop.Res.Death.Main = "COVID-19 Deaths",
-        Residents.Deaths = "Total Deaths")
-    
-    staff_exp <- c(
+    exp <- c(
         Name = "Prisons",
-        Staff.Confirmed = "Positive",
-        Staff.Recovered = "Recovered", 
-        Staff.Tested = "Staff Tested (Self Reported & DOC Conducted)",
-        Staff.Deaths = "Deaths")
+        Staff.Active = "Current Positive Staff", 
+        Residents.Active = "Current Positive Prisoners"
+    )
+
     
-    check_names(x$la1, rez_exp)
-    check_names(x$la2, staff_exp)
+    check_names(x, exp)
+    names(x) <- names(exp)
     
-    la_rez <- x$la1
-    names(la_rez) <- names(rez_exp)
-    
-    la_staff <- x$la2
-    names(la_staff) <- names(staff_exp)
-    
-    la_rez <- la_rez %>%
+    x %>%
         clean_scraped_df() %>%
-        mutate(Residents.Tadmin = Residents.Tested + Drop.Res.Retests, 
-               Residents.Active = Drop.Res.Symp + Drop.Res.Asymp) %>%
-        select(
-            Name, Residents.Confirmed, Residents.Tested, Residents.Deaths,
-            Residents.Recovered, Residents.Tadmin, Residents.Active) %>%
-        filter(Name != "TOTAL")
-    
-    la_staff <- la_staff %>%
-        filter(Name != "TOTAL") %>%
+        filter(!str_detect(Name, "(?i)total")) %>%
         mutate(Name = ifelse(
             Name == "Louisiana Correctional Institute for Women",
             "Louisiana Correctional Institute for Women - Hunt",
             Name))
-    
-    full_join(la_rez, la_staff, by="Name") %>%
-        clean_scraped_df()
 }
 
 #' Scraper class for general Louisiana COVID data
@@ -90,6 +51,7 @@ louisiana_extract <- function(x){
 #' for staff and another for residents. Table for residents is more detailed.
 #' Not that the testing numbers indicate the number of individuals who are
 #' tested and not the total number of tests administered. 
+#' Update: Removed all but staff and resident active in June 2021. 
 #' \describe{
 #'   \item{Prisons}{The facility name.}
 #'   \item{Current Positive Symptomatic}{Residents active Positive who are sympotomatic}

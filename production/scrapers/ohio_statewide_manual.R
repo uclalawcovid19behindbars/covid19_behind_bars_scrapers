@@ -4,7 +4,7 @@ source("./R/utilities.R")
 ohio_statewide_date_check <- function(x, date = Sys.Date()){
     x %>% 
         magick::image_read_pdf() %>% 
-        magick::image_crop("500x50+800+200") %>% 
+        magick::image_crop("600x50+800+200") %>% 
         magick::image_ocr() %>% 
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
         lubridate::mdy() %>%

@@ -11,7 +11,7 @@ new_york_check_date <- function(x, date = Sys.Date()){
     {.[str_detect(., "(?i)21")]} %>%
     str_split(., "(?i)as of | at") %>%
     unlist() %>%
-    .[2]
+    .[2] %>% 
     lubridate::mdy() %>% 
     error_on_date(date)
 }

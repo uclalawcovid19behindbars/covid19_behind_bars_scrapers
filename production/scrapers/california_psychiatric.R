@@ -16,8 +16,15 @@ california_psychiatric_restruct <- function(x){
 }
 
 california_psychiatric_extract <- function(x){
+    
+    staff_idx <- which(sapply(x, function(z){
+        any(str_detect(z[,1], "(?i)staff"))}))
+    
+    res_idx <- which(sapply(x, function(z){
+        any(str_detect(z[,1], "(?i)patient"))}))
+    
     # Staff data
-    staff <- as.data.frame(t(x[[1]]))
+    staff <- as.data.frame(t(x[[staff_idx]]))
     
     names(staff) <- staff[1,]
     staff <- staff[-1, ]
@@ -37,7 +44,7 @@ california_psychiatric_extract <- function(x){
         select(-starts_with("Drop")) 
     
     # Resident data   
-    resident <- as.data.frame(t(x[[2]]))
+    resident <- as.data.frame(t(x[[res_idx]]))
     
     names(resident) <- resident[1, ]
     resident <- resident[-1, ]

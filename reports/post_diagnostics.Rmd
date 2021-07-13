@@ -63,8 +63,7 @@ old_df <- stringr::str_c(
     read_csv()
 
 covid_suffixes <- c(
-    ".Confirmed", ".Deaths", ".Recovered", ".Tadmin", ".Tested", ".Active",
-    ".Negative", ".Pending", ".Quarantine", ".Initiated", ".Completed", ".Vadmin")
+  ".Confirmed", ".Deaths", ".Tadmin", ".Active", ".Initiated", ".Completed")
 
 # Get totals 
 rowAny <- function(x) rowSums(x) > 0
@@ -75,7 +74,7 @@ new_total <- new_df %>%
     summarise_all(sum_na_rm) %>% 
     pivot_longer(cols = everything(), 
                  names_to = "Variable", 
-                 values_to = "New Total")
+                 values_to = "New Total") 
 
 old_total <- old_df %>% 
     select(all_of(ends_with(covid_suffixes))) %>% 
@@ -86,9 +85,7 @@ old_total <- old_df %>%
 
 joined <- full_join(old_total, new_total, by = "Variable") %>% 
     mutate(Difference = `New Total` - `Old Total`) %>% 
-    mutate(cumulative_flag = ifelse(str_detect(Variable, ".Active") 
-                                  | str_detect(Variable, ".Pending")
-                                  | str_detect(Variable, ".Quarantine"), 0, 1))
+    mutate(cumulative_flag = ifelse(str_detect(Variable, ".Active|.Initiated|.Completed"), 0, 1))
 
 # Highlight cumulative variables that decreased 
 kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %>% 
@@ -103,7 +100,7 @@ kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %
 
 **Which facilities have metrics that are declining that shouldn't be?**
 
-This is also based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted. 
+This is also based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted except from Texas, Ohio, and the BOP (where we know reported counts are not cumulative). 
 
 ``` {r check_previous_facility, echo = F, message = F, warning = F}
 old_facility <- old_df %>% 
@@ -125,14 +122,18 @@ new_facility <- new_df %>%
 joined_facility <- full_join(old_facility, new_facility, 
                              by = c("Facility.ID", "Variable")) %>% 
     mutate(Difference = `New Value` - `Old Value`) %>% 
-    filter(!str_detect(Variable, ".Active|.Pending|.Quarantine")) %>% 
+    filter(!str_detect(Variable, ".Active|.Initiated|.Completed")) %>% 
+    mutate(known_issues = ifelse(
+        Jurisdiction == "federal" | State %in% c("Texas", "Ohio") & Jurisdiction == "state", 
+        1, 0)) %>% 
     filter(Difference < 0) %>% 
-    arrange(Difference) %>% 
-    select(-Facility.ID) 
+    arrange(known_issues, Difference) %>% 
+    select(-Facility.ID)
 
 kable(joined_facility, format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    row_spec(which(joined_facility$Variable %in% c("Residents.Confirmed", "Residents.Deaths")), 
+    row_spec(which(joined_facility$Variable %in% c("Residents.Confirmed", "Residents.Deaths") 
+                   & joined_facility$known_issues == 0), 
              background = "#ffa07a") %>% 
     scroll_box(height = "300px")
 ```
@@ -167,7 +168,7 @@ measure_decline_df <- full_join(
     mutate(Difference = `New Total` - `Old Total`) %>% 
     filter(Difference < 0) %>% 
     filter(stringr::str_ends(
-        Measure, ".Confirmed|.Deaths|.Tadmin|.Recovered|.Tested|.Initiated|.Completed|.Vadmin"))
+        Measure, ".Confirmed|.Deaths|.Tadmin|.Tested|.Initiated|.Completed"))
 
 kable(measure_decline_df, format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
@@ -183,43 +184,12 @@ kable(measure_decline_df, format.args = list(big.mark = ",")) %>%
 AP and the Marshall Project report [data on COVID in prisons at the state-level](https://www.themarshallproject.org/2020/05/01/a-state-by-state-look-at-coronavirus-in-prisons) each week. Because of differences in our methodology (e.g. data sources, update frequency, etc.), we do NOT expect our statewide totals to perfectly align with data from AP/TMP. The table below includes states where our totals differ by more than 20% OR where TMP is reporting values higher than we are. 
 
 ``` {r, echo = F}
-mp <- read_mpap_data()
-
-covid_vars <- c(
-    "Residents.Confirmed", 
-    "Residents.Deaths", 
-    "Residents.Tadmin", 
-    "Residents.Tested", 
-    "Residents.Completed", 
-    "Staff.Confirmed", 
-    "Staff.Deaths", 
-    "Staff.Tested", 
-    "Staff.Completed"
-)
-
-joined <- full_join(
-    new_df %>% 
-        mutate(State = ifelse(Jurisdiction == "federal", "Federal", State)) %>%
-        filter(Jurisdiction %in% c("state", "federal")) %>% 
-        filter(!Age %in% c("Juvenile")) %>% 
-        group_by(State) %>% 
-        summarise_at(., covid_vars, sum_na_rm) %>% 
-        pivot_longer(!State, names_to = "metric", values_to = "UCLA"), 
-    
-    mp %>% 
-        group_by(State) %>% 
-        summarise_at(., covid_vars, sum_na_rm) %>% 
-        pivot_longer(!State, names_to = "metric", values_to = "MP"), 
-    
-    by = c("State", "metric")
-)
-
-joined %>% 
+new_state_df %>% 
     filter(!is.na(UCLA) & !is.na(MP)) %>% 
     mutate(diff = abs((UCLA - MP) / MP)) %>% 
     filter(diff != 0) %>% 
     arrange(desc(diff)) %>% 
-    select(State, Metric = metric, UCLA, MP) %>% 
+    select(State, Measure, UCLA, MP) %>% 
     kable(format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     scroll_box(height = "300px")

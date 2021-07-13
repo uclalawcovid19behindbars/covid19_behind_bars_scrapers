@@ -75,6 +75,7 @@ mississippi_pop_extract <- function(x){
         filter(!is.na(Residents.Population)) 
     
     filtered <- x_ %>% 
+        filter(!is.na(Date)) %>% 
         filter(!Name %in% drop_names) 
     
     out <- filtered %>% 
