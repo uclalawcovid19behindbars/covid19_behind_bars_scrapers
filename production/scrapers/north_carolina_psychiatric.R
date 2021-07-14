@@ -1,16 +1,57 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+north_carolina_check_date <- function(x, date = Sys.Date()){
+    z <- get_src_by_attr(x, "a", attr = "href", attr_regex = "clf-report") %>%
+        magick::image_read_pdf() %>%
+        .[1]
+    
+    z %>%
+        magick::image_crop("2550x200+0+550") %>%
+        magick::image_ocr() %>%
+        str_split("(?i)updated") %>%
+        unlist() %>%
+        last() %>%
+        str_remove_all("\n") %>%
+        lubridate::mdy() %>%
+        error_on_date(date)
+}
+
 north_carolina_psychiatric_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "ongoing-outbreaks")
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "clf-report")
 }
 
 north_carolina_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://covid19.ncdhhs.gov/dashboard/outbreaks-and-clusters")
+    z <-  magick::image_read_pdf(x)
+    
+    lapply(2:4, function(i) ExtractTable(z[i]))
 }
 
 north_carolina_psychiatric_extract <- function(x){
-    x
+    main_mat <- x[[1]][[1]]
+    
+    comb_df <- bind_rows(lapply(x, function(z){
+        main_mat <- z[[1]]
+        first_name <- unlist(main_mat[1,])
+        first_name[which(first_name != "")-1] <- unname(
+            first_name[which(first_name != "")])
+        second_name <- unlist(main_mat[2,]) %>%
+            {ifelse(. == "Cases", "Confirmed", .)} %>%
+            str_remove_all("\\*")
+        
+        names(main_mat) <- str_c(first_name, second_name, sep = ".") %>%
+            str_replace(".Facility", "Facility")
+        
+        main_mat[3:nrow(main_mat),] %>%
+            as_tibble()
+    }))
+    
+    comb_df %>%
+        filter(`Facility Type` == "Residential Care Facility") %>%
+        select(-`Facility Type`, -`Facility County`) %>% 
+        select(-Total.Confirmed, -Total.Deaths) %>%
+        mutate(across(Staff.Confirmed:Residents.Deaths, ~ as.integer(.x))) %>%
+        rename(Name = Facility)
 }
 
 #' Scraper class for general North Carolina COVID data
@@ -38,7 +79,7 @@ north_carolina_psychiatric_scraper <- R6Class(
             type = "pdf",
             state = "NC",
             jurisdiction = "psychiatric",
-            check_date = NULL,
+            check_date = north_carolina_check_date,
             # pull the JSON data directly from the API
             pull_func = north_carolina_psychiatric_pull,
             # restructuring the data means pulling out the data portion of the json

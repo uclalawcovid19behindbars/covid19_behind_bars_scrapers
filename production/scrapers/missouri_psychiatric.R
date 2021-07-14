@@ -20,11 +20,65 @@ missouri_psychiatric_pull <- function(x){
 }
 
 missouri_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://dmh.mo.gov/disaster-services/covid-19-information/dmh-positive-cases-data")
+    
+    strong_text <- x %>%
+        rvest::html_node(".content") %>%
+        rvest::html_nodes("strong") %>%
+        rvest::html_text() %>%
+        unique()
+    
+    all_text <- x %>%
+        rvest::html_node(".content") %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>%
+        unique() %>%
+        str_replace_all("–", "-") %>%
+        str_replace_all("-", "-") %>%
+        str_squish()
+    
+    st_starts <- which(str_detect(all_text, "STAFF"))
+    res_starts <- which(str_detect(all_text, "PATIENTS/RESIDENTS"))
+    txt_end <- which(str_detect(all_text, "TOTAL"))
+    
+    if(length(st_starts) != 2 | length(res_starts) != 2 | length(txt_end) != 1){
+        stop("text is not as expected please inspect.")
+    }
+    
+    if(!all(str_detect(all_text[c(st_starts[2], res_starts[2])], "DEATHS"))){
+        stop("text is not as expected please inspect.")
+    }
+    
+    bind_rows(
+        all_text[(st_starts[1]+1):(res_starts[1]-1)] %>%
+            str_split_fixed(" - ", 2) %>%
+            `colnames<-`(c("Staff.Confirmed", "Name")) %>% 
+            as_tibble() %>%
+            mutate(Staff.Confirmed = as.numeric(Staff.Confirmed)),
+        
+        all_text[(res_starts[1]+1):(st_starts[2]-1)] %>%
+            str_split_fixed(" - ", 2) %>%
+            `colnames<-`(c("Residents.Confirmed", "Name")) %>% 
+            as_tibble() %>%
+            mutate(Residents.Confirmed = as.numeric(Residents.Confirmed)),
+        
+        all_text[(st_starts[2]+1):(res_starts[2]-1)] %>%
+            str_split_fixed(" - ", 2) %>%
+            `colnames<-`(c("Staff.Deaths", "Name")) %>% 
+            as_tibble() %>%
+            mutate(Staff.Deaths = as.numeric(Staff.Deaths)),
+        
+        all_text[(res_starts[2]+1):(txt_end-1)] %>%
+            str_split_fixed(" - ", 2) %>%
+            `colnames<-`(c("Residents.Deaths", "Name")) %>% 
+            as_tibble() %>%
+            mutate(Residents.Deaths = as.numeric(Residents.Deaths)))
+    
 }
 
 missouri_psychiatric_extract <- function(x){
-    NULL
+    x %>%
+        group_by(Name) %>%
+        summarize_all(sum_na_rm)
 }
 
 #' Scraper class for general missouri_psychiatric COVID data
