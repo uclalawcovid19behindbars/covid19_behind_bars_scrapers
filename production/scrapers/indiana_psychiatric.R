@@ -17,11 +17,19 @@ indiana_psychiatric_pull <- function(x){
 }
 
 indiana_psychiatric_restruct <- function(x){
-    stop_defunct_scraper("https://www.in.gov/fssa/dmha/state-psychiatric-hospitals/indiana-state-psychiatric-hospitals-covid-19-statistics/")
+    x %>%
+        rvest::html_node("table") %>%
+        rvest::html_table() %>%
+        filter(!str_detect(`Facility name`, "(?i)total"))
 }
 
 indiana_psychiatric_extract <- function(x){
-    NULL
+    x %>%
+        rename(
+            Name = "Facility name",
+            Residents.Confirmed = "Patients testing positive for COVID-19",
+            Staff.Confirmed = "Staff testing positive for COVID-19") %>%
+        mutate(Name = str_squish(str_remove(Name, "/.*")))
 }
 
 #' Scraper class for general indiana_psychiatric COVID data
