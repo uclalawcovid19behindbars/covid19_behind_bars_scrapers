@@ -23,7 +23,7 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 
 ``` {r echo = F, warning = F}
 # Read latest facility data 
-new_df <- read_scrape_data(all_dates = FALSE, window = 31)
+new_df <- read_scrape_data(all_dates = FALSE)
 
 # Get all log files from the latest run 
 latest_date <- max(new_df$Date) %>% 
@@ -146,7 +146,7 @@ This compares to the state-aggregated totals in `state_aggregate_counts.csv` whi
 
 ```{r check_previous_state, echo = F, message = F, warning = F}
 # Read latest statewide data 
-new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE, window = 31)
+new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
 
 # Read old data 
 old_state_df <- stringr::str_c(

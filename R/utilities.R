@@ -544,23 +544,23 @@ sum_na_rm <- function(x){
 }
 
 write_agg_data <- function(...){
-  raw_agg <- calc_aggregate_counts(...)
-  
-  # the order and selection of cols corresponds to values in the Google sheet
-  # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
-  sel_vars <- c(
-    "Residents.Confirmed", "Staff.Confirmed",
-    "Residents.Deaths", "Staff.Deaths",
-    "Residents.Tadmin",
-    "Residents.Initiated", "Staff.Initiated"
-  )
-  
-  raw_agg %>%
-    filter(Measure %in% sel_vars) %>%
-    mutate(Measure = factor(Measure, sel_vars)) %>%
-    arrange(Measure) %>%
-    mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
-    write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
+    raw_agg <- calc_aggregate_counts(...)
+    
+    # the order and selection of cols corresponds to values in the Google sheet
+    # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
+    sel_vars <- c(
+        "Residents.Confirmed", "Staff.Confirmed",
+        "Residents.Deaths", "Staff.Deaths",
+        "Residents.Tadmin",
+        "Residents.Initiated", "Staff.Initiated"
+    )
+    
+    raw_agg %>%
+        filter(Measure %in% sel_vars) %>%
+        mutate(Measure = factor(Measure, sel_vars)) %>%
+        arrange(Measure) %>%
+        mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
+        write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
 }
 
 write_state_agg_data <- function(...){
@@ -585,26 +585,15 @@ write_state_agg_data <- function(...){
         write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
 }
 
-write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, agg_window = 31){
+write_latest_data <- function(){
   
-    out_df <- read_scrape_data(all_dates = FALSE, window = fac_window)
+    out_df <- read_scrape_data(all_dates = FALSE)
     
     covid_suffixes <- c(
       ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
       ".Initiated", ".Completed", ".Vadmin")
     
     rowAny <- function(x) rowSums(x) > 0
-    
-    out_df %>%
-        # Drop rows missing COVID data (e.g. only with population data)
-        filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-        select(all_of(ends_with(covid_suffixes))) %>%
-        summarize_all(sum_na_rm) %>%
-        pivot_longer(
-            cols = everything(), 
-            names_to = "Variable",
-            values_to = "Count") %>%
-        print()
     
     # Write facility-level data 
     out_df %>%
@@ -626,13 +615,13 @@ write_latest_data <- function(coalesce = TRUE, fill = FALSE, fac_window = 31, ag
                   na="")
 
     # Write state-level data 
-    write_state_agg_data(state = TRUE, window = agg_window)
+    write_state_agg_data(state = TRUE)
     
     # Write national-level data 
-    write_agg_data(window = agg_window)
+    write_agg_data()
     
     # Write state-jurisdiction-level data 
-    agg <- alt_aggregate_counts(window = agg_window)
+    agg <- alt_aggregate_counts()
     
     agg %>% 
       filter(str_detect(Measure, paste(covid_suffixes, collapse = "|"))) %>% 
