@@ -3,11 +3,10 @@ source("./R/utilities.R")
 
 idaho_vaccine_date_check <- function(x, date = Sys.Date()){
     base_html <- xml2::read_html(x)
-    
     base_html %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>% 
-        {.[str_detect(., "(?i)vaccinations")]} %>% 
+        {.[which(str_detect(., "(?i)vaccinations"))+2]} %>% 
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
         lubridate::mdy() %>%
         error_on_date(date)

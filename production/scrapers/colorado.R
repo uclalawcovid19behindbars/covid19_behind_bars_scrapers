@@ -5,7 +5,7 @@ source("./R/utilities.R")
 colorado_check_date <- function(x, date = Sys.Date()){
     base_page <- xml2::read_html(x)
     
-    base_page %>%
+    site_date <- base_page %>%
         rvest::html_node("article") %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>%
@@ -14,8 +14,9 @@ colorado_check_date <- function(x, date = Sys.Date()){
         unlist() %>%
         last() %>%
         str_squish() %>%
-        lubridate::mdy() %>%
-        error_on_date(date)
+        lubridate::mdy() 
+    
+    error_on_date(site_date, date)
 }
 
 colorado_vec_return_white <- function(vec, threshold = 200, buffer = 1){

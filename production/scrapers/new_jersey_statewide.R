@@ -5,14 +5,14 @@ new_jersey_statewide_check_date <- function(x, date = Sys.Date()){
     png <- get_src_by_attr(x, "img", attr = "src", attr_regex = "COVID_Chart") %>%
         last()
     
-    png %>% 
-        magick::image_read() %>% 
-        magick::image_crop("200x800+0+400") %>% 
-        magick::image_ocr() %>% 
-        {.[str_detect(., "(?i)21")]} %>%
+    png %>%
+        magick::image_read() %>%
+        magick::image_crop("200x800+0+400") %>%
+        magick::image_ocr() %>%
+        {.[str_detect(., "(?i)20")]} %>%
         str_split(., "(?i)updated as of |\nPercent") %>%
         unlist() %>%
-        .[2]
+        .[2] %>%
         lubridate::mdy() %>% 
         error_on_date(date)
 }

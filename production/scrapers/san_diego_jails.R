@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 san_diego_jails_check_date <- function(x, date = Sys.Date()){
     html_obj <- xml2::read_html(x)
-    
+
     html_obj %>%
         rvest::html_nodes("a") %>%
         .[str_detect(rvest::html_text(.), "(?i)jail daily figures")] %>%
