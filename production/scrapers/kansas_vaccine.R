@@ -41,7 +41,8 @@ kansas_vaccine_extract <- function(x){
               Staff.Initiated = `TotalStaffVaccinated`) %>% 
        mutate(Name = clean_fac_col_txt(Name)) %>% 
        mutate(across(ends_with("Initiated"), ~ stringr::str_replace(.x, '\\*', ''))) %>% 
-       clean_scraped_df() 
+       clean_scraped_df() %>%
+       filter(Name != "")
 }
 
 #' Scraper class for Kansas vaccine data

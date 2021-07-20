@@ -81,7 +81,7 @@ georgia_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    georgia <- georgia_scraper$new(log=FALSE)
+    georgia <- georgia_scraper$new(log=TRUE)
     georgia$run_check_date()
     georgia$raw_data
     georgia$pull_raw()
