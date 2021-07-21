@@ -94,20 +94,20 @@ nevada_pull <- function(x){
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
     dir.create(sub_dir, showWarnings = FALSE)
     
-    more_options <- TRUE
-    maybe_hidden_options <- TRUE
+    new_labels <- TRUE
     html_list <- list()
-    i <- 0
+    iters <- 0
     
-    while(maybe_hidden_options | more_options){
-        
+    while(new_labels & iters < 10){
+        # after we have initiated the NV page to only show correction facilities
+        # grab the labels that are currently visible and accessible
         for(j in valid_prison_options){
             fac_name <- nevada_clean_fac_text(box_options[j])
             if(!(fac_name %in% names(html_list))){
                 
                 src_str <- str_c(
-                    "//div[@class='slicerItemContainer' and @aria-label='",
-                    box_options[j], "']/div")
+                    "//div[@class=\"slicerItemContainer\" and @aria-label=\"",
+                    box_options[j], "\"]/div")
                 
                 elCB <- remDr$findElement("xpath", src_str)
                 
@@ -116,62 +116,56 @@ nevada_pull <- function(x){
                     elCB$clickElement()
                     Sys.sleep(7)
                     
-                    html_list[[l]] <- xml2::read_html(
+                    html_list[[fac_name]] <- xml2::read_html(
                         remDr$getPageSource()[[1]])
                 }
             }
         }
         
+        # after we have grabbed all the data scroll down on the bar a little
+        # bit to make new elements appear
+        elSB <- remDr$findElements(
+            "xpath", "//div[@class='scroll-bar']")[[4]]
+        loc <- elSB$getElementLocation()
+        remDr$mouseMoveToLocation(webElement = elSB)
+        remDr$buttondown()
+        Sys.sleep(1)
+        # i have no idea how sustainable the 25 value is here might need
+        # to be changed in the future. We want to scroll and y-25 seems
+        # to give just enough scroll to show new options if they exist
+        # while not skipping over others
+        remDr$mouseMoveToLocation(x = loc$x, y=loc$y-25)
+        remDr$buttonup()
         
-        i <- i + 1
-        if(i > 200){
-            break
-        }
-        
-        if(!more_options & maybe_hidden_options){
-            elSB <- remDr$findElements(
-                "xpath", "//div[@class='scroll-bar']")[[4]]
-            loc_data <- elSB$getElementLocation()
-            remDr$mouseMoveToLocation(webElement = elSB)
-            remDr$buttondown()
-            Sys.sleep(1)
-            remDr$mouseMoveToLocation(x = loc_data$x, y = loc_data$y +3)
-            remDr$buttonup()
-            maybe_hidden_options <- FALSE
-        }
-    
         nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
-    
+        
         box_options <- nv_page %>%
             rvest::html_nodes(".slicerText") %>%
             rvest::html_text()
-    
+        
         valid_prison_options <- box_options %>%
             str_replace_all("[^a-zA-Z0-9 -]", "") %>%
             str_remove_all("-") %>%
             str_replace_all(" ", "") %>%
             {grepl("^[[:upper:]]+$", .)} %>%
             which()
-    
-        names(valid_prison_options) <- box_options[valid_prison_options] %>%
-            str_remove("(?i)NDOC -") %>%
-            clean_fac_col_txt()
-    
-        new_options <- valid_prison_options[
-            !(names(valid_prison_options) %in% names(html_list))]
-    
-        remDr$findElements(
-            "css", ".glyphicon.checkbox")[[new_options[1]]]$clickElement()
-    
-        Sys.sleep(5)
-    
-        clean_name <- clean_fac_col_txt(names(new_options[1]))
-
-        html_list[[clean_name]] <- xml2::read_html(
-            remDr$getPageSource()[[1]])
-
-        more_options <- any(!(
-            names(valid_prison_options) %in% names(html_list)))
+        
+        # is there any new facility info to grab? if yes run this whole loop
+        # again
+        new_valid_options <- nevada_clean_fac_text(
+            box_options[valid_prison_options])
+        new_labels <- !all(new_valid_options %in% names(html_list))
+        
+        # if there were no overlapping labels then we might have skipped
+        # some facilities which is bad!
+        if(!any(new_valid_options %in% names(html_list))){
+            warning(
+                "There was no overlap in labels. Check to make sure no ",
+                "facilities were skipped.")
+        }
+        
+        # avoid the infinite loop
+        iters <- iters + 1
     }
     
     # Not gonna work need to find a permanent location
