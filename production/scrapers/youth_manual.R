@@ -45,7 +45,7 @@ youth_manual_extract <- function(x){
         ) 
     
     if (nrow(out_data) == 0) {
-        warning("No manual youth data reported within the past 30 days!")
+        warning("Date is more than 30 different from expected")
     }
     
     return(out_data)
