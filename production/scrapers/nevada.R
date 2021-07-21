@@ -1,6 +1,11 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
+nevada_clean_fac_text <- function(x){
+    str_remove(x, "(?i)NDOC -") %>%
+        clean_fac_col_txt()
+}
+
 nevada_check_date <- function(x, date = Sys.Date()){
     # scrape from the power bi iframe directly
     y <- str_c(
@@ -54,17 +59,7 @@ nevada_pull <- function(x){
         str_c(
             "//div[@aria-label='Facility Type Slicer Drop down box to ",
             "select one or more facility types.']"))$clickElement()
-    Sys.sleep(4)
-    remDr$findElement(
-        "xpath", 
-        str_c("//div[@aria-label='Facility Type Slicer Drop down box to ",
-              "select one or more facility types.']"))$clickElement()
     Sys.sleep(10)
-    # remDr$findElement(
-    #     "xpath", 
-    #     str_c("//div[@class='slicerItemContainer']",
-    #           "/span[@title='Select all']"))$clickElement()
-    # Sys.sleep(10)
     remDr$findElement(
         "xpath", 
         str_c("//div[@class='slicerItemContainer']",
@@ -80,6 +75,13 @@ nevada_pull <- function(x){
         rvest::html_nodes(".slicerText") %>%
         rvest::html_text()
     
+    valid_prison_options <- box_options %>%
+        str_replace_all("[^a-zA-Z0-9 -]", "") %>%
+        str_remove_all("-") %>%
+        str_replace_all(" ", "") %>%
+        {grepl("^[[:upper:]]+$", .)} %>%
+        which()
+    
     # TODO: Need to find a way of this is selected or not given that
     # isElementSelected() is not retuening expected results
     
@@ -88,20 +90,54 @@ nevada_pull <- function(x){
     # remDr$findElements(
     #     "css", ".glyphicon.checkbox")[[deselect_index]]$clickElement()
     # Sys.sleep(3)
-    
-    
+
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
     dir.create(sub_dir, showWarnings = FALSE)
     
-    
     more_options <- TRUE
+    maybe_hidden_options <- TRUE
     html_list <- list()
     i <- 0
     
-    while(more_options){
+    while(maybe_hidden_options | more_options){
+        
+        for(j in valid_prison_options){
+            fac_name <- nevada_clean_fac_text(box_options[j])
+            if(!(fac_name %in% names(html_list))){
+                
+                src_str <- str_c(
+                    "//div[@class='slicerItemContainer' and @aria-label='",
+                    box_options[j], "']/div")
+                
+                elCB <- remDr$findElement("xpath", src_str)
+                
+                if(elCB$isElementDisplayed()[[1]]){
+                    
+                    elCB$clickElement()
+                    Sys.sleep(7)
+                    
+                    html_list[[l]] <- xml2::read_html(
+                        remDr$getPageSource()[[1]])
+                }
+            }
+        }
+        
+        
         i <- i + 1
         if(i > 200){
             break
+        }
+        
+        if(!more_options & maybe_hidden_options){
+            elSB <- remDr$findElements(
+                "xpath", "//div[@class='scroll-bar']")[[4]]
+            loc_data <- elSB$getElementLocation()
+            remDr$mouseMoveToLocation(webElement = elSB)
+            remDr$buttondown()
+            Sys.sleep(1)
+            remDr$mouseMoveToLocation(x = loc_data$x, y = loc_data$y +3)
+            remDr$buttonup()
+            maybe_hidden_options <- FALSE
         }
     
         nv_page <- xml2::read_html(remDr$getPageSource()[[1]])

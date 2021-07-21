@@ -37,9 +37,9 @@ pennsylvania_bi_vaccination_pull <- function(x, wait = 10){
     html_list <- list()
     iters <- 1
     new_labels <- TRUE
-    not_viz_els <- FALSE
     
-    while(new_labels & iters < 6){
+    while(new_labels & iters < 10){
+        # grab the labels that are currently visible and accessible
         for(l in viz_labels){
             if(!(l %in% names(html_list))){
                 
@@ -57,41 +57,43 @@ pennsylvania_bi_vaccination_pull <- function(x, wait = 10){
                     html_list[[l]] <- xml2::read_html(
                         remDr$getPageSource()[[1]])
                 }
-                else{
-                    not_viz_els <- TRUE
-                }
             }
         }
         
-        if(not_viz_els){
-            sr_ <- "//text[@title='PARTIAL']"
-            elSB <- remDr$findElements(
-                "xpath", "//div[@class='scroll-bar']")[[2]]
-            elDEST <- remDr$findElement("xpath", sr_)
-            remDr$mouseMoveToLocation(webElement = elSB)
-            remDr$buttondown()
-            Sys.sleep(1)
-            remDr$mouseMoveToLocation(webElement = elDEST)
-            remDr$buttonup()
-        }
+        # after we have grabbed all the data scroll down on the bar a little
+        # bit to make new elements appear
+        elSB <- remDr$findElements(
+            "xpath", "//div[@class='scroll-bar']")[[2]]
+        loc <- elSB$getElementLocation()
+        remDr$mouseMoveToLocation(webElement = elSB)
+        remDr$buttondown()
+        Sys.sleep(1)
+        # i have no idea how sustainable the 25 value is here might need
+        # to be changed in the future. We want to scroll and y-25 seems
+        # to give just enough scroll to show new options if they exist
+        # while not skipping over others
+        remDr$mouseMoveToLocation(x = loc$x, y=loc$y-25)
+        remDr$buttonup()
         
+        # make a list of the new visible elements
         viz_labels <- remDr$getPageSource()[[1]] %>%
             xml2::read_html() %>%
             rvest::html_nodes(xpath="//div[@class='slicerItemContainer']") %>%
             rvest::html_attr("aria-label")
-
+        
+        # is there any new facility info to grab? if yes run this whole loop
+        # again
         new_labels <- !all(viz_labels %in% names(html_list))
 
+        # if there were no overlapping labels then we might have skipped
+        # some facilities which is bad!
         if(!any(viz_labels %in% names(html_list))){
             warning(
                 "There was no overlap in labels. Check to make sure no ",
                 "facilities were skipped.")
         }
-
-        if((!new_labels) & (iters == 1)){
-            warning("page is not as expected. Please inspect.")
-        }
-
+        
+        # avoid the infinite loop
         iters <- iters + 1
     }
 
