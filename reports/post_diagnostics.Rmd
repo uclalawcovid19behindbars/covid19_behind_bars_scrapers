@@ -23,7 +23,7 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 
 ``` {r echo = F, warning = F}
 # Read latest facility data 
-new_df <- read_scrape_data(all_dates = FALSE, window = 31)
+new_df <- read_scrape_data(all_dates = FALSE)
 
 # Get all log files from the latest run 
 latest_date <- max(new_df$Date) %>% 
