@@ -607,7 +607,9 @@ write_state_agg_data <- function(write_historical = TRUE){
     }
 }
 
-write_facility_data <- function(write_historical = TRUE){
+write_facility_data <- function(
+    write_historical = TRUE,
+    statewide_hacks = c("Missouri", "Texas", "Ohio")){
     fac_sel_vars <- c(
         "Facility.ID", "Jurisdiction", "State", "Name", "Date", "source",
         "Residents.Confirmed", "Staff.Confirmed",
@@ -621,14 +623,28 @@ write_facility_data <- function(write_historical = TRUE){
         "Address", "Zipcode", "City", "County", "Latitude",
         "Longitude", "County.FIPS", "ICE.Field.Office"
     )
-  
+    
+    swh_df <- read_scrape_data(all_dates = FALSE, wide_data = FALSE) %>%
+        # hack for statewide that gets missed beacuse of youth data
+        filter(Name == "STATEWIDE") %>%
+        filter(State %in% statewide_hacks) %>%
+        group_by(
+          Facility.ID, jurisdiction_scraper, State, Name) %>%
+        # make all the sources the same for wide data only
+        mutate(source = first(source)) %>%
+        # make all the dates the same for wide data not all dates only
+        mutate(Date = max(Date)) %>%
+        ungroup() %>%
+        pivot_wider(names_from = "Measure", values_from = "value")
+
     lastest_fac <- read_scrape_data(all_dates = FALSE)
     lastest_fac %>%
+        filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>%
+        bind_rows(swh_df) %>%
         filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
         filter(!is.na(Facility.ID)) %>% 
-        filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
         select(fac_sel_vars) %>% 
-        filter(Web.Group != "Psychiatric") %>% 
+        filter(Web.Group != "Psychiatric") %>%
         write_csv("./data/latest-data/latest_facility_counts.csv", na = "")
   
     if (write_historical){
@@ -663,8 +679,8 @@ write_state_jurisdiction_data <- function(write_historical = TRUE){
     }
 }
 
-write_latest_data <- function(write_historical = TRUE){
-    write_facility_data(write_historical = write_historical)
+write_latest_data <- function(write_historical = TRUE, ...){
+    write_facility_data(write_historical = write_historical, ...)
     write_state_agg_data(write_historical = write_historical)
     write_national_agg_data(write_historical = write_historical)
     write_state_jurisdiction_data(write_historical = write_historical)
