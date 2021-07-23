@@ -543,10 +543,15 @@ sum_na_rm <- function(x){
     sum(x, na.rm = TRUE)
 }
 
-write_agg_data <- function(...){
-    raw_agg <- calc_aggregate_counts(...)
-    
-    # the order and selection of cols corresponds to values in the Google sheet
+COVID_SUFFIXES <- c(
+    ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
+    ".Initiated", ".Completed", ".Vadmin"
+)
+
+rowAny <- function(x) rowSums(x) > 0
+
+write_national_agg_data <- function(write_historical = TRUE){
+    # The order and selection of cols corresponds to values in the Google sheet
     # https://docs.google.com/spreadsheets/d/1MCiyyaz1PtQX_AZ5sMRUOIOttbi8nqIvXCcPt4j4RIo
     sel_vars <- c(
         "Residents.Confirmed", "Staff.Confirmed",
@@ -554,80 +559,115 @@ write_agg_data <- function(...){
         "Residents.Tadmin",
         "Residents.Initiated", "Staff.Initiated"
     )
-    
-    raw_agg %>%
+  
+    latest_national <- calc_aggregate_counts(all_dates = FALSE)
+    latest_national %>%
         filter(Measure %in% sel_vars) %>%
         mutate(Measure = factor(Measure, sel_vars)) %>%
         arrange(Measure) %>%
         mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
-        write_csv("./data/latest-data/national_aggregate_counts.csv", na="")
+        write_csv("./data/latest-data/latest_national_counts.csv", na = "")
+  
+    if (write_historical){
+        historical_national <- calc_aggregate_counts(all_dates = TRUE)
+        historical_national %>%
+            filter(Measure %in% sel_vars) %>%
+            mutate(Measure = factor(Measure, sel_vars)) %>%
+            arrange(Measure, Date) %>%
+            mutate(Missing = gsub("((?:[^,]+, ){4}[^,]+),", "\\1\n", Missing)) %>%
+            write_csv("./data/historical-data/historical_national_counts.csv", na = "")
+    }
 }
 
-write_state_agg_data <- function(...){
-    full_var_df <- calc_aggregate_counts(...)
-    aggregate_pop_df <- read_aggregate_pop_data() 
+write_state_agg_data <- function(write_historical = TRUE){
+    latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) 
+    aggregate_pop <- read_aggregate_pop_data() 
     
-    covid_suffixes <- c(
-        ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
-        ".Initiated", ".Completed", ".Vadmin")
-    
-    full_var_df %>%
-        # Pivot wide 
+    latest_state %>%
         filter(!is.na(Val)) %>%
         select(State, Measure, Val) %>%
         pivot_wider(names_from = "Measure", values_from = "Val") %>%
         arrange(State) %>%
-        select(State, ends_with(covid_suffixes)) %>% 
+        select(State, ends_with(COVID_SUFFIXES)) %>% 
         select(-Staff.Tested) %>% 
-        # Join with population anchors 
-        left_join(aggregate_pop_df, by = "State") %>% 
+        left_join(aggregate_pop, by = "State") %>% 
         select(-Date) %>% 
-        write_csv("./data/latest-data/state_aggregate_counts.csv", na="")
+        write_csv("./data/latest-data/latest_state_counts.csv", na = "")
+    
+    if (write_historical){
+        historical_state <- calc_aggregate_counts(state = TRUE, all_dates = TRUE)
+        historical_state %>%
+            filter(!is.na(Val)) %>%
+            select(Date, State, Measure, Val) %>%
+            pivot_wider(names_from = "Measure", values_from = "Val") %>%
+            arrange(State, Date) %>%
+            select(Date, State, ends_with(COVID_SUFFIXES)) %>% 
+            select(-Staff.Tested) %>% 
+            write_csv("./data/historical-data/historical_state_counts.csv", na = "")
+    }
 }
 
-write_latest_data <- function(){
+write_facility_data <- function(write_historical = TRUE){
+    fac_sel_vars <- c(
+        "Facility.ID", "Jurisdiction", "State", "Name", "Date", "source",
+        "Residents.Confirmed", "Staff.Confirmed",
+        "Residents.Deaths", "Staff.Deaths", 
+        "Residents.Tadmin", "Residents.Tested", 
+        "Residents.Active", "Staff.Active",
+        "Population.Feb20", "Residents.Population", 
+        "Residents.Initiated", "Staff.Initiated", 
+        "Residents.Completed", "Staff.Completed", 
+        "Residents.Vadmin", "Staff.Vadmin", "Web.Group", 
+        "Address", "Zipcode", "City", "County", "Latitude",
+        "Longitude", "County.FIPS", "ICE.Field.Office"
+    )
   
-    out_df <- read_scrape_data(all_dates = FALSE)
-    
-    covid_suffixes <- c(
-      ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
-      ".Initiated", ".Completed", ".Vadmin")
-    
-    rowAny <- function(x) rowSums(x) > 0
-    
-    # Write facility-level data 
-    out_df %>%
-        # Drop rows missing COVID data (e.g. only with population data)
-        filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-        select(
-            Facility.ID, Jurisdiction, State, Name, Date, source,
-            Residents.Confirmed, Staff.Confirmed,
-            Residents.Deaths, Staff.Deaths, 
-            Residents.Tadmin, Residents.Tested, 
-            Residents.Active, Staff.Active,
-            Population.Feb20, Residents.Population, 
-            Residents.Initiated, Staff.Initiated, 
-            Residents.Completed, Staff.Completed, 
-            Residents.Vadmin, Staff.Vadmin, 
-            Address, Zipcode, City, County, Latitude,
-            Longitude, County.FIPS, HIFLD.ID, ICE.Field.Office) %>% 
-        write_csv("./data/latest-data/adult_facility_covid_counts.csv", 
-                  na="")
+    lastest_fac <- read_scrape_data(all_dates = FALSE)
+    lastest_fac %>%
+        filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
+        filter(!is.na(Facility.ID)) %>% 
+        filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
+        select(fac_sel_vars) %>% 
+        filter(Web.Group != "Psychiatric") %>% 
+        write_csv("./data/latest-data/latest_facility_counts.csv", na = "")
+  
+    if (write_historical){
+        historical_fac <- read_scrape_data(all_dates = TRUE)
+        historical_fac %>%
+            filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
+            filter(!is.na(Facility.ID)) %>% 
+            filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
+            select(fac_sel_vars) %>% 
+            filter(Web.Group != "Psychiatric") %>% 
+            write_csv("./data/historical-data/historical_facility_counts.csv", na = "") 
+    }
+}
 
-    # Write state-level data 
-    write_state_agg_data(state = TRUE)
+write_state_jurisdiction_data <- function(write_historical = TRUE){
+    alt_sel_vars <- c ("State", "Web.Group", "Measure", "Val", "Rate", "Date")
     
-    # Write national-level data 
-    write_agg_data()
-    
-    # Write state-jurisdiction-level data 
-    agg <- alt_aggregate_counts()
-    
-    agg %>% 
-      filter(str_detect(Measure, paste(covid_suffixes, collapse = "|"))) %>% 
-      select(State, Web.Group, Measure, Val, Rate, Date) %>% 
-      write_csv("./data/latest-data/state_jurisdiction_aggregate_counts.csv", 
-                na="")
+    latest_alt <- alt_aggregate_counts(all_dates = FALSE)
+    latest_alt %>% 
+        filter(str_detect(Measure, paste(COVID_SUFFIXES, collapse = "|"))) %>% 
+        select(alt_sel_vars) %>% 
+        filter(!Web.Group %in% c("County", "Psychiatric")) %>% 
+        write_csv("./data/latest-data/latest_state_jurisdiction_counts.csv", na = "")
+      
+    if (write_historical){
+        historical_alt <- alt_aggregate_counts(all_dates = TRUE)
+        historical_alt %>% 
+            filter(str_detect(Measure, paste(COVID_SUFFIXES, collapse = "|"))) %>% 
+            select(alt_sel_vars) %>% 
+            filter(!Web.Group %in% c("County", "Psychiatric")) %>% 
+            write_csv("./data/historical-data/historical_state_jurisdiction_counts.csv", na = "")
+    }
+}
+
+write_latest_data <- function(write_historical = TRUE){
+    write_facility_data(write_historical = write_historical)
+    write_state_agg_data(write_historical = write_historical)
+    write_national_agg_data(write_historical = write_historical)
+    write_state_jurisdiction_data(write_historical = write_historical)
 }
 
 get_latest_manual <- function(state){
