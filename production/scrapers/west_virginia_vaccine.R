@@ -56,7 +56,7 @@ west_virginia_vaccine_restruct <- function(x){
 
 west_virginia_vaccine_extract <- function(x){
     
-    emp_idx <- first(which(str_detect(x$Name, "(?i)employee")))
+    emp_idx <- first(which(str_detect(x$Drop.County, "(?i)employee")))
     
     res_df <- x[1:(emp_idx-1),] %>%
         select(!starts_with("Drop")) %>%
@@ -70,8 +70,9 @@ west_virginia_vaccine_extract <- function(x){
         mutate(Name = stringr::str_c(Drop.County, " staff total")) %>% 
         rename(Staff.Population = Drop.Population) %>% 
         select(!starts_with("Drop")) %>%
+        filter(!str_detect(Staff.Population, "(?i)staffing")) %>% 
         clean_scraped_df() %>% 
-        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Completed, Johnson))
+        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Completed, Johnson)) 
     
     if(nrow(res_df) != 34){
         warning(stringr::str_c(

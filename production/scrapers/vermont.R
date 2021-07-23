@@ -4,7 +4,7 @@ source("./R/utilities.R")
 vermont_check_date <- function(x, date = Sys.Date()){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "VT", 
-                                  col_types = "Dccccccc") %>%
+                                  col_types = "Dcccccccc") %>%
         filter(!is.na(Date)) %>% 
         filter(Date == max(Date)) %>%
         pull(Date) %>%
@@ -15,7 +15,7 @@ vermont_check_date <- function(x, date = Sys.Date()){
 vermont_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "VT", 
-                                  col_types = "Dccccccc")
+                                  col_types = "Dcccccccc")
 }
 
 vermont_restruct <- function(x){
@@ -29,7 +29,7 @@ vermont_extract <- function(x){
     x %>% 
         filter(!is.na(Name)) %>% 
         select(Name, Staff.Confirmed, Residents.Confirmed, Staff.Deaths, Residents.Deaths, 
-               Residents.Recovered, Residents.Tested) %>% 
+               Residents.Recovered, Residents.Tested, Residents.Tadmin) %>% 
         mutate(Residents.Confirmed =
                    ifelse(str_detect(Name, "(?i)state-wide|statewide"), NA, Residents.Confirmed)) %>%
         clean_scraped_df()

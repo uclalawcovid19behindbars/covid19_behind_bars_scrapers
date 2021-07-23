@@ -626,7 +626,7 @@ write_facility_data <- function(write_historical = TRUE){
     lastest_fac %>%
         filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
         filter(!is.na(Facility.ID)) %>% 
-        filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
+        # filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
         select(fac_sel_vars) %>% 
         filter(Web.Group != "Psychiatric") %>% 
         write_csv("./data/latest-data/latest_facility_counts.csv", na = "")
@@ -636,7 +636,7 @@ write_facility_data <- function(write_historical = TRUE){
         historical_fac %>%
             filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
             filter(!is.na(Facility.ID)) %>% 
-            filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
+            # filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
             select(fac_sel_vars) %>% 
             filter(Web.Group != "Psychiatric") %>% 
             write_csv("./data/historical-data/historical_facility_counts.csv", na = "") 

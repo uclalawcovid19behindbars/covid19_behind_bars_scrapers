@@ -7,7 +7,7 @@ tennessee_check_date <- function(x, date = Sys.Date()){
         magick::image_read_pdf(pages = 1)
     
     z %>%
-        magick::image_crop("500x90+480+280") %>%
+        magick::image_crop("458x80+480+280") %>%
         magick::image_ocr() %>%
         str_remove("(?i)updated") %>%
         str_remove_all("\\||\n") %>%

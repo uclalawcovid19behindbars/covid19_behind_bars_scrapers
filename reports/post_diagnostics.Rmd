@@ -59,7 +59,7 @@ We expect all cumulative variables to increase with each subsequent scraper run.
 # Read old facility data 
 old_df <- stringr::str_c(
     "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/adult_facility_covid_counts.csv") %>% 
+    "latest-data/latest_facility_counts.csv") %>% 
     read_csv()
 
 covid_suffixes <- c(
@@ -151,7 +151,7 @@ new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
 # Read old data 
 old_state_df <- stringr::str_c(
     "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/state_aggregate_counts.csv") %>% 
+    "latest-data/latest_state_counts.csv") %>% 
     read_csv()
 
 measure_decline_df <- full_join(

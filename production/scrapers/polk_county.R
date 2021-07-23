@@ -14,7 +14,8 @@ polk_county_check_date <- function(x, date = Sys.Date()){
 }
 
 polk_county_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "covid-19-stats") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "covid.") %>%
+        first() %>% 
         magick::image_read()
 }
 

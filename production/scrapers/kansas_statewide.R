@@ -9,6 +9,7 @@ kansas_statewide_date_check <- function(x, date = Sys.Date()){
         rvest::html_text() %>% 
         {.[str_detect(., "(?i)as of")]} %>% 
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        min(na.rm = TRUE) %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }

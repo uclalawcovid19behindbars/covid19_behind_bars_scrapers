@@ -31,14 +31,15 @@ st_luce_county_extract <- function(x){
 
     exp_names <- c(
         Residents.Population = "Current Jail Population",
-        Residents.Tested = "Inmates Tested",
-        Drop.Residents.Active = "Current Positive Cases",
+        Drop.Residents.Tested = "Inmates Tested",
+        Residents.Active = "Current Positive Cases",
+        Drop.Change = "Change since last update", 
         Drop.Residents.Hospitalized = "Inmate Hospitalizations"
     )
 
     df_ <- x[2,]
     names(df_) <- x[1,]
-    check_names(df_, exp_names)
+    check_names(df_, exp_names, detect = TRUE)
 
     names(df_) <- names(exp_names)
 

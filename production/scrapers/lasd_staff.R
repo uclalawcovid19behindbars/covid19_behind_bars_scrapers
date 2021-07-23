@@ -27,7 +27,7 @@ lasd_staff_date_check <- function(x, date = Sys.Date()){
         error_on_date(date)
 }
 
-lasd_staff_pull <- function(x, wait = 5){
+lasd_staff_pull <- function(x, wait = 10){
     lasd_html <- xml2::read_html(x)
     
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
@@ -40,7 +40,7 @@ lasd_staff_pull <- function(x, wait = 5){
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
-    Sys.sleep(6)
+    Sys.sleep(wait)
     
     remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}

@@ -28,6 +28,8 @@ missouri_extract <- function(x){
         filter(Name!="Facility") %>%
         select(-starts_with("Drop")) %>%
         clean_scraped_df() %>%
+        mutate(Residents.Confirmed = Residents.Active + Residents.Recovered, 
+               Staff.Confirmed = Staff.Active + Staff.Recovered) %>% 
         as_tibble()
 }
 
