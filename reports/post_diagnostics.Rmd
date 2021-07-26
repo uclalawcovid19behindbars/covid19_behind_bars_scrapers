@@ -28,20 +28,89 @@ new_df <- read_scrape_data(all_dates = FALSE)
 # Get all log files from the latest run 
 latest_date <- max(new_df$Date) %>% 
     as.character()
-
 log_status <- behindbarstools::list_remote_data("log_files") %>% 
     str_subset(pattern = latest_date) %>% 
     as_tibble_col(column_name = "log") %>% 
     mutate(scraper = str_extract(log, "(?<=log_files/).*"))%>% 
-    mutate(status = map(log, ~ read_file(.) %>% word(1)) %>% unlist()) 
+    mutate(error = map(log, 
+         ~read_file(.) %>% 
+           str_detect(., "(?i)error")) %>%
+           unlist()
+           ) %>%
+    mutate(status = ifelse(error, "ERROR", "WARN")) %>%
+    mutate(error_on_date = map(log, 
+           ~read_file(.) %>% 
+             str_detect(., "(?i)Date is more than 30 different from expected")) %>%
+             unlist()
+             ) %>%
+  select(-error)
 
 # Highlight scrapers with errors   
 kable(log_status %>% 
           select(-log), 
-      col.names = c("Scraper", "Status")) %>%     
+      col.names = c("Scraper", "Status", "Error on Date")) %>%     
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     column_spec(1, border_right = "1px solid #d2d2d2") %>% 
     row_spec(which(log_status$status == "ERROR"), background = "#ffa07a") %>% 
+    scroll_box(height = "300px")
+```
+
+---
+
+# Dashboard update frequency
+
+**How many days has it been since we saw data updates from each scraped dashboard?** 
+
+```{r update-frequency, echo = F, message = F, warning = F, fig.height = 10, fig.width = 15}
+last_df <- pull_last_update()
+last_df %>%
+    filter(!is.na(days_late)) %>%
+    # only get these kind of scrapers
+    filter(jurisdiction %in% c("state", "federal", "immigration")) %>%
+    # remove population scrapers here
+    filter(!stringr::str_detect(id, "(?i)population")) %>%
+    # remove youth scrapers here
+    filter(!stringr::str_detect(id, "(?i)youth")) %>%
+    # Do some renaming
+    mutate(State = ifelse(jurisdiction == "immigration", "ICE", State)) %>%
+    mutate(State = ifelse(jurisdiction == "federal", "BOP", State)) %>%
+    # average across all scrapers for a given agency
+    group_by(State) %>%
+    summarize(days_late = mean(days_late), .groups = "drop") %>%
+    mutate(State = forcats::fct_reorder(State, days_late)) %>%
+    ggplot(aes(x = State, y = days_late, xend = State, yend = 0)) +
+    geom_point(size = 3, color = "#D7790F") +
+    geom_segment(size = 1.5, color = "#D7790F") +
+    coord_flip() +
+    theme_behindbars() +
+    theme(
+        panel.grid.major.y = element_blank(),
+        axis.text.y = element_text(color = "#555526", size = 13),
+        axis.text.x = element_text(color = "#555526", size = 18),
+        panel.grid.major.x = element_line(
+            color = "#92926C", linetype = "dotted"),
+        axis.title.x = element_text(margin = margin(r = 20)),
+        axis.title.y = element_blank(),
+        legend.position = "none") +
+    scale_color_bbdiscrete() +
+    labs(x="", y="") +
+    ggtitle(
+        "Days Since Agency Updated Covid Data",
+        stringr::str_c("As of ", as.character(first(last_df$Date))))
+```
+
+**How many scrapers were too old to scrape from (`error_on_date`)?** 
+
+There were `r log_status %>% filter(error_on_date == TRUE) %>% nrow()` scrapers that errored on date. They were:
+
+```{r error-on-date, echo = F, message = F, warning = F}
+kable(log_status %>% 
+          select(-log) %>%
+          filter(error_on_date == TRUE),
+      col.names = c("Scraper", "Status", "Error on Date")) %>%     
+    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
+    column_spec(1, border_right = "1px solid #d2d2d2") %>% 
+    # row_spec(which(log_status$error_on_date == TRUE), background = "#ffa07a") %>% 
     scroll_box(height = "300px")
 ```
 
