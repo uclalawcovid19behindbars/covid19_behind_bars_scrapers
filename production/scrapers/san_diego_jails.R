@@ -27,7 +27,7 @@ san_diego_jails_pull <- function(x) {
 
 san_diego_jails_restruct <- function(x) {
     x %>% 
-        magick::image_crop("2500x700+0+300") %>% 
+        magick::image_crop("2700x700+0+300") %>% 
         ExtractTable()
 }
 

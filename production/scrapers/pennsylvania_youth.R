@@ -16,7 +16,7 @@ pennsylvania_youth_check_date <- function(x, date = Sys.Date()){
     update_text %>%
         str_split(":") %>%
         unlist() %>%
-        last() %>%
+        .[2] %>%
         str_split("at") %>%
         unlist() %>%
         first() %>%

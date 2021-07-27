@@ -294,6 +294,29 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
     labs(tag = "") 
 ```
 
+**Which facilities have seen the greatest increase in active cases among staff over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
+                          metric = "Staff.Active", 
+                          plot_days = 30, 
+                          num_fac = 3, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+**Which facilities have seen the greatest increase in cumulative cases among staff over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
+                          metric = "Staff.Confirmed", 
+                          plot_days = 30, 
+                          num_fac = 3, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+
 ---
 
 # New Facility Names 
