@@ -51,7 +51,7 @@ cook_county_restruct <- function(x){
                 str_detect(covid_sub_text, "(?i)detainees")))
     
     # make sure we have 1 and only 1 entry for each concept
-    if(!all(sapply(res_idx, length) == 1)){
+    if(!all(sapply(res_idx, length) <= 1)){
         stop("Website structure is not as expected please inspect")
     }
     
