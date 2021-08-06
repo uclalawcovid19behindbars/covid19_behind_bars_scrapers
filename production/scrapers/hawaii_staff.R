@@ -3,24 +3,25 @@ source("./R/utilities.R")
 
 hawaii_staff_date_check <- function(x, date = Sys.Date()){
     img <- get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)active-recovered") %>%
+        x, "img", attr = "src", attr_regex = "(?i)testing.?stats") %>%
         {gsub("-[0-9]+x[0-9]+", "", .)} %>%
         magick::image_read() 
     
     img %>% 
-        magick::image_crop("500x100") %>% 
+        magick::image_crop("500x200") %>% 
         magick::image_ocr() %>% 
         str_split("Updated") %>% 
         unlist() %>%
-        {.[str_detect(., "(?i)21")]} %>% 
+        {.[str_detect(., "(?i)21")]} %>%
         str_squish() %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{1,2}") %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }
 
 hawaii_staff_pull <- function(x) {
     get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)active-recovered") %>%
+        x, "img", attr = "src", attr_regex = "(?i)testing.?stats") %>%
         {gsub("-[0-9]+x[0-9]+", "", .)} %>%
         magick::image_read()
 }

@@ -7,12 +7,12 @@ hawaii_date_check <- function(x, date = Sys.Date()){
         {gsub("-[0-9]+x[0-9]+", "", .)} %>%
         magick::image_read()
     
-    img %>% 
-        magick::image_crop("800x100+0+200") %>% 
-        magick::image_ocr() %>% 
-        str_split("Updated|[:space:]") %>% 
+    img %>%
+        magick::image_crop("700x100+600+300") %>%
+        magick::image_ocr() %>%
+        str_split("Updated|[:space:]") %>%
         unlist() %>%
-        {.[str_detect(., "21")]} %>% 
+        {.[str_detect(., "21")]} %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }

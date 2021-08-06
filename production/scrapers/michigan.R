@@ -22,7 +22,7 @@ michigan_pull <- function(x){
     img1 <- mi_html %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>% 
-        .[8] %>%    #https://miro.medium.com/max/2000/1*zEN_6qqJgd2KodD3vJmzyw.png 
+        .[8] %>%    #https://miro.medium.com/max/2000/1*xp1iT7e3pZUuuIJw17-0dg.png
         magick::image_read()
     
     img1
@@ -35,7 +35,7 @@ michigan_restruct <- function(x){
         magick::image_convert(type = "Bilevel") %>% 
         # this is finicky and needs to be changed
         # crop out the top row with the column names 
-        magick::image_crop("1500x70+0+0") %>%
+        magick::image_crop("1500x80+0+0") %>%
         ExtractTable()
 
     names(out_list[[1]]) <- unname(unlist(out_list_names))
