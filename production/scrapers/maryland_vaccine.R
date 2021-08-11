@@ -60,8 +60,6 @@ get_maryland_facility_vaccine_table <- function(x){
         rvest::html_nodes(".tableEx") %>%
         rvest::html_nodes(".innerContainer")
     
-    tab <- tab[3]
-    
     col_dat <- tab %>%
         rvest::html_nodes(".bodyCells") %>%
         rvest::html_nodes("div") %>%
@@ -82,7 +80,8 @@ get_maryland_facility_vaccine_table <- function(x){
         rvest::html_nodes("div") %>% 
         rvest::html_attr("title") %>%
         na.omit() %>%
-        as.vector()
+        as.vector() %>% 
+        head(ncol(dat_df))
     
     dat_df %>%
         rename(Name = "Facility (Administered)") %>%

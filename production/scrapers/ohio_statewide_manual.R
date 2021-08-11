@@ -21,18 +21,18 @@ ohio_statewide_manual_pull <- function(x){
 
 ohio_statewide_manual_restruct <- function(x){
     x %>%
-        filter(!is.na(Date)) %>% 
-        filter(Date == max(Date)) 
+        filter(!is.na(Date)) %>%
+        filter(Date == max(Date))
 }
 
 ohio_statewide_manual_extract <- function(x, exp_date = Sys.Date()){
     
     site_updated_date <- lubridate::ymd(x$`Site updated date`)
-    
+
     error_on_date(max(site_updated_date), exp_date)
     
     check_names(x, c(
-        "Date", 
+        "Date",
         "Site updated date",
         "Name", 
         "Month-to-date Tested", 
