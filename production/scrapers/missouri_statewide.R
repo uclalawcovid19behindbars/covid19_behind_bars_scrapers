@@ -41,42 +41,30 @@ missouri_statewide_restruct <- function(x){
     Name <- "State-wide"
     MOSW <- data.frame(Name, Staff.Deaths, Residents.Deaths, Residents.Tadmin, Residents.Initiated)
     
-    # Non Facility Row
-    # NameNF <- "Non-Facility"
-    # Staff.Confirmed <- x %>%
-    #     rvest::html_node(xpath="//h3[contains(text(),'Cumulative')]") %>%
-    #     rvest::html_text() %>%
-    #     str_split(":") %>%
-    #     .[[1]] %>%
-    #     last() %>%
-    #     string_to_clean_numeric()
-    # 
-    # Staff.Recovered <- x %>%
-    #     rvest::html_node(
-    #         xpath="//h3[contains(text(),'Cumulative')]/following::ul") %>%
-    #     rvest::html_node(xpath="//li[contains(text(),'Recovered')]") %>%
-    #     rvest::html_text() %>%
-    #     str_split(":") %>%
-    #     .[[1]] %>%
-    #     last() %>%
-    #     string_to_clean_numeric()
-    # 
-    # MO.NF <- data.frame(Name = NameNF, Staff.Confirmed, Staff.Recovered)
-    # 
-    # for(i in 1:ncol(MOSW)){
-    #     if(is.na(MOSW[,i])){
-    #         warning(str_c(
-    #             "Extracted NA value where not expected: ", names(MOSW)[i]))
-    #     }
-    # }
-    # for(i in 1:ncol(MO.NF)){
-    #     if(is.na(MO.NF[,i])){
-    #         warning(str_c(
-    #             "Extracted NA value where not expected: ", names(MO.NF)[i]))
-    #     }
-    # }
+    # Check vaccinate rate 
+    pop_denoms <- read_aggregate_pop_data()
+    mo_pop <- pop_denoms %>% 
+        filter(State == "Missouri") %>% 
+        pull(Residents.Population)
     
-    #dplyr::bind_rows(MOSW, MO.NF)
+    vax_rate <- x %>% 
+        rvest::html_node(
+            xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
+        rvest::html_text() %>%
+        # Pull number before ([%])  
+        word(2, sep = "\\(") %>% 
+        sub("\\%.*", "", .) %>% 
+        string_to_clean_numeric() 
+    
+    diff <- abs((vax_rate / 100) - (Residents.Initiated / mo_pop))
+    
+    if(diff > 0.02){
+        warning(
+            paste("Listed vaccination rate", (vax_rate / 100), 
+                  "far away from scraped value", round((Residents.Initiated / mo_pop), 2))
+        )
+    }
+    
     MOSW
 }
 
