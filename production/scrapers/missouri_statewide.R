@@ -60,8 +60,8 @@ missouri_statewide_restruct <- function(x){
     
     if(diff > 0.02){
         warning(
-            paste("Listed vaccination rate", (vax_rate / 100), 
-                  "far away from scraped value", round((Residents.Initiated / mo_pop), 2))
+            paste("Listed vaccination rate", scales::percent(vax_rate / 100), 
+                  "far away from scraped value", scales::percent(Residents.Initiated / mo_pop))
         )
     }
     
