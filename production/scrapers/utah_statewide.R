@@ -51,8 +51,7 @@ utah_statewide_extract <- function(x){
     
     staff_rows <- tibble(Name = "STATEWIDE",
                          Staff.Confirmed = statewide_staff_confirmed,
-                         Staff.Recovered = statewide_staff_recovered,
-                         Staff.Active = statewide_staff_confirmed - statewide_staff_recovered)
+                         Staff.Recovered = statewide_staff_recovered)
     
     extract_out <- staff_rows %>%
         clean_scraped_df() %>%
@@ -64,13 +63,11 @@ utah_statewide_extract <- function(x){
 #' Scraper class for general Utah COVID data
 #' 
 #' @name utah_statewide_scraper
-#' @description The staff numbers are for the whole system and Staff.Active is a calculated number
-#' from Staff cumulative cases and staff recovered cases.
+#' @description The staff numbers are for the whole system
 #' \describe{
 #'   \item{Location}{The facility name.}
 #'   \item{Staff Confirmed}{Staff cumulative cases}
 #'   \item{Staff Recovered}{Staff recovered}
-#'   \item{Staff Active}{Staff active cases}
 #' }
 
 utah_statewide_scraper <- R6Class(
