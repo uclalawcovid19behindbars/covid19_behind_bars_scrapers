@@ -39,7 +39,6 @@ arkansas_html_restruct <- function(x){
         
         mid_text <- p_txt[fidx] %>%
             str_c(collapse = "")
-        
     }
     
     data_txt <- mid_text %>%
@@ -51,7 +50,21 @@ arkansas_html_restruct <- function(x){
     ak_vars <- data_txt[,2]
     names(ak_vars) <- data_txt[,1]
     
-    as_tibble(t(ak_vars))
+    staff_dat <- x %>%
+        rvest::html_node(xpath = "//strong[contains(text(), 'DOC STAFF')]") %>%
+        # get the parent
+        rvest::html_node(xpath = "parent::p") %>%
+        rvest::html_text() %>%
+        str_remove("DOC STAFF") %>%
+        str_split("recovered| – ") %>%
+        unlist() %>%
+        .[[3]] %>%
+        as.numeric()
+    
+    out <- as_tibble(t(ak_vars)) %>%
+        bind_cols(staff_active = staff_dat)
+    
+    return(out)
 }
 
 arkansas_html_extract <- function(x){
@@ -60,8 +73,9 @@ arkansas_html_extract <- function(x){
         clean_scraped_df() %>%
         mutate(Residents.Active = `positive/not recovered`) %>%
         mutate(Residents.Confirmed =
-                   `Residents.Active` + `positive/recovered`) %>%
-        select(Name, starts_with("Residents"))
+                   `Residents.Active` + `positive/recovered`,
+               Staff.Active = staff_active) %>%
+        select(Name, starts_with("Residents"), starts_with("Staff.")) 
 }
 
 #' Scraper class for general Arkansas COVID data
