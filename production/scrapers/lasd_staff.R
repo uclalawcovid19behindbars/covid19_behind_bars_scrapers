@@ -56,37 +56,23 @@ lasd_staff_restruct <- function(x){
         str_squish()
     
     row_vals <- tables[[2]] %>%
-        rvest::html_nodes(".floatingBodyCells") %>%
-        rvest::html_nodes(".pivotTableCellWrap") %>%
-        rvest::html_text() %>%
-        str_squish() %>%
-        string_to_clean_numeric()
-    
-    col_names1 <- tables[[1]] %>%
-        rvest::html_nodes(".columnHeaders") %>%
-        rvest::html_nodes(".pivotTableCellWrap") %>%
-        rvest::html_text() %>%
-        str_squish()
-    
-    row_vals1 <- tables[[1]] %>%
         rvest::html_nodes(".bodyCells") %>%
-        rvest::html_nodes(".pivotTableCellWrap") %>%
+        rvest::html_nodes(".pivotTableCellWrap") %>% 
         rvest::html_text() %>%
         str_squish() %>%
         string_to_clean_numeric()
     
-    df_ <- as_tibble(as.data.frame(t(c(row_vals, row_vals1))))
-    names(df_) <- c(col_names, col_names1)
+    t <- as.data.frame(t(row_vals))
+    names(t) <- col_names2
     
-    df_
+    check_names(t, c("Prof.", "Sworn", "Total"))
+    
+    return(t)
 }
 
 lasd_staff_extract <- function(x){
     x %>%
-        select(
-            Staff.Confirmed = Total,
-            Staff.Quarantine = `Personnel Currently Quarantined`
-        ) %>%
+        select(Staff.Confirmed = Total) %>%
         mutate(Name = "LA Jail")
 }
 
