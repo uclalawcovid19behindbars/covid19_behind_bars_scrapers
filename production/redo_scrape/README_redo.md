@@ -26,6 +26,7 @@ rm(list=ls())
 library(tidyverse)
 source("./R/utilities.R")
 sync_remote_files(FALSE)
+summarize_remote_data()
 ```
 
 We specify `FALSE`, the default setting, here for the `raw` parameter as to avoid re-writing the raw files from which extractions were made. However, it will not break anything if the parameter accidently set to `TRUE`. 
