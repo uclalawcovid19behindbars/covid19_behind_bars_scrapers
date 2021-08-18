@@ -57,11 +57,13 @@ missouri_statewide_restruct <- function(x){
         string_to_clean_numeric() 
     
     diff <- abs((vax_rate / 100) - (Residents.Initiated / mo_pop))
-    
+
     if(diff > 0.02){
-        warning(
-            paste("Listed vaccination rate", scales::percent(vax_rate / 100), 
-                  "far away from scraped value", scales::percent(Residents.Initiated / mo_pop))
+        stop(
+            paste0("Website vaccination rate, ", scales::percent(vax_rate / 100),
+                  ", far away the rate calculated with the value scraped (",
+                  scales::percent(Residents.Initiated / mo_pop),
+                  ")")
         )
     }
     
