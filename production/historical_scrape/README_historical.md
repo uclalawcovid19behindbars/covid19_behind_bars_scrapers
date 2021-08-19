@@ -23,3 +23,5 @@ RScript production/historical_scrape/main_historical.R --config production/histo
 This will populate the `results` directory with the raw, extracted, and log files. 
 
 4. **Sync files**: Sync your files with the remote database by calling `sync_remote_files(raw = TRUE)` within the console. 
+
+5. **Summarize server data**: Rebuild the aggregated data on the server using the command `summarize_remote_data()`.  

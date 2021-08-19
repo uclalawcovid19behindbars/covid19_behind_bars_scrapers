@@ -741,3 +741,7 @@ hist_config_update <- function(df){
       "rsync --perms --chmod=u+rwx -rtvu --progress ", tf,
       " ucla:/srv/shiny-server/scraper_data/summary_data/hist_records.csv"))
 }
+
+summarize_remote_data <- function(){
+  system("ssh ucla '/srv/shiny-server/scraper_utilities/summarize.R'")
+}
