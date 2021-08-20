@@ -251,15 +251,15 @@ cpp_df <- read_cpp_data()
 
 new_state_df %>% 
     left_join(cpp_df %>% 
-                  select(-Date) %>% 
-                  pivot_longer(!State, names_to = "Measure", values_to = "CPP"), 
+                  rename(Date.CPP = Date) %>% 
+                  pivot_longer(!c(State, Date.CPP), names_to = "Measure", values_to = "CPP"), 
               by = c("State", "Measure")) %>% 
     filter(!is.na(UCLA) & !is.na(CPP)) %>% 
     filter(str_detect(Measure, "Confirmed|Deaths")) %>% 
     mutate(diff = abs((UCLA - CPP) / CPP)) %>% 
     filter(diff != 0) %>% 
     arrange(desc(diff)) %>% 
-    select(State, Measure, UCLA, CPP) %>% 
+    select(State, Measure, UCLA, CPP, Date.UCLA, Date.CPP) %>% 
     kable(format.args = list(big.mark = ",")) %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     scroll_box(height = "300px")
@@ -348,7 +348,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 ``` {r echo = F}
 new_df %>% 
     filter(is.na(Facility.ID)) %>% 
-    select(State, Name, Jurisdiction) %>% 
+    select(State, Name, Jurisdiction, Residents.Confirmed, Staff.Confirmed) %>% 
     arrange(State, Name) %>% 
     kable() %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
