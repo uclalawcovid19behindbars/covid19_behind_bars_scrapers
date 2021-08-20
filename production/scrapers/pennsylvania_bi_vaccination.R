@@ -157,7 +157,13 @@ pennsylvania_bi_vaccination_restruct  <- function(x){
             }) %>%
             str_replace(" ", ".")
         
-        card_group <- rep(c("Residents.", "Staff."), each = length(card_labs)/2)
+        # These are hard-coded, but order may change!! 
+        card_group <- c(
+            "Staff.", "Staff.", "Residents.", 
+            "Residents.", "Residents.", "Staff."
+        )
+            
+        # rep(c("Residents.", "Staff."), each = length(card_labs)/2)
         
         card_vals <- sapply(data_cards, function(z){
             rvest::html_text(rvest::html_nodes(z, "title"))
@@ -173,7 +179,7 @@ pennsylvania_bi_vaccination_restruct  <- function(x){
 }
 
 pennsylvania_bi_vaccination_extract <- function(x){
-    x %>%
+    out <- x %>%
         pivot_wider(names_from = "measure", values_from = "value") %>%
         mutate(Residents.Initiated = Residents.Partial + Residents.Full) %>%
         mutate(Staff.Initiated = Staff.Partial + Staff.Full) %>%
@@ -183,6 +189,13 @@ pennsylvania_bi_vaccination_extract <- function(x){
         clean_scraped_df() %>%
         rename(
             Residents.Completed = Residents.Full, Staff.Completed = Staff.Full)
+    
+    if(sum(out$Staff.Initiated) > sum(out$Residents.Initiated)){
+        stop(str_c("Stucture of raw file likely changed! ", 
+                   "See if Resident/Staff labels are out of order in card_group ", 
+                   "in restruct function above."))
+    }
+    out
 }
 
 #' Scraper class for general PA vaccination data from dashboard
