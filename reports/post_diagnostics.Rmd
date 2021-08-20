@@ -110,7 +110,6 @@ kable(log_status %>%
       col.names = c("Scraper", "Status", "Error on Date")) %>%     
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
     column_spec(1, border_right = "1px solid #d2d2d2") %>% 
-    # row_spec(which(log_status$error_on_date == TRUE), background = "#ffa07a") %>% 
     scroll_box(height = "300px")
 ```
 
@@ -191,7 +190,7 @@ new_facility <- new_df %>%
 joined_facility <- full_join(old_facility, new_facility, 
                              by = c("Facility.ID", "Variable")) %>% 
     mutate(Difference = `New Value` - `Old Value`) %>% 
-    filter(!str_detect(Variable, ".Active|.Initiated|.Completed")) %>% 
+    filter(str_detect(Variable, ".Confirmed|.Deaths")) %>% 
     mutate(known_issues = ifelse(
         Jurisdiction == "federal" | State %in% c("Texas", "Ohio") & Jurisdiction == "state", 
         1, 0)) %>% 
@@ -246,6 +245,28 @@ kable(measure_decline_df, format.args = list(big.mark = ",")) %>%
 
 ---
 
+# Comparison to CPP 
+``` {r, echo = F}
+cpp_df <- read_cpp_data()
+
+new_state_df %>% 
+    left_join(cpp_df %>% 
+                  rename(Date.CPP = Date) %>% 
+                  pivot_longer(!c(State, Date.CPP), names_to = "Measure", values_to = "CPP"), 
+              by = c("State", "Measure")) %>% 
+    filter(!is.na(UCLA) & !is.na(CPP)) %>% 
+    filter(str_detect(Measure, "Confirmed|Deaths")) %>% 
+    mutate(diff = abs((UCLA - CPP) / CPP)) %>% 
+    filter(diff != 0) %>% 
+    arrange(desc(diff)) %>% 
+    select(State, Measure, UCLA, CPP, Date.UCLA, Date.CPP) %>% 
+    kable(format.args = list(big.mark = ",")) %>% 
+    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
+    scroll_box(height = "300px")
+```
+
+---
+
 # Comparison to AP/TMP
 
 **How does our aggregated data compare to data from AP and the Marshall Project?** 
@@ -255,6 +276,7 @@ AP and the Marshall Project report [data on COVID in prisons at the state-level]
 ``` {r, echo = F}
 new_state_df %>% 
     filter(!is.na(UCLA) & !is.na(MP)) %>% 
+    filter(str_detect(Measure, "Confirmed|Deaths")) %>% 
     mutate(diff = abs((UCLA - MP) / MP)) %>% 
     filter(diff != 0) %>% 
     arrange(desc(diff)) %>% 
@@ -326,7 +348,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 ``` {r echo = F}
 new_df %>% 
     filter(is.na(Facility.ID)) %>% 
-    select(State, Name, Jurisdiction) %>% 
+    select(State, Name, Jurisdiction, Residents.Confirmed, Staff.Confirmed) %>% 
     arrange(State, Name) %>% 
     kable() %>% 
     kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
