@@ -63,7 +63,7 @@ lasd_staff_restruct <- function(x){
         string_to_clean_numeric()
     
     t <- as.data.frame(t(row_vals))
-    names(t) <- col_names2
+    names(t) <- col_names
     
     check_names(t, c("Prof.", "Sworn", "Total"))
     

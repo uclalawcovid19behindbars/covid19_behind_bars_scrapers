@@ -8,7 +8,7 @@ hawaii_date_check <- function(x, date = Sys.Date()){
         magick::image_read()
     
     img %>%
-        magick::image_crop("700x100+600+300") %>%
+        magick::image_crop("700x100+300+200") %>%
         magick::image_ocr() %>%
         str_split("Updated|[:space:]") %>%
         unlist() %>%
@@ -21,7 +21,7 @@ hawaii_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Facilities", "0", "Name",
-        "Tests", "1", "Residents.Tadmin",
+        "Tested", "1", "Residents.Tadmin",
         "Results Pending", "2", "Residents.Pending",
         "Negative", "3", "Residents.Negative",
         "Incon- clusive", "4", "Residents.Inconclusive",

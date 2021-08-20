@@ -24,14 +24,13 @@ wisconsin_staff_restruct <- function(x){
     
     out <- df_[,1:2]
     
-    out %>% 
-        janitor::row_to_names(row_number = 1)
+    return(out)
 }
 
 wisconsin_staff_extract <- function(x){
     exp_names <- c(
-        Name = "Division of Adult Institutions",
-        Staff.Confirmed = "Staff Confirmed"
+        Name = "",
+        Staff.Confirmed = "Confirmed Cases"
     )
     
     check_names(x, exp_names)
@@ -39,12 +38,11 @@ wisconsin_staff_extract <- function(x){
     names(df_) <- names(exp_names)
     
     df_ %>%
-        # remove adult totals
-        filter(!str_detect(Name, "(?i)division of adult")) %>%
-        # remove totals except for corrections which only has a total
-        filter(!str_detect(Name, "(?i)total") |
-                   str_detect(Name, "(?i)division of community")) %>%
-        filter(!str_detect(Staff.Confirmed, "(?i)staff")) %>%
+        filter(!str_detect(Name, "(?i)dai total")) %>%
+        # Note: keep DCC total (no facility-level data)
+        filter(!str_detect(Name, "(?i)djc total")) %>% 
+        filter(!str_detect(Name, "(?i)central office total")) %>% 
+        filter(!str_detect(Staff.Confirmed, c("(?i)staff|division"))) %>%
         clean_scraped_df() %>%
         as_tibble()
 }

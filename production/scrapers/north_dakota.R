@@ -37,7 +37,7 @@ north_dakota_restruct <- function(x){
         rvest::html_nodes(xpath="//h3[@id='']") %>%
         rvest::html_text()
 
-    dat_list <- lapply(1:length(svg_charts), function(i){
+    dat_list <- lapply(1:length(table_names), function(i){
     
         sub_svg <- svg_charts[[i]]
     

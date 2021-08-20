@@ -5,12 +5,11 @@ utah_check_date <- function(x, date = Sys.Date()){
     z <- xml2::read_html(x)
     
     z %>%
-        rvest::html_node(
-            xpath="//span[contains(text(),'COVID-19 case')]/parent::em") %>%
-        rvest::html_node("span") %>% 
+        rvest::html_nodes("p") %>% 
         rvest::html_text() %>%
-        str_remove("(?i)updated") %>%
-        lubridate::mdy() %>%
+        {.[str_detect(., "(?i)page updated")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy() %>% 
         error_on_date(date)
 }
 

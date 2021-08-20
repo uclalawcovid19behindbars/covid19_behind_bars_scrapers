@@ -198,7 +198,7 @@ string_to_clean_numeric <- function(column) {
     # check if there are any nonnumeric characters we didn't expect
     expected.nonnumeric.values <- 
         c("-", "N/A", "na", "n/a", "NA", "", " +", "n/a*",
-          NA, "T", "[", "]", "o", "O", "Unknown",
+          NA, "T", "[", "]", "o", "O", "Unknown", "*", "pending", 
           "PENDING DOH RESULTS", "PENDING DOH RESULT$", "S", "", "PENDING")
     
     unexpected.nonnumeric.values <- column[

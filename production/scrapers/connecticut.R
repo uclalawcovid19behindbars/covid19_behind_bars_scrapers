@@ -52,7 +52,7 @@ connecticut_extract <- function(x){
     st_exp <- c(
         Drop.Pos = "Total Offender Positives",
         Residents.Recovered = "Total Offenders Recovered",
-        Drop.Hosp = "Covid-19 Offenders in Hospital",
+        Drop.Hosp = "Covid-19 Offenders in Hospital0",
         Residents.Deaths = "Covid-19 Offender Deaths")
     basic_check(x$state[,1], st_exp)
     

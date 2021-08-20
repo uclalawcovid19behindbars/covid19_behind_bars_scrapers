@@ -160,7 +160,7 @@ wisconsin_population_extract <- function(x){
                            " is higher than expected. Inspect for total rows that were not dropped."))
     }
     # Check number of facilities for the same reason 
-    if (nrow(out) > 59){
+    if (nrow(out) > 60){
         warning(
             stringr::str_c("Number of rows ", nrow(out), " does not match expected. ", 
                            "Inspect for total rows that were not dropped."))

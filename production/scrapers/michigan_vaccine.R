@@ -45,12 +45,11 @@ michigan_vaccine_extract <- function(x){
         Age65.Drop = "age_group_65", 
         Age50.Drop = "age_group_50_64", 
         Age16.Drop = "age_group_16_49", 
-        Vulnerable.Drop = "number_of_doses_given_to_medically_vulnerable", 
-        PctFully.Drop = "percent_of_fully_vaccinated_population_moderna_or_janssen"
+        Vulnerable.Drop = "number_of_doses_given_to_medically_vulnerable"
     )
     
     df_ <- janitor::clean_names(x)
-    check_names(df_, exp_names)
+    check_names(df_, exp_names, detect = TRUE)
     names(df_) <- names(exp_names)
     
     df_ %>% 
@@ -80,7 +79,6 @@ michigan_vaccine_extract <- function(x){
 #'   \item{Age group 50-64}{}
 #'   \item{Age group 16-49}{}
 #'   \item{# of doses given to medically vulnerable}{}
-#'   \item{% of fully vaccinated population (Moderna or Janssen)}{}
 #' }
 
 michigan_vaccine_scraper <- R6Class(

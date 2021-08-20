@@ -63,7 +63,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
-    
+
     else if(abs(1442 - h_) <= 2 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
@@ -78,7 +78,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
-    
+
     else if(abs(1463 - h_) <= 8 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
@@ -93,7 +93,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
-    
+
     else if(abs(1473 - h_) <= 3 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+410", "(?i)total pos"),
@@ -108,7 +108,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
-    
+
     else if(abs(1492 - h_) <= 4 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+400", "(?i)total pos"),
@@ -123,7 +123,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+592", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+212", "(?i)jail pop"))
     }
-    
+
     else if(abs(1605 - h_) <= 12 & w_ == 1200){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+620+440", "(?i)total pos"),
@@ -152,19 +152,20 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+219", "(?i)jail pop"))
     }
+
     else if(abs(1515 - h_) <= 19 & w_ == 1200){
         out <- tibble(
-            Residents.Confirmed = lasd_crop(x, "570x30+620+435", "(?i)total pos"),
-            Residents.Recovered = lasd_crop(x, "570x30+620+715", "(?i)recover"),
-            Residents.Deaths = lasd_crop(x, "570x30+620+790", "(?i)deaths"),
+            Residents.Confirmed = lasd_crop(x, "570x30+620+405", "(?i)total pos"),
+            Residents.Recovered = lasd_crop(x, "570x30+620+675", "(?i)recover"),
+            Residents.Deaths = lasd_crop(x, "570x30+620+740", "(?i)deaths"),
             Residents.Quarantine = lasd_crop(x, "570x30+620+1055", "(?i)total"),
-            drop.neg.asymp = lasd_crop(x, "570x25+620+612", "(?i)negative"),
-            drop.neg.symp = lasd_crop(x, "570x25+20+612", "(?i)negative"),
-            drop.pos.asymp = lasd_crop(x, "545x25+625+558", "(?i)current"),
-            drop.pos.symp = lasd_crop(x, "562x25+20+558", "(?i)current"),
-            drop.test.asymp = lasd_crop(x, "562x25+620+640", "(?i)total"),
-            drop.test.symp = lasd_crop(x, "562x25+20+640", "(?i)total"),
-            Residents.Population = lasd_crop(x, "562x25+20+233", "(?i)jail pop"))
+            drop.neg.asymp = lasd_crop(x, "570x25+620+572", "(?i)negative"),
+            drop.neg.symp = lasd_crop(x, "570x25+20+572", "(?i)negative"),
+            drop.pos.asymp = lasd_crop(x, "545x25+625+518", "(?i)current"),
+            drop.pos.symp = lasd_crop(x, "562x25+20+518", "(?i)current"),
+            drop.test.asymp = lasd_crop(x, "562x25+620+600","(?i)total"),
+            drop.test.symp = lasd_crop(x, "562x25+20+600", "(?i)total"),
+            Residents.Population = lasd_crop(x, "562x25+20+213", "(?i)jail pop"))
     }
     else if(abs(2560 - h_) <= 19 & abs(1914 - w_) <= 19){
         out <- tibble(
@@ -205,8 +206,8 @@ lasd_extract <- function(x){
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
     
-    if(out_df$Residents.Deaths != 13){
-        warning("You sure LA shouldnt be 13???")
+    if(out_df$Residents.Deaths != 14){
+        warning("You sure LA shouldnt be 14?")
     }
     
     out_df

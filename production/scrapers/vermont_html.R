@@ -38,12 +38,14 @@ vermont_html_restruct <- function(x){
                                       xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[3]/tbody") %>%
         lapply(rvest::html_table) %>%
         .[[1]] %>%
+        select(c(1:3)) %>% 
         janitor::row_to_names(2)
     ## table 4
     staff_tab <- rvest::html_nodes(x, 
                                    xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[6]/tbody") %>%
         lapply(rvest::html_table) %>%
         .[[1]] %>%
+        select(c(1:3)) %>% 
         janitor::row_to_names(2)
     out <- list(in_state = in_state_tab,
                 out_state = out_state_tab,
