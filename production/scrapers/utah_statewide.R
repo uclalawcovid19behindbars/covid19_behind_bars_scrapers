@@ -19,19 +19,22 @@ utah_statewide_pull <- function(x){
 }
 
 utah_statewide_restruct <- function(x){
-    staff_confirmed <- rvest::html_nodes(x, 
-                                         xpath = "/html/body/section/article/div[2]/div[3]/p[22]/span/em/strong/span") %>%
-        rvest::html_text(.) 
-    if(!str_detect(staff_confirmed, "(?i)total confirmed staff cases")){
-        warning("Field does mot match expected text")
-    }
+    staff_confirmed <- x %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[which(str_detect(., "(?i)total confirmed staff cases"))]} 
     
-    staff_recovered <- rvest::html_nodes(x,
-                                         xpath = "/html/body/section/article/div[2]/div[3]/p[23]/strong/span") %>%
-        rvest::html_text()
-    if(!str_detect(staff_recovered, "(?i)total recovered staff cases")){
-        warning("Field does mot match expected text")
+    if(!str_detect(staff_confirmed, "(?i)total confirmed staff cases")){
+        warning("Field does mot match expected text (staff confirmed)")
     }
+    staff_recovered <- x %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text() %>% 
+        {.[which(str_detect(., "(?i)total recovered staff cases"))]} 
+    
+    # if(!str_detect(staff_recovered, "(?i)total recovered staff cases")){
+    #     warning("Field does mot match expected text (staff recovered)")
+    # }
     restruct_out <- list(staff_confirmed = staff_confirmed,
                          staff_recovered = staff_recovered)
     return(restruct_out)
@@ -48,6 +51,8 @@ utah_statewide_extract <- function(x){
         unlist() %>%
         .[2] %>%
         as.numeric() 
+    statewide_staff_recovered <- ifelse(length(statewide_staff_recovered) == 0,
+                                        NA_integer_, statewide_staff_recovered)
     
     staff_rows <- tibble(Name = "STATEWIDE",
                          Staff.Confirmed = statewide_staff_confirmed,
