@@ -247,7 +247,7 @@ kable(measure_decline_df, format.args = list(big.mark = ",")) %>%
 
 # Comparison to CPP 
 ``` {r, echo = F}
-cpp_df <- read_cpp_data()
+cpp_df <- behindbarstools::read_cpp_data()
 
 new_state_df %>% 
     left_join(cpp_df %>% 

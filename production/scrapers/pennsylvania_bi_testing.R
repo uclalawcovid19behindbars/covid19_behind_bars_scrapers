@@ -51,6 +51,8 @@ pennsylvania_bi_testing_restruct  <- function(x){
             rvest::html_nodes(".label") %>%
             rvest::html_text()
     })
+    ## if a bar is missing a label, manually insert it
+    # possible_values[[2]] <- append(possible_values[[2]], "1440", 19)
     
     idx <- which(lapply(possible_values, length) == length(labs))
     
