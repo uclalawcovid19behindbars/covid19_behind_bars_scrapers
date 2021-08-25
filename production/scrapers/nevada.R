@@ -52,7 +52,7 @@ nevada_pull <- function(x){
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
-    Sys.sleep(6)
+    Sys.sleep(10)
     
     remDr$findElement(
         "xpath", 
@@ -125,7 +125,7 @@ nevada_pull <- function(x){
         # after we have grabbed all the data scroll down on the bar a little
         # bit to make new elements appear
         elSB <- remDr$findElements(
-            "xpath", "//div[@class='scroll-bar']")[[4]]
+            "xpath", "//div[@class='scroll-bar']")[[2]]
         loc <- elSB$getElementLocation()
         remDr$mouseMoveToLocation(webElement = elSB)
         remDr$buttondown()
@@ -177,7 +177,7 @@ nevada_pull <- function(x){
         htmltools::tags$iframe(
             src = fn, 
             style="display:block", 
-            height="500", width="1200"
+            height="1000", width="1200"
         )  
     )
     
@@ -214,14 +214,14 @@ nevada_restruct <- function(x){
         # get the values of confirmed
         confirmed <- op_page %>%
             rvest::html_nodes(".labelGraphicsContext") %>%
-            .[[3]] %>%
+            .[[1]] %>%
             rvest::html_nodes("text") %>%
             rvest::html_text() %>%
             as.numeric()
         # make sure labels match what we expect
         confirmed_labels <- op_page %>%
             rvest::html_nodes(".legend-item-container") %>%
-            .[[2]] %>%
+            .[[1]] %>%
             rvest::html_nodes("text") %>%
             rvest::html_text()
         names(confirmed) <- confirmed_labels
