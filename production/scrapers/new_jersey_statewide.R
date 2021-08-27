@@ -7,12 +7,15 @@ new_jersey_statewide_check_date <- function(x, date = Sys.Date()){
     
     png %>%
         magick::image_read() %>%
-        magick::image_crop("200x800+0+400") %>%
+        magick::image_crop("1200x800+0+400") %>%
         magick::image_ocr() %>%
         {.[str_detect(., "(?i)20")]} %>%
         str_split(., "(?i)updated as of |\nPercent") %>%
         unlist() %>%
         .[2] %>%
+        str_split(., "(?i)and include week") %>% 
+        .[[1]] %>% 
+        {.[str_detect(., "(?i)2021")]} %>% 
         lubridate::mdy() %>% 
         error_on_date(date)
 }

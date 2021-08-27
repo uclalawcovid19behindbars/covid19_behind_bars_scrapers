@@ -143,6 +143,7 @@ if(sys.nframe() == 0){
     california_statewide$raw_data
     california_statewide$pull_raw()
     california_statewide$raw_data
+    california_statewide$save_raw()
     california_statewide$restruct_raw()
     california_statewide$restruct_data
     california_statewide$extract_from_raw()

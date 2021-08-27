@@ -156,6 +156,7 @@ if(sys.nframe() == 0){
     california$raw_data
     california$pull_raw()
     california$raw_data
+    california$save_raw()
     california$restruct_raw()
     california$restruct_data
     california$extract_from_raw()
