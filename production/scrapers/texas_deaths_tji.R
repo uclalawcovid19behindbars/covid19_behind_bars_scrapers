@@ -10,24 +10,25 @@ texas_deaths_tji_pull <- function(x){
 
 texas_deaths_tji_restruct <- function(x){
     x_ <- x %>% 
-        filter(str_detect(FacilityType, "(?i)state")) 
+        filter(str_detect(FacilityType, "(?i)state|county")) 
     
     fac_types <- x_ %>% 
         distinct(FacilityType) %>% 
         pull()
 
     for (i in fac_types){
-        if (!i %in% c("State Prison", "State Jail")){
+        if (!i %in% c("State Prison", "State Jail", "County Jail")){
             stop(paste("Unexpected facility type:", i))
         }
     }
     
-    if (length(fac_types) != 2){
+    if (length(fac_types) != 3){
         stop(paste("Should have pulled State Prison and State Jail facilities.", 
                     "Instead pulled:", toString(fac_types)))
     }
 
     x_ %>% 
+        mutate(Facility = paste(Facility, FacilityType)) %>% 
         group_by(Facility) %>% 
         summarise(Residents.Deaths = n()) 
 }
