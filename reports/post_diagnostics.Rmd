@@ -298,7 +298,7 @@ scrape_df <- behindbarstools::read_scrape_data(all_dates = TRUE)
 
 behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           plot_days = 30, 
-                          num_fac = 3, 
+                          num_fac = 5, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
@@ -311,7 +311,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           metric = "Residents.Active", 
                           plot_days = 30, 
-                          num_fac = 3, 
+                          num_fac = 5, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
@@ -322,7 +322,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           metric = "Staff.Active", 
                           plot_days = 30, 
-                          num_fac = 3, 
+                          num_fac = 5, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```
@@ -333,7 +333,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           metric = "Staff.Confirmed", 
                           plot_days = 30, 
-                          num_fac = 3, 
+                          num_fac = 5, 
                           auto_label = TRUE) + 
     labs(tag = "") 
 ```

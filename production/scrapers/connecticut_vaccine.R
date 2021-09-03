@@ -42,6 +42,7 @@ connecticut_vaccine_restruct <- function(x){
     h_ <- round(dim(magick::image_data(x))[3] * .9)
     
     st_txt <- magick::image_crop(x, "190x120+260+710") %>%
+        magick::image_modulate(brightness = 200) %>% 
         magick::image_ocr()
     
     if(!(str_detect(st_txt, "(?i)staff") & str_detect(st_txt, "(?i)vacc"))){

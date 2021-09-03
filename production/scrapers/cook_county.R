@@ -3,11 +3,7 @@ source("./R/generic_scraper.R")
 cook_county_check_date <- function(x, date = Sys.Date()){
     base_page <- xml2::read_html(x)
     
-    covid_section <- base_page %>%
-        rvest::html_nodes(xpath="//*[text()='COVID-19 Cases at CCDOC']/..") %>%
-        .[[which(rvest::html_name(.) == "div")]]
-    
-    covid_section %>%
+    base_page %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>%
         {.[str_starts(., "(?i)as of")]} %>%
@@ -19,10 +15,9 @@ cook_county_check_date <- function(x, date = Sys.Date()){
 cook_county_restruct <- function(x){
     
     # grab the main div which has covid related data
-    covid_section <- x %>%
-        rvest::html_nodes(xpath="//*[text()='COVID-19 Cases at CCDOC']/..") %>%
-        .[[which(rvest::html_name(.) == "div")]]
-    
+    covid_section <- x %>% 
+        rvest::html_nodes("ul") 
+  
     # get the jail detainee information
     covid_sub_text <- covid_section %>%
         rvest::html_nodes("li") %>%
@@ -64,14 +59,14 @@ cook_county_restruct <- function(x){
         as_tibble()
     
     # get the staff data which is not part of a list but rather in the main text
-    staff_sub_text <- covid_section %>%
-        rvest::html_nodes("p") %>%
+    staff_sub_text <- x %>% 
+        rvest::html_nodes("p") %>% 
         rvest::html_text() %>%
         str_remove_all("(?i)covid-19") %>%
         .[(which(str_starts(., "(?i)as of")) + 1):(
             which(str_detect(., "(?i)note:")) - 1)] %>%
         str_replace_all(",([0-9])", "\\1")
-    
+        
     # do some sanity checks
     ## there should be three text sections
     if(length(staff_sub_text) != 3){

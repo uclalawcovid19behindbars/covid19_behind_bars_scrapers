@@ -1,27 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-alaska_check_date <- function(x, date = Sys.Date()){
-    raw_page <- xml2::read_html(x)
-
-    covid_sub_page <- raw_page %>%
-        rvest::html_node(xpath = "//h2[text() = 'Monthly DOC COVID-19 Tracker']/..")
-    
-    site_date <- covid_sub_page %>%
-        rvest::html_nodes("p") %>%
-        rvest::html_text() %>%
-        {.[str_detect(., "(?i)last updated")]} %>%
-        str_split("(?i)last updated ") %>%
-        unlist() %>%
-        .[2] %>%
-        str_replace_all("[^[:alnum:]]", " ") %>%
-        str_squish() %>%
-        lubridate::mdy()
-    
-    error_on_date(site_date, date)
-}
-
-
 alaska_pull <- function(x){
     xml2::read_html(x)
 }
@@ -89,7 +68,7 @@ alaska_scraper <- R6Class(
             type = "html",
             state = "AK",
             jurisdiction = "state",
-            check_date = alaska_check_date,
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = alaska_pull,
             # restructuring the data means pulling out the data portion of the json
