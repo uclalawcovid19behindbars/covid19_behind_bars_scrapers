@@ -15,7 +15,7 @@ new_jersey_check_date <- function(x, date = Sys.Date()){
 }
 
 new_jersey_pull <- function(x){
-    xml2::read_html(x)
+    stop_defunct_scraper(x)
 }
 
 new_jersey_restruct <- function(x){
