@@ -71,9 +71,11 @@ michigan_extract <- function(x){
     mi1$Name[mi1$Name == "Parnal Correctional Facility"] <- 
         "Parnall Correctional Facility"
     
-    mi1 %>%
+    out_extract <- mi1 %>%
         select(-starts_with("Drop")) %>%
         as_tibble()
+    
+    return(out_extract)
 }
 
 #' Scraper class for general Michigan COVID data
