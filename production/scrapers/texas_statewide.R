@@ -29,8 +29,6 @@ texas_statewide_restruct <- function(x){
 texas_statewide_extract <- function(x){
     x %>%
         mutate(Name = "State-Wide", 
-               Residents.Deaths = Offender_Deceased__Presumed_COVID + 
-                   Offender_Deceased_Confirmed_COVID, 
                Residents.Confirmed = Offender_Total_Positive_Cases, 
                Residents.Tadmin = Offender_Total_Tests, 
                Residents.Active = Offender_Active_Cases, 

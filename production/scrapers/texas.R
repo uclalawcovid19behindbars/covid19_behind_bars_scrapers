@@ -27,8 +27,6 @@ texas_restruct <- function(x){
 
 texas_extract <- function(x){
     x %>%
-        mutate(Residents.Deaths = Offender_Deceased__Presumed_COVID + 
-                   Offender_Deceased_Confirmed_COVID) %>%
         mutate(Residents.Quarantine = 
                    Medical_Restriction + Medical_Isolation) %>%
         select(
