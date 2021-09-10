@@ -75,6 +75,8 @@ minnesota_vaccine_extract <- function(x, exp_date = Sys.Date()){
             Staff.Initiated, 
             Staff.Completed
         ) %>% 
+        # Remove non-DOC so numerator and denominator universes match  
+        filter(!str_detect(Name, "(?i)non-doc")) %>% 
         clean_scraped_df()
 }
 

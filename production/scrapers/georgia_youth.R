@@ -33,11 +33,12 @@ georgia_youth_extract <- function(x){
                   "Youth\nRecovered"))
     
     clean <- x %>%
-        select(Name = "DJJ Location", 
-               Residents.Confirmed = `Youth\nConfirmed`,
-               Residents.Recovered = `Youth\nRecovered`,
-               Staff.Confirmed = `Staff\nConfirmed`,
-               Staff.Recovered = `Staff\nRecovered`
+        janitor::clean_names() %>% 
+        select(Name = `djj_location`, 
+               Residents.Confirmed = `youth_confirmed`,
+               Residents.Recovered = `youth_recovered`,
+               Staff.Confirmed = `staff_confirmed`,
+               Staff.Recovered = `staff_recovered`
                ) %>%
         mutate(Name = str_c(toupper(Name), " YOUTH")) %>%
         filter(!str_detect(Name, "(i?)TOTAL"))
