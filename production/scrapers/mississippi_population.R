@@ -80,7 +80,9 @@ mississippi_pop_extract <- function(x){
     
     out <- filtered %>% 
         filter(Date == max(filtered$Date)) %>% 
-        select(-Date)
+        select(-Date) # %>%
+      ## scraper blip 9/14/21: "bolivar county" row skipped
+     #   add_row(tibble_row(Name = "Bolivar County", Residents.Population = 288))
     
     # Check that total matches sum of facilities 
     total <- x_ %>% 

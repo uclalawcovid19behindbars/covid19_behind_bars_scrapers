@@ -32,13 +32,17 @@ michigan_restruct <- function(x){
     out_list <- ExtractTable(x)
 
     out_list_names <- x %>%
-        magick::image_convert(type = "Bilevel") %>% 
+        magick::image_convert(type = "Bilevel") %>%
         # this is finicky and needs to be changed
-        # crop out the top row with the column names 
+        # crop out the top row with the column names
         magick::image_crop("1500x80+0+0") %>%
         ExtractTable()
 
     names(out_list[[1]]) <- unname(unlist(out_list_names))
+    ## laziest fix if the image crop fails one day
+    ## only do this if you look at the image and it checks out
+    # names(out_list[[1]]) <- c("Location", "Prisoners Tested", "Total Prisoners Confirmed",
+    #                           "Prisoners Negative", "Active Positive Cases", "Prisoner Deaths")
 
     out_list
 }

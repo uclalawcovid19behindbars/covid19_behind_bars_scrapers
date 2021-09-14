@@ -26,7 +26,8 @@ south_dakota_restruct <- function(x){
     img_panels <- list(
         magick::image_crop(sd_pgs, str_c(img_width/2, "x", img_height)),
         magick::image_crop(sd_pgs, str_c(
-            img_width/2, "x", img_height, "+", img_width/2, "+0")))
+          #  img_width/2, "x", img_height, "+", img_width/2, "+0")))
+          img_width/2, "x", img_height, "+", img_width/3 + 450, "+0")))
     
     img_text <- sapply(img_panels, magick::image_ocr)
     staff_idx <- which(sapply(img_text, str_detect, pattern = "(?i)staff"))
@@ -75,19 +76,20 @@ south_dakota_extract <- function(x){
     }else{
         col_name_st <- matrix(c(
             "Facility", "0", "Name",
-            "Total Positive", "1", "Staff.Confirmed",
-            "Negative", "2", "Staff.Negative",
-            "Recovered", "3", "Staff.Recovered",
+            "Cumulative Positive", "1", "Staff.Confirmed",
+            "Recovered", "2", "Staff.Recovered",
+            "Active Positive", "3", "Staff.Active",
             "Death", "4", "Staff.Deaths"
         ), ncol = 3, nrow = 5, byrow = TRUE)
         
         col_name_res <- matrix(c(
             "Facility", "0", "Name",
-            "Total Positive", "1", "Residents.Confirmed",
+            "Cumulative Positive", "1", "Residents.Confirmed",
             "Negative", "2", "Residents.Negative",
             "Recovered", "3", "Residents.Recovered",
-            "Death", "4", "Residents.Deaths"
-        ), ncol = 3, nrow = 5, byrow = TRUE)
+            "Active Positive", "4", "Residents.Active",
+            "Death", "5", "Residents.Deaths"
+        ), ncol = 3, nrow = 6, byrow = TRUE)
     }
     
     colnames(col_name_st) <- c("check", "raw", "clean")
