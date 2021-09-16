@@ -63,8 +63,6 @@ lasd_restruct <- function(x){
         h_ <- magick::image_info(x)$height
     }
     
-    warning(paste("\nwidth:", w_, "height:", h_))
-    
     if (h_ <= 1380){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+580+400", "(?i)total pos"),
