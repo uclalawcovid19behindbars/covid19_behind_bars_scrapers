@@ -63,6 +63,8 @@ lasd_restruct <- function(x){
         h_ <- magick::image_info(x)$height
     }
     
+    warning(paste("\nwidth:", w_, "height:", h_))
+    
     if (h_ <= 1380){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+580+400", "(?i)total pos"),
@@ -212,22 +214,7 @@ lasd_restruct <- function(x){
             drop.test.symp = lasd_crop(x, "562x25+20+640", "(?i)total"),
             Residents.Population = lasd_crop(x, "562x25+20+239", "(?i)jail pop"))
     }
-    
-    else if (h_ <= 1600){
-        out <- tibble(
-            Residents.Confirmed = lasd_crop(x, "570x30+600+420", "(?i)total pos"),
-            Residents.Recovered = lasd_crop(x, "570x30+620+710", "(?i)recover"),
-            Residents.Deaths = lasd_crop(x, "570x30+620+785", "(?i)deaths"),
-            Residents.Quarantine = lasd_crop(x, "570x30+620+1135", "(?i)total"),
-            drop.neg.asymp = lasd_crop(x, "570x25+620+604", "(?i)negative"),
-            drop.neg.symp = lasd_crop(x, "570x25+20+604", "(?i)negative"),
-            drop.pos.asymp = lasd_crop(x, "570x25+620+548", "(?i)current"),
-            drop.pos.symp = lasd_crop(x, "562x25+20+548", "(?i)current"),
-            drop.test.asymp = lasd_crop(x, "562x25+620+630", "(?i)total"),
-            drop.test.symp = lasd_crop(x, "562x25+20+630", "(?i)total"),
-            Residents.Population = lasd_crop(x, "562x25+20+229", "(?i)jail pop"))
-    }
-    
+
     else{
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+600+420", "(?i)total pos"),
@@ -253,9 +240,9 @@ lasd_extract <- function(x){
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
     
-    # if(out_df$Residents.Deaths != 14){
-    #     warning("You sure LA shouldnt be 14?")
-    # }
+    if(out_df$Residents.Deaths != 14){
+        warning("You sure LA shouldnt be 14?")
+    }
     
     out_df
 }
