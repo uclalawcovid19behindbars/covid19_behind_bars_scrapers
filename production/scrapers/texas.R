@@ -37,7 +37,8 @@ texas_extract <- function(x){
             Residents.Recovered = Offender_Recovered,
             Residents.Active = Offender_Active_Cases,
             Staff.Confirmed = Employee_Total_Positive_Cases,
-            Staff.Recovered = Employee_Recovered
+            Staff.Recovered = Employee_Recovered, 
+            Staff.Active = Employee_Active_Cases
         )
 }
 

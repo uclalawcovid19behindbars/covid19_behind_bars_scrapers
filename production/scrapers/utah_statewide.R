@@ -5,10 +5,13 @@ utah_statewide_check_date <- function(x, date = Sys.Date()){
     z <- xml2::read_html(x)
     
     z %>%
-        rvest::html_node(
-            xpath="/html/body/section/article/div[2]/div[3]/p[24]/em/span") %>%
-        rvest::html_text() %>%
-        str_remove("(?i)updated") %>%
+        rvest::html_nodes("p") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)updated")]} %>% 
+        first() %>% 
+        str_split("updated") %>% 
+        unlist() %>% 
+        {.[str_detect(., "21")]} %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }

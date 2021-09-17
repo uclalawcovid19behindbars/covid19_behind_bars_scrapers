@@ -157,7 +157,7 @@ maryland_vaccine_restruct <- function(x){
         Name = "Name", 
         Residents.Initiated =  "First Doses Administered", 
         Residents.First.Refusal.Drop = "First Dose Refusals", 
-        Residents.Completed = "Second Doses Adminstered", 
+        Residents.Completed = "Second Doses Administered", 
         Residents.Second.Refusal.Drop = "Second Dose Refusals"
     )
     

@@ -64,7 +64,7 @@ california_statewide_pull <- function(x, wait = 25){
 
 california_statewide_restruct <- function(x){
     tadmin_txt <- x %>%
-        magick::image_crop("340x140+375+130") %>%
+        magick::image_crop("360x140+400+130") %>%
         magick::image_ocr() %>%
         clean_fac_col_txt()
     
@@ -75,20 +75,7 @@ california_statewide_restruct <- function(x){
     tadmin_num <- as.numeric(
         str_c(unlist(str_extract_all(tadmin_txt, "[0-9]+")), collapse = ""))
     
-    tested_txt <- x %>%
-        magick::image_crop("340x140+705+130") %>%
-        magick::image_ocr() %>%
-        clean_fac_col_txt()
-    
-    if(!str_detect(tested_txt, "(?i)patients tested")){
-        warning("Field does mot match expected text")
-    }
-    
-    tested_num <- as.numeric(
-        str_c(unlist(str_extract_all(tested_txt, "[0-9]+")), collapse = ""))
-    
-    tibble(Residents.Tested = tested_num, 
-           Residents.Tadmin = tadmin_num, 
+    tibble(Residents.Tadmin = tadmin_num, 
            Name = "State-Wide")
 }
 
