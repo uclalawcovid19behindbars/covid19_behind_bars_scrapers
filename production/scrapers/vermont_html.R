@@ -3,8 +3,9 @@ source("./R/utilities.R")
 
 vermont_html_check_date <- function(x, date = Sys.Date()){
     base_html <- xml2::read_html(x)
-    date_txt <- rvest::html_nodes(base_html, 
-                                  xpath="//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[1]/tbody/tr[1]/td[2]/span/span/span/span/span/span") %>%
+    date_txt <- rvest::html_nodes(
+        base_html, 
+        xpath="//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[1]/tbody/tr[1]/td[2]/span/span/span/span/span/span") %>%
         rvest::html_text()
     
     date_txt %>%
@@ -18,51 +19,61 @@ vermont_html_pull <- function(x){
 
 vermont_html_restruct <- function(x){
     ## table 1 
-    in_state_tab <- rvest::html_nodes(x, 
-                                      xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[1]/tbody") %>%
+    in_state_tab <- rvest::html_nodes(
+        x, 
+        xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[1]/tbody") %>%
         lapply(rvest::html_table) %>%
         .[[1]] 
     if(!str_detect(in_state_tab$X1[1], "(?i)in-state incarcerated individuals")){
         warning("Check first table, unexpected value received")
     }
+    
     ## table 2
-    out_state_tab <- rvest::html_nodes(x, 
-                                       xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[2]/tbody") %>%
+    out_state_tab <- rvest::html_nodes(
+        x, 
+        xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[2]/tbody") %>%
         lapply(rvest::html_table) %>%
         .[[1]] 
     if(!str_detect(out_state_tab$X1[1], "(?i)out-of-state incarcerated individuals")){
         warning("Check second table, unexpected value received")
     }
+    
     ## table 3 
-    facility_tab <- rvest::html_nodes(x, 
-                                      xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[3]/tbody") %>%
+    facility_tab <- rvest::html_nodes(
+        x, 
+        xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[3]/tbody") %>%
         lapply(rvest::html_table) %>%
         .[[1]] %>%
-        select(c(1:3)) %>% 
+        select(c(1:4)) %>% 
         janitor::row_to_names(2)
+    
     ## table 4
-    staff_tab <- rvest::html_nodes(x, 
-                                   xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[6]/tbody") %>%
+    staff_tab <- rvest::html_nodes(
+        x, 
+        xpath = "//*[@id='block-uswds-base-subtheme-content']/article/div/div/table[6]/tbody") %>%
         lapply(rvest::html_table) %>%
         .[[1]] %>%
-        select(c(1:3)) %>% 
+        select(c(1:4)) %>% 
         janitor::row_to_names(2)
+    
     out <- list(in_state = in_state_tab,
                 out_state = out_state_tab,
                 facility = facility_tab,
                 staff = staff_tab)
+    
     return(out)
 }
 
 vermont_html_extract <- function(x){
+    
     in_state_tab_extract <- x$in_state %>%
         mutate(Name = "State-wide for non-facility",
-               Residents.Confirmed = subset(., X1 == "Unique Positive Cases*", select = X2),
                Residents.Tested = subset(., X1 == "Total Incarcerated Individuals Tested", select = X2),
                Residents.Tadmin = subset(., X1 == "Total Tests Conducted", select = X2)) %>%
         select(Name, starts_with("Residents.")) %>%
         unique() %>%
-        unnest(cols = c(Residents.Confirmed, Residents.Tested, Residents.Tadmin))
+        unnest(cols = c(Residents.Tested, Residents.Tadmin))
+    
     out_state_tab_extract <- x$out_state %>%
         mutate(Name = "Out-of-State",
                Residents.Confirmed = subset(., X1 == "Unique Positive Cases*", select = X2),
@@ -71,19 +82,24 @@ vermont_html_extract <- function(x){
         select(Name, starts_with("Residents.")) %>%
         unique() %>%
         unnest(cols = c(Residents.Confirmed, Residents.Tested, Residents.Tadmin))
+    
     facility_tab_extract <- x$facility %>%
         select(Name = Facility,
                Residents.Active = `# Currently Positive`,
-               Residents.Confirmed = `Unique Positive Cases`) %>%
+               Residents.Confirmed = `Unique Positive Cases`, 
+               Residents.Deaths = `COVID-Related Deaths`) %>%
         filter(Name != "Out of State",
                Name != "Total",
                !str_detect(Name, "(?i)NOTE:"))
+    
     staff_tab_extract <- x$staff %>%
         select(Name = Location,
                Staff.Active = `# Currently Positive`,
-               Staff.Confirmed = `Unique Positive Cases`) %>%
+               Staff.Confirmed = `Unique Positive Cases`, 
+               Staff.Deaths = `COVID-Related Deaths`) %>%
         filter(Name != "Total",
                !str_detect(Name, "(?i)NOTE:"))
+    
     fac_data <- facility_tab_extract %>%
         full_join(staff_tab_extract, by = "Name") 
     
