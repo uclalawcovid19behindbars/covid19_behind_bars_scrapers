@@ -66,7 +66,7 @@ while(current_date <= en_date){
         scraper$pull_raw()
         scraper$restruct_raw()
         scraper$extract_from_raw()
-        scraper$validate_extract()
+        # scraper$validate_extract()
         scraper$save_extract()
     }
     

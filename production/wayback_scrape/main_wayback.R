@@ -62,24 +62,25 @@ cat("Starting wayback run for", args$scraper, "\n")
 
 while(current_date <= en_date){
     # sunday is 1 and we only want SUN, MON, WED, FRI
-    if(lubridate::wday(current_date) %in% c(1, 2, 4, 6)){
-        cat("On date", as.character(current_date), "\n")
+    # if(lubridate::wday(current_date) %in% c(1, 2, 4, 6)){
         
-        # run step by step but dont write to perma.cc
-        scraper <- get(scraper_name_vec[args$scraper])$new(log = TRUE)
-        # reset the date to date of scrape
-        scraper$reset_date(date = current_date)
-        # pull from waybackmachine
-        scraper$pull_wayback_raw()
-        # rest of the process is normal
-        scraper$save_raw()
-        scraper$restruct_raw()
-        scraper$extract_from_raw()
-        scraper$validate_extract()
-        scraper$save_extract()
-        
-        Sys.sleep(30)
-    }
+    cat("On date", as.character(current_date), "\n")
+    
+    # run step by step but dont write to perma.cc
+    scraper <- get(scraper_name_vec[args$scraper])$new(log = TRUE)
+    # reset the date to date of scrape
+    scraper$reset_date(date = current_date)
+    # pull from waybackmachine
+    scraper$pull_wayback_raw()
+    # rest of the process is normal
+    scraper$save_raw()
+    scraper$restruct_raw()
+    scraper$extract_from_raw()
+    # scraper$validate_extract()
+    scraper$save_extract()
+    
+    Sys.sleep(30)
+    # }
     
     # increment to the next day
     current_date <- current_date + 1

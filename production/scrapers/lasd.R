@@ -47,10 +47,14 @@ lasd_pull <- function(x, wait = 5){
 }
 
 lasd_restruct <- function(x){
+
+    # --------------------------------------------------------------------------
+    # 1. PRE-PROCESS IMAGE 
+    # --------------------------------------------------------------------------
     
-    x <- magick::image_trim(x)
+    x <- magick::image_trim(x) %>% 
+        magick::image_modulate(saturation = 180)
     
-    # Extract non-tables (recovered, deaths, asymptomatic total, symptomatic total)
     w_ <- magick::image_info(x)$width
     h_ <- magick::image_info(x)$height
     
@@ -61,6 +65,11 @@ lasd_restruct <- function(x){
         w_ <- magick::image_info(x)$width
         h_ <- magick::image_info(x)$height
     }
+
+    # --------------------------------------------------------------------------
+    # EXTRACT NON-TABLES 
+    # recovered, deaths, asymptomatic total, symptomatic total 
+    # --------------------------------------------------------------------------
     
     # Brightened version works better for tesseract OCR 
     # Un-brightened version works better for ExtractTable 
@@ -72,17 +81,13 @@ lasd_restruct <- function(x){
             Residents.Deaths = lasd_crop(x_, "570x30+590+736", "(?i)deaths"),
             Symptomatic.Total = lasd_crop(x_, "562x30+00+590", "(?i)total"),
             Asymptomatic.Total = lasd_crop(x_, "562x30+590+590", "(?i)total"))
-    }
-    
-    else if (h_ <= 1590){
+    } else if (h_ <= 1590){
         out <- tibble(
             Residents.Recovered = lasd_crop(x_, "570x30+610+705", "(?i)recover"),
             Residents.Deaths = lasd_crop(x_, "570x30+610+780", "(?i)deaths"), 
             Symptomatic.Total = lasd_crop(x_, "562x30+00+630", "(?i)total"),
             Asymptomatic.Total = lasd_crop(x_, "562x30+610+630", "(?i)total"))
-    }
-    
-    else {
+    } else {
         out <- tibble(
             Residents.Recovered = lasd_crop(x_, "570x30+620+710", "(?i)recover"),
             Residents.Deaths = lasd_crop(x_, "570x30+620+785", "(?i)deaths"), 
@@ -90,96 +95,110 @@ lasd_restruct <- function(x){
             Asymptomatic.Total = lasd_crop(x_, "562x30+610+638", "(?i)total"))
     }
     
-    out
-}
+    # --------------------------------------------------------------------------
+    # EXTRACT TABLES 
+    # --------------------------------------------------------------------------
+    
+    ex_ <- ExtractTable(x)
 
-# # Extract other tables 
-# ex_ <- ExtractTable(x)
-# 
-# # If length of (ex_) != 7: 
-##    warning()
-# 
-# num_ <- lapply(ex_, function(z){
-#     z <- z %>% 
-#         mutate(val = as.numeric(gsub(",", "", `1`))) %>% 
-#         select(measure = `0`, val)})
-# 
-# # Get indices because ExtractTable is not deterministic :( 
-# pop_idx <- which(sapply(num_, function(z){
-#     any(str_detect(z[,1], "(?i)bookings"))}))
-# 
-# iso_idx <- which(sapply(num_, function(z){
-#     any(str_detect(z[,1], "(?i)pending"))}))
-# 
-# hist_idx <- which(sapply(num_, function(z){
-#     any(str_detect(z[,1], "(?i)total positive"))}))
-# 
-# iso_fac_idx <- which(sapply(num_, function(z){
-#     any(str_detect(z[,1], "(?i)century")) & any(str_detect(z[,1], "(?i)pui"))}))
-# 
-# quar_fac_idx <- which(sapply(num_, function(z){
-#     any(str_detect(z[,1], "(?i)century")) & (!any(str_detect(z[,1], "(?i)pui")))}))
-# 
-# symp_idx <- which(sapply(num_, function(z){
-#     any(z$val == out$Symptomatic.Total)}))
-# 
-# asymp_idx <- which(sapply(num_, function(z){
-#     any(z$val ==  out$Asymptomatic.Total)}))
-# 
-# # Combine tables 
-# parse_table <- function(df, idx){
-#     tryCatch(
-#         {return (df[[idx]])},
-#         error = function(cond){return(data.frame())}
-#     )
-# }
-# 
-# tables_ <- do.call(rbind, list(
-#     
-#     # Population 
-#     parse_table(num_, pop_idx) %>% 
-#         mutate(measure = paste("Population", measure)), 
-#     
-#     # Current Isolation Totals 
-#     parse_table(num_, iso_idx) %>%
-#         mutate(measure = paste("Isolation Total", measure)),
-#     
-#     # Historical Symptomatic and Asmptomatic Running Totals 
-#     parse_table(num_, hist_idx) %>% 
-#         mutate(measure = paste("Historical Total", measure)), 
-#     
-#     # Isolation Totals by Facility 
-#     parse_table(num_, iso_fac_idx) %>% 
-#         mutate(measure = case_when(
-#             str_detect(measure, "(?i)pui") ~ paste("Isolation", lag(measure), measure), 
-#             str_detect(measure, "(?i)confirmed") ~ paste("Isolation", lag(measure, n = 2), measure), 
-#             TRUE ~ paste("Isolation", measure))), 
-#     
-#     # Quarentine Totals by Facility 
-#     parse_table(num_, quar_fac_idx) %>% 
-#         mutate(measure = paste("Quarentine Total", measure)), 
-#     
-#     # Symptomatic  
-#     parse_table(num_, symp_idx) %>% 
-#         mutate(measure = paste("Symptomatic", measure)), 
-#     
-#     # Asympatomatic 
-#     parse_table(num_, asymp_idx) %>% 
-#         mutate(measure = paste("Asymptomatic", measure))
-#     )) %>% 
-#     pivot_longer(cols = c(-measure)) %>%
-#     pivot_wider(names_from = measure)
-# 
-# # Combine tables and non-tables 
-# bind_cols(out, tables_) %>% 
-#     select(starts_with(
-#         c("Residents", "Symptomatic", "Asymptomatic", "Population", 
-#           "Isolation", "Historical", "Quarentine"))) 
-# }
+    if (length(ex_) != 7){
+        warning(paste("Expected 7 ExtractTable tables but returned", length(ex_)))
+    }
+
+    num_ <- lapply(ex_, function(z){
+        if (ncol(z) == 3){
+            # Sometimes ExtractTable reads tables horizontally 
+            z <- z %>%
+                t() %>%
+                as.data.frame() %>%
+                separate(V1,
+                         into = c("0", "1"),
+                         sep = "(?<=[a-zA-Z])\\s*(?=[0-9])")
+        }
+        z <- z %>%
+            mutate(val = as.numeric(gsub(",", "", `1`))) %>%
+            select(measure = `0`, val)})
+
+    # Get indices because ExtractTable is not deterministic 
+    pop_idx <- which(sapply(num_, function(z){
+        any(str_detect(z[,1], "(?i)bookings"))}))
+
+    iso_idx <- which(sapply(num_, function(z){
+        any(str_detect(z[,1], "(?i)pending"))}))
+
+    hist_idx <- which(sapply(num_, function(z){
+        any(str_detect(z[,1], "(?i)total positive"))}))
+
+    iso_fac_idx <- which(sapply(num_, function(z){
+        any(str_detect(z[,1], "(?i)century")) & any(str_detect(z[,1], "(?i)pui"))}))
+
+    quar_fac_idx <- which(sapply(num_, function(z){
+        any(str_detect(z[,1], "(?i)century")) & (!any(str_detect(z[,1], "(?i)pui")))}))
+
+    symp_idx <- which(sapply(num_, function(z){
+        any(z$val == out$Symptomatic.Total)}))
+
+    asymp_idx <- which(sapply(num_, function(z){
+        any(z$val ==  out$Asymptomatic.Total)}))
+
+    # Combine tables
+    parse_table <- function(df, idx, str){
+        tryCatch(
+            {
+                x_ <-  df[[idx]] %>%
+                    mutate(measure = paste(str, measure))
+                
+                # Sometimes ExtractTable re-sorts rows in unpredictable ways  
+                x <- x_[order(as.numeric(row.names(x_))),]
+
+                return(x)
+            },
+            error = function(cond){return(data.frame())}
+        )
+    }
+
+    tables_ <- do.call(rbind, list(
+
+        # Population
+        parse_table(num_, pop_idx, "Population"),
+
+        # Current Isolation Totals
+        parse_table(num_, iso_idx, "Isolation Total"),
+
+        # Historical Symptomatic and Asmptomatic Running Totals
+        parse_table(num_, hist_idx, "Historical Total"),
+
+        # Isolation Totals by Facility
+        parse_table(num_, iso_fac_idx, "") %>%
+            mutate(measure = case_when(
+                str_detect(measure, "(?i)pui") ~ paste("Isolation", lag(measure), measure),
+                str_detect(measure, "(?i)confirmed") ~ paste("Isolation", lag(measure, n = 2), measure),
+                TRUE ~ paste("Isolation", measure))),
+
+        # Quarentine Totals by Facility
+        parse_table(num_, quar_fac_idx, "Quarentine Total"),
+
+        # Symptomatic
+        parse_table(num_, symp_idx, "Symptomatic"),
+
+        # Asympatomatic
+        parse_table(num_, asymp_idx, "Asymptomatic")
+        )) %>%
+        pivot_longer(cols = c(-measure)) %>%
+        pivot_wider(names_from = measure)
+
+    # --------------------------------------------------------------------------
+    # COMBINE TABLES AND NON-TABLES 
+    # --------------------------------------------------------------------------
+    
+    bind_cols(out, tables_) %>%
+        select(starts_with(
+            c("Residents", "Symptomatic", "Asymptomatic", "Population",
+              "Isolation", "Historical", "Quarentine")))
+}
 
 lasd_extract <- function(x){
     x %>%
-        select(Residents.Recovered, Residents.Deaths) %>% 
         mutate(Name = "LA Jail") 
 }
 #' Scraper class for general LASD staff COVID data
@@ -230,9 +249,8 @@ lasd_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     lasd <- lasd_scraper$new(log=TRUE)
-    lasd$run_check_date()
     lasd$raw_data
-    lasd$reset_date("2021-06-21")
+    lasd$reset_date("DATE")
     lasd$pull_raw()
     lasd$raw_data
     lasd$save_raw()
@@ -240,6 +258,5 @@ if(sys.nframe() == 0){
     lasd$restruct_data
     lasd$extract_from_raw()
     lasd$extract_data
-    lasd$validate_extract()
     lasd$save_extract()
 }
