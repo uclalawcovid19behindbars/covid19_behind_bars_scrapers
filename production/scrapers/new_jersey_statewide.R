@@ -72,11 +72,11 @@ new_jersey_statewide_extract <- function(x){
     names(x) <- c(
         "Residents.Tadmin.Aug.Drop", # Cumulative since July, not true cumulative  
         "Residents.Confirmed",
-        "Residents.Initiated", 
+        "Residents.Vadmin", 
         "Residents.Deaths", 
         "Staff.Tadmin.Drop", # We don't collect Staff.Tadmin 
         "Staff.Confirmed", # Collecting facility-level in main scraper 
-        "Staff.Initiated"
+        "Staff.Vadmin"
     )
     
     x %>% 
