@@ -67,7 +67,7 @@ lasd_restruct <- function(x){
     }
 
     # --------------------------------------------------------------------------
-    # EXTRACT NON-TABLES 
+    # 2. EXTRACT NON-TABLES 
     # recovered, deaths, asymptomatic total, symptomatic total 
     # --------------------------------------------------------------------------
     
@@ -96,7 +96,7 @@ lasd_restruct <- function(x){
     }
     
     # --------------------------------------------------------------------------
-    # EXTRACT TABLES 
+    # 3. EXTRACT TABLES 
     # --------------------------------------------------------------------------
     
     ex_ <- ExtractTable(x)
@@ -188,7 +188,7 @@ lasd_restruct <- function(x){
         pivot_wider(names_from = measure)
 
     # --------------------------------------------------------------------------
-    # COMBINE TABLES AND NON-TABLES 
+    # 4. COMBINE TABLES AND NON-TABLES 
     # --------------------------------------------------------------------------
     
     bind_cols(out, tables_) %>%
