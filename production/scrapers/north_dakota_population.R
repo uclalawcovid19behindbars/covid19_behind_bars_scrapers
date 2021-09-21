@@ -18,7 +18,8 @@ nd_pop_crop <- function(img, crop, detect){
 
     sub_txt <- img %>% 
         magick::image_crop(crop) %>% 
-        magick::image_ocr() 
+        magick::image_ocr() %>% 
+        first()
     
     if(!str_detect(sub_txt, detect)){
         warning("Field does mot match expected text")
