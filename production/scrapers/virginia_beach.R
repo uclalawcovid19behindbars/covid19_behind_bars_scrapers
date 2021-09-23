@@ -47,7 +47,7 @@ virginia_beach_extract <- function(x){
     exp_names_staff <- c(
         Staff.Confirmed = "DEPUTY POSITIVE RESULTS",
         Staff.Active ="ACTIVE DEPUTY CASES",
-        Staff.Recovered = "DEPUTIES CLEARED",
+        Staff.Recovered = "DEPUTY CASES CLEARED",
         Staff.Population = "TOTAL DEPUTIES"
     )
     

@@ -6,7 +6,7 @@ south_carolina_population_check_date <- function(x, date = Sys.Date()){
     # Check date 
     pdf_date <- x %>% 
         magick::image_read_pdf() %>% 
-        magick::image_crop("330x140+1900+100") %>% 
+        magick::image_crop("410x140+1820+100") %>% 
         magick::image_ocr() %>% 
         lubridate::mdy()
     

@@ -13,6 +13,7 @@ california_staff_check_date <- function(x, date = Sys.Date()){
         unlist() %>% 
         .[2] %>% 
         str_squish() %>%
+        str_replace("Sept", "Sep") %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }

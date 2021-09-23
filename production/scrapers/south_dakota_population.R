@@ -8,6 +8,7 @@ south_dakota_population_check_date <- function(x, date = Sys.Date()){
         magick::image_crop("800x200+50+100") %>% 
         magick::image_ocr() %>% 
         lubridate::mdy() %>%
+        first() %>% 
         error_on_date(date)
 }
 

@@ -15,6 +15,7 @@ montana_check_date <- function(x, date = Sys.Date()){
         unlist() %>%
         .[2] %>%
         str_remove("\\.") %>%
+        str_replace("Sept", "Sep") %>% 
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
 }

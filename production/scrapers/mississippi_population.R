@@ -91,7 +91,7 @@ mississippi_pop_extract <- function(x){
         pull(Residents.Population)
     
     if (total != sum_na_rm(out$Residents.Population)){
-        stop(str_c("Total population ", total, " different from expected ", 
+        warning(str_c("Total population ", total, " different from expected ", 
                    sum_na_rm(out$Residents.Population), ". Inspect raw file."))
     }
     
