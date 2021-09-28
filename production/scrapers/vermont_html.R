@@ -45,7 +45,7 @@ vermont_html_restruct <- function(x){
         lapply(rvest::html_table) %>%
         .[[1]] %>%
         select(c(1:4)) %>% 
-        janitor::row_to_names(2)
+        janitor::row_to_names(3)
     
     ## table 4
     staff_tab <- rvest::html_nodes(

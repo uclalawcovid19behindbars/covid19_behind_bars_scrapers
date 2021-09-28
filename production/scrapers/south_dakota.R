@@ -2,22 +2,23 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 south_dakota_check_date <- function(x, date = Sys.Date()){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases") %>%
-        magick::image_read_pdf() %>% 
-        magick::image_crop("800x45+2700+320") %>% 
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)case") %>%
+        magick::image_read_pdf() %>%
+        magick::image_crop("800x45+2700+320") %>%
         magick::image_ocr() %>%
         str_split(" ") %>%
         unlist() %>%
-        first() %>% 
+        first() %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }
 
 south_dakota_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covidcases")
+    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)case")
 }
 
 south_dakota_restruct <- function(x){
+  x <- "https://doc.sd.gov/documents/COVID19PositiveCaseInformationbyFacility09282021.pdf"
     sd_pgs <- magick::image_read_pdf(x)
     
     img_width <- magick::image_info(sd_pgs)$width
