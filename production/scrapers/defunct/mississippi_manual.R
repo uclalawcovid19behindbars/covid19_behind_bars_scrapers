@@ -10,8 +10,7 @@ ms_manual_check_date <- function(x, date = Sys.Date()){
 }
 
 ms_manual_pull <- function(x){
-    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "MS Deaths", col_types = "cDcc")
+    stop_defunct_scraper(x)
 }
 
 ms_manual_restruct <- function(x){
