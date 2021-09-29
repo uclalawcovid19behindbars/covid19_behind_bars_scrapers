@@ -2,7 +2,7 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 mississippi_records_pull <- function(x){
-    readxl::read_excel("results/manual/COVID-19 DAILY REPORT VitalCore 090321.xlsx")
+    readxl::read_excel("/tmp/sel_dl/COVID-19 DAILY REPORT VitalCore 090321.xlsx")
 }
 
 mississippi_records_restruct <- function(x){
