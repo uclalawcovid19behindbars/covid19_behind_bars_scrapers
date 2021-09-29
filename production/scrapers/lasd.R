@@ -66,6 +66,13 @@ lasd_restruct <- function(x){
         h_ <- magick::image_info(x)$height
     }
 
+    # Add date 
+    date <- x %>% 
+        magick::image_crop("500x50+700+0") %>% 
+        magick::image_ocr() %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
+        lubridate::mdy()
+    
     # --------------------------------------------------------------------------
     # 2. EXTRACT NON-TABLES 
     # recovered, deaths, asymptomatic total, symptomatic total 
@@ -194,7 +201,8 @@ lasd_restruct <- function(x){
     bind_cols(out, tables_) %>%
         select(starts_with(
             c("Residents", "Symptomatic", "Asymptomatic", "Population",
-              "Isolation", "Historical", "Quarentine")))
+              "Isolation", "Historical", "Quarentine"))) %>% 
+        mutate(pdf_date = date)
 }
 
 lasd_extract <- function(x){
@@ -250,7 +258,7 @@ lasd_scraper <- R6Class(
 if(sys.nframe() == 0){
     lasd <- lasd_scraper$new(log=TRUE)
     lasd$raw_data
-    lasd$reset_date("DATE")
+    lasd$reset_date("2021-09-28")
     lasd$pull_raw()
     lasd$raw_data
     lasd$save_raw()
