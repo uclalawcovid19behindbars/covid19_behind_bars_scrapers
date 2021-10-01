@@ -175,7 +175,8 @@ colorado_restruct <- function(x){
             magick::image_crop("213x987+1264+1100") %>%
             magick::image_convert(type = 'Bilevel'),
         z %>%
-            magick::image_crop("213x987+1700+1100") %>%
+            magick::image_crop("95x937+1685+1150") %>%
+            magick::image_scale("x987") %>% 
             magick::image_convert(type = 'Bilevel')
     )
     

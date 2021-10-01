@@ -37,26 +37,27 @@ pennsylvania_youth_restruct <- function(x){
 
 pennsylvania_youth_extract <- function(x){
     semi_cln <- x %>%
-        janitor::row_to_names(row_number = 1)
+        janitor::row_to_names(row_number = 1) %>% 
+        janitor::clean_names()
     
     check_names(semi_cln,
-                c("YDC/YFC",
-                  "Current Census of Youth",
-                  "Current Positive Cases Among Youth",
-                  "Cumulative Positive Cases Among Youth",
-                  "Deaths of Youth",
-                  "Current Census of Staff",
-                  "Current Positive Cases Among Staff",
-                  "Cumulative Positive Cases Among Staff"
+                c("ydc_yfc",
+                  "current_census_of_youth",
+                  "current_positive_cases_among_youth",
+                  "cumulative_positive_cases_among_youth",
+                  "deaths_of_youth",
+                  "current_census_of_staff",
+                  "current_positive_cases_among_staff",
+                  "cumulative_positive_cases_among_staff"
                   ))
     
     clean <- semi_cln %>%
-        select(Name = `YDC/YFC`, 
-               Residents.Population = `Current Census of Youth`,
-               Residents.Active = `Current Positive Cases Among Youth`,
-               Residents.Confirmed = `Cumulative Positive Cases Among Youth`,
-               Residents.Deaths = `Deaths of Youth`,
-               Staff.Confirmed = `Cumulative Positive Cases Among Staff`
+        select(Name = ydc_yfc, 
+               Residents.Population = current_census_of_youth,
+               Residents.Active = current_positive_cases_among_youth,
+               Residents.Confirmed = cumulative_positive_cases_among_youth,
+               Residents.Deaths = deaths_of_youth,
+               Staff.Confirmed = cumulative_positive_cases_among_staff
         ) %>%
         mutate(Name = str_c(toupper(Name), " YOUTH"))
     
