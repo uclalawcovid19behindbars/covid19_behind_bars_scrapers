@@ -1,16 +1,25 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-mississippi_records_pull <- function(x){
-    readxl::read_excel("/tmp/sel_dl/COVID-19 DAILY REPORT VitalCore 090321.xlsx")
+historical_ms_records_pull <- function(x, date){
+    readxl::read_excel("results/tmp/COVID-19 DAILY REPORT VitalCore 090321.xlsx")
 }
 
-mississippi_records_restruct <- function(x){
+historical_ms_records_restruct <- function(x, date){
+    
+    file_date <- names(x[3]) %>% 
+        str_extract("\\d{1,2}.\\d{1,2}.\\d{2,4}") %>% 
+        lubridate::mdy() 
+        
+    if (file_date != date){
+        warning(paste("File date", file_date, "different from expected date", date))
+    }
+    
     x %>% 
         janitor::row_to_names(row_number = 2)
 }
 
-mississippi_records_extract <- function(x){
+historical_ms_records_extract <- function(x){
     
     exp_names <- c(
         "FACILITY", 
@@ -68,9 +77,9 @@ mississippi_records_extract <- function(x){
 
 #' Scraper class for Mississippi COVID data from records request 
 #' 
-#' @name mississippi_records_scraper
-#' @description MS provides data for a number of facilities through a pdf
-#' however minimal data is provided for each facility.
+#' @name historical_mississippi_records_scraper
+#' @description Facilty-level data on cases, deaths, vaccines provided by the 
+#' Mississippi DOC via a records request. 
 #' \describe{
 #'   \item{Facility}
 #'   \item{Total Positives}
@@ -85,45 +94,45 @@ mississippi_records_extract <- function(x){
 #'   \item{% 2nd Dose}
 #' }
 
-mississippi_records_scraper <- R6Class(
-    "mississippi_records_scraper",
+historical_mississippi_records_scraper <- R6Class(
+    "historical_mississippi_records_scraper",
     inherit = generic_scraper,
     public = list(
         log = NULL,
         initialize = function(
             log,
-            url = "Mississippi Department of Corrections",
-            id = "mississippi_records",
+            url = "Mississippi Department of Corrections Records Response",
+            id = "historical_mississippi_records",
             type = "csv",
             state = "MS",
             jurisdiction = "state",
             check_date = NULL,
             # pull the JSON data directly from the API
-            pull_func = mississippi_records_pull,
+            pull_func = historical_ms_records_pull,
             # restructuring the data means pulling out the data portion of the json
-            restruct_func = mississippi_records_restruct,
+            restruct_func = historical_ms_records_restruct,
             # Rename the columns to appropriate database names
-            extract_func = mississippi_records_extract){
+            extract_func = historical_ms_records_extract){
             super$initialize(
                 url = url, id = id, pull_func = pull_func, type = type,
                 restruct_func = restruct_func, extract_func = extract_func,
                 log = log, state = state, jurisdiction = jurisdiction,
-                check_date = check_date)
+                check_date = NULL)
         }
     )
 )
 
 if(sys.nframe() == 0){
-    mississippi_records <- mississippi_records_scraper$new(log=TRUE)
-    mississippi_records$run_check_date()
-    mississippi_records$raw_data
-    mississippi_records$pull_raw()
-    mississippi_records$raw_data
-    mississippi_records$save_raw()
-    mississippi_records$restruct_raw()
-    mississippi_records$restruct_data
-    mississippi_records$extract_from_raw()
-    mississippi_records$extract_data
-    mississippi_records$validate_extract()
-    mississippi_records$save_extract()
+    historical_ms_records <- historical_mississippi_records_scraper$new(log=TRUE)
+    historical_ms_records$reset_date("2021-09-03")
+    historical_ms_records$raw_data
+    historical_ms_records$pull_raw(date = historical_ms_records$date, .dated_pull = TRUE)
+    historical_ms_records$raw_data
+    historical_ms_records$save_raw()
+    historical_ms_records$restruct_raw(date = historical_ms_records$date)
+    historical_ms_records$restruct_data
+    historical_ms_records$extract_from_raw()
+    historical_ms_records$extract_data
+    historical_ms_records$validate_extract()
+    historical_ms_records$save_extract()
 }
