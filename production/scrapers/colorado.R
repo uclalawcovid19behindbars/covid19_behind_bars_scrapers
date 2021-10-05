@@ -1,7 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-
 colorado_check_date <- function(x, date = Sys.Date()){
     base_page <- xml2::read_html(x)
     
@@ -46,22 +45,51 @@ colorado_extract_cell <- function(cell){
 }
 
 colorado_extract_col <- function(sub_col, numeric = TRUE){
+    w_ <- magick::image_info(sub_col)$width
+  
+    # Dimensions for tests, total positive, active cases 
+    if (w_ > 200){
+        idxs <- seq(0, 47*20, by = 47)
+    }
     
-    idxs <- seq(0, 47*20, by = 47)
+    # Dimensions for deaths (slightly shorter)
+    else {
+        idxs <- seq(0, 44*20, by = 44)
+    }
     
     extract_vals <- tryCatch(
             {
                 sapply(1:length(idxs), function(idx){
-                    if(idx == 21){
-                        crp <- "213x40+0+940"
-                    }else{
-                        crp <- str_c("213x47+0+", idxs[idx])
+                    if (w_ > 200){
+                        if(idx == 21){
+                            crp <- "213x40+0+940"
+                        } else{
+                            crp <- str_c("213x47+0+", idxs[idx])
+                        }
+                    } 
+                    else {
+                        if(idx == 21){
+                            crp <- "113x44+0+840"
+                        } else{
+                            crp <- str_c("113x44+0+", idxs[idx])
+                        }
                     }
-                    
+                  
                     if(numeric){
-                        out <- sub_col %>%
-                            magick::image_crop(crp) %>%
-                            colorado_extract_cell()
+                        if (w_ > 200) {
+                            out <- sub_col %>%
+                                magick::image_crop(crp) %>%
+                                colorado_extract_cell()
+                          }
+              
+                        else {
+                          out <- sub_col %>%
+                              magick::image_crop(crp) %>% 
+                              magick::image_ocr() %>%
+                              # sometimes ocr converts 4's to a's
+                              str_replace_all("a", "4") %>% 
+                              string_to_clean_numeric()
+                        }
                     }
                     else{
                         out <- sub_col %>%
@@ -145,25 +173,7 @@ colorado_pull <- function(x){
 colorado_restruct <- function(x){
     z <-  magick::image_read_pdf(x, pages = 1)
     
-    col_names <- clean_fac_col_txt(c(
-        z %>%
-            magick::image_crop("423x50+177+484") %>%
-            magick::image_ocr(),
-        z %>%
-            magick::image_crop("423x50+616+484") %>%
-            magick::image_ocr(),
-        z %>%
-            magick::image_crop("423x50+1055+484") %>%
-            magick::image_ocr(),
-        z %>%
-            magick::image_crop("423x50+1494+484") %>%
-            magick::image_ocr()
-    ))
-    
-    # extract tables struggles to pull some of this data so
-    # by cropping it first we can ensure greater consistency.
-    # that is as long as CO keeps the same formatting.
-    
+    # TESTS, TOTAL POSITIVE, ACTIVE CASES  
     sub_col_list <- list(
         z %>%
             magick::image_crop("213x987+387+1100") %>%
@@ -173,10 +183,6 @@ colorado_restruct <- function(x){
             magick::image_convert(type = 'Bilevel'),
         z %>%
             magick::image_crop("213x987+1264+1100") %>%
-            magick::image_convert(type = 'Bilevel'),
-        z %>%
-            magick::image_crop("95x937+1685+1150") %>%
-            magick::image_scale("x987") %>% 
             magick::image_convert(type = 'Bilevel')
     )
     
@@ -184,7 +190,41 @@ colorado_restruct <- function(x){
         colorado_extract_col(sc)
     })
     
-    colnames(col_vals) <- col_names
+    colnames(col_vals) <- clean_fac_col_txt(c(
+        z %>%
+            magick::image_crop("423x50+177+484") %>%
+            magick::image_ocr(),
+        z %>%
+            magick::image_crop("423x50+616+484") %>%
+            magick::image_ocr(),
+        z %>%
+            magick::image_crop("423x50+1055+484") %>%
+            magick::image_ocr()
+    ))
+    
+    # DEATHS 
+    # (handle separately bc split into two columns)
+    death_sub_col_list <- list(
+        z %>%
+            magick::image_crop("83x887+1695+1160") %>%
+            magick::image_convert(type = 'Bilevel'),  
+        z %>%
+            magick::image_crop("83x887+1800+1160") %>%
+            magick::image_convert(type = 'Bilevel')  
+    )
+    
+    death_col_vals <- sapply(death_sub_col_list, function(sc){
+        colorado_extract_col(sc)
+    })
+    
+    colnames(death_col_vals) <- clean_fac_col_txt(c(
+        z %>%
+            magick::image_crop("110x70+1690+1090") %>%
+            magick::image_ocr(),
+        z %>%
+            magick::image_crop("110x70+1795+1090") %>%
+            magick::image_ocr()
+    ))
     
     vacc_check <- magick::image_crop(z, "400x50+1940+1585") %>%
         magick::image_ocr() %>%
@@ -204,7 +244,7 @@ colorado_restruct <- function(x){
 
     fac_names <- colorado_extract_col(fac_col, FALSE)
   
-    col_vals %>%
+    cbind(col_vals, death_col_vals) %>%
         as_tibble() %>%
         mutate(Name =fac_names) %>%
         bind_rows(tibble(Name = "STATEWIDE", Residents.Initiated = vac_num))
@@ -218,7 +258,8 @@ colorado_extract <- function(x){
         Residents.Tadmin = "TESTS",
         Residents.Confirmed = "TOTAL POSITIVE",
         Residents.Active = "ACTIVE CASES",
-        Residents.Deaths = "DEATHS",
+        Deaths.Due.Drop = "Deaths due to COVID",
+        Deaths.Among.Drop = "Deaths Among Cases", 
         Name = "Name",
         Residents.Initiated = "Residents.Initiated"
     )
@@ -228,8 +269,10 @@ colorado_extract <- function(x){
     names(df_) <- names(exp_names)
     
     df_ %>%
-        mutate(Residents.Recovered = 
-                   Residents.Confirmed - Residents.Active - Residents.Deaths)
+        mutate(Residents.Deaths = Deaths.Due.Drop + Deaths.Among.Drop, 
+               Residents.Recovered = 
+                   Residents.Confirmed - Residents.Active - Residents.Deaths) %>% 
+      select(-ends_with("Drop"))
 }
 
 #' Scraper class for general Colorado COVID data
