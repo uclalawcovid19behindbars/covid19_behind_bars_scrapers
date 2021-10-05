@@ -94,24 +94,18 @@ north_dakota_extract <- function(x){
         "Residents.Total.Individuals.Tested.Twice", 
         "Staff.Total.Tests.Administered", 
         "Staff.Total.Individuals.Tested", 
-        "Staff.Total.Individuals.Tested.Twice", 
-        "Residents.Total.First.Doses", 
-        "Residents.Total.Second.Doses", 
-        "Residents.Total.Single.Doses"))
+        "Staff.Total.Individuals.Tested.Twice"))
     
     x %>%
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
-                   Staff.Positive, 
-               Residents.Initiated = Residents.Total.First.Doses + Residents.Total.Single.Doses, 
-               Residents.Completed = Residents.Total.Second.Doses + Residents.Total.Single.Doses) %>%
+                   Staff.Positive) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
             Staff.Tested = Staff.Total.Individuals.Tested, 
-            Residents.Initiated, Residents.Completed, 
             Residents.Active = Residents.Positive, 
             Staff.Active = Staff.Positive
         ) %>% 

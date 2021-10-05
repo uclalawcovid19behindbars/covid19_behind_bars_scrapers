@@ -28,10 +28,10 @@ allegheny_county_restruct <- function(x){
         .[c(1, 3)] %>%
         rvest::html_table()
     
-    if(!any(str_detect(tabs[[1]][,1], "(?i)inmate"))){
+    if(!any(str_detect(unlist(tabs[[1]][,1]), "(?i)incarcerated"))){
         warning("Website structure may have changed. Please check.")
     }
-    if(!any(str_detect(tabs[[2]][,1], "(?i)staff"))){
+    if(!any(str_detect(unlist(tabs[[2]][,1]), "(?i)employee"))){
         warning("Website structure may have changed. Please check.")
     }
 
