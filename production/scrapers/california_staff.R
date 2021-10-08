@@ -36,7 +36,8 @@ california_staff_extract <- function(x){
         Staff.Confirmed = "Cumulative Confirmed",
         Staff.Recovered = "Staff Returned to Work",
         Staff.Active = "Active Cases",
-        Staff.New.Last14.Drop = "New Cases in Last 14 Days"
+        Staff.New.Last14.Drop = "New Cases in Last 14 Days",
+        Staff.Deaths = "Staff Deaths"
     )
     
     check_names(x, ext)
@@ -60,6 +61,8 @@ california_staff_extract <- function(x){
 #'   \item{New In Last 14 Days}{The number of new cases among Staff.}
 #'   \item{Active Cases}{The number of active cases among staff.}
 #'   \item{Staff Returned to Work}{Staff Recovered.}
+#'   \item{Staff Deaths}{Staff COVID-19 Deaths.}
+
 #' }
 
 california_staff_scraper <- R6Class(
