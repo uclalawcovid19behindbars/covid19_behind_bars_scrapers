@@ -237,8 +237,8 @@ lasd_extract <- function(x){
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
     
-    if(out_df$Residents.Deaths != 15){
-        warning("You sure LA shouldnt be 15?")
+    if(out_df$Residents.Deaths != 16){
+        warning("You sure LA shouldnt be 16?")
     }
     
     out_df
