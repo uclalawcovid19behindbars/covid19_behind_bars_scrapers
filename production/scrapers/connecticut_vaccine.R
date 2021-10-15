@@ -31,7 +31,7 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    in_txt <- magick::image_crop(x, "200x120+10+720") %>%
+    in_txt <- magick::image_crop(x, "200x120+10+640") %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -41,7 +41,7 @@ connecticut_vaccine_restruct <- function(x){
     
     h_ <- round(dim(magick::image_data(x))[3] * .9)
     
-    st_txt <- magick::image_crop(x, "190x120+260+710") %>%
+    st_txt <- magick::image_crop(x, "190x120+240+640") %>%
         magick::image_modulate(brightness = 200) %>% 
         magick::image_ocr()
     
@@ -55,7 +55,7 @@ connecticut_vaccine_restruct <- function(x){
             magick::image_ocr() %>%
             string_to_clean_numeric(),
     
-        Staff = magick::image_crop(x, str_c("200x110+260+", h_)) %>%
+        Staff = magick::image_crop(x, str_c("200x110+240+", h_)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric()

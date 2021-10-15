@@ -29,11 +29,10 @@ south_dakota_population_extract <- function(x){
         "Adult Corrections: End of Month Population:", "0", "Name",
         "State Males", "1", "State.Males.Drop",
         "State Females", "2", "State.Females.Drop", 
-        "State Total", "3", "State.Total.Drop", 
+        "State Total", "3", "Residents.Population", 
         "Federal Males", "4", "Fedearl.Males.Drop", 
-        "Federal Females", "5", "Federal.Females.Drop", 
-        "Total Inmates", "6", "Residents.Population"
-    ), ncol = 3, nrow = 7, byrow = TRUE)
+        "Federal Females", "5", "Federal.Females.Drop" 
+    ), ncol = 3, nrow = 6, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
@@ -43,7 +42,9 @@ south_dakota_population_extract <- function(x){
     rename_extractable(x[[1]], col_name_df) %>% 
         select(!ends_with(".Drop")) %>% 
         filter(!str_detect(Name, "Population")) %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>% 
+        filter(!is.na(Name)) %>% 
+        filter(Name != "")
 }
 
 #' Scraper class for South Dakota population data 
