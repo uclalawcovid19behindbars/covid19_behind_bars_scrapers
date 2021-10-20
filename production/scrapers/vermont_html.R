@@ -72,7 +72,10 @@ vermont_html_extract <- function(x){
                Residents.Tadmin = subset(., X1 == "Total Tests Conducted", select = X2)) %>%
         select(Name, starts_with("Residents.")) %>%
         unique() %>%
-        unnest(cols = c(Residents.Tested, Residents.Tadmin))
+        unnest(cols = c(Residents.Tested, Residents.Tadmin), 
+               names_repair = "unique") %>%
+        rename(Residents.Tested = X2...2,
+               Residents.Tadmin = X2...3)
     
     out_state_tab_extract <- x$out_state %>%
         mutate(Name = "Out-of-State",
@@ -81,8 +84,12 @@ vermont_html_extract <- function(x){
                Residents.Tadmin = subset(., X1 == "Total Tests Conducted", select = X2)) %>%
         select(Name, starts_with("Residents.")) %>%
         unique() %>%
-        unnest(cols = c(Residents.Confirmed, Residents.Tested, Residents.Tadmin))
-    
+        unnest(cols = c(Residents.Confirmed, Residents.Tested, Residents.Tadmin), 
+               names_repair = "unique") %>%
+        rename(Residents.Confirmed = X2...2,
+               Residents.Tested = X2...3,
+               Residents.Tadmin = X2...4)
+
     facility_tab_extract <- x$facility %>%
         select(Name = Facility,
                Residents.Active = `# Currently Positive`,
