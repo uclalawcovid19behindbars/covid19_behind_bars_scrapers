@@ -50,12 +50,15 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
         janitor::clean_names()
     
     check_names(x_, c(
-        "facility", 
-        "as_of_date_vaccine", 
-        "first_doses_moderna_or_pfizer",
-        "second_doses_moderna_or_pfizer", 
-        "johnson_johnson_doses", 
-        "total_doses"
+        "facility1", 
+        "as_of_date_vaccinated_pioc", 
+        "number_partially_vaccinated",
+        "percent_partially_vaccinated", 
+        "number_fully_vaccinated", 
+        "percent_fully_vaccinated", 
+        "number_partially_or_fully_vaccinated", 
+        "percent_partially_or_fully_vaccinated", 
+        "facility_population"
     ))
     
     x_
@@ -63,13 +66,11 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
 
 wisconsin_vaccine_extract <- function(x){
     x %>% 
-        rename(Name = facility) %>% 
+        select(Residents.Initiated = number_partially_or_fully_vaccinated, 
+               Residents.Completed = number_fully_vaccinated, 
+               Name = facility1) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
-        clean_scraped_df() %>% 
-        mutate(Residents.Initiated = first_doses_moderna_or_pfizer + johnson_johnson_doses, 
-               Residents.Completed = second_doses_moderna_or_pfizer + johnson_johnson_doses, 
-               Residents.Vadmin = total_doses) %>% 
-        select(Name, starts_with("Res"))
+        clean_scraped_df()
 }
 
 #' Scraper class for general COVID data

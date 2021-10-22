@@ -3,8 +3,9 @@ source("./R/utilities.R")
 
 new_hampshire_vaccine_check_date <- function(x, date = Sys.Date()){
     base_html <- xml2::read_html(x)
-    date_txt <- rvest::html_nodes(base_html, 
-                                  xpath="//*[@id=\"block-state-of-nh-core-content\"]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[1]/p[1]/strong") %>%
+    date_txt <- rvest::html_nodes(
+        base_html, 
+        xpath="//*[@id=\"block-state-of-nh-core-content\"]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[1]/p[1]/strong") %>%
         rvest::html_text()
     
     date_txt %>%
@@ -32,21 +33,23 @@ new_hampshire_restruct <- function(x){
     rez_idx <- which(stringr::str_detect(captions, "(?i)residents testing"))
     
     res_pop <- x %>%
-        rvest::html_node(xpath="/html/body/div[2]/div/main/div/div/div/div[2]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[1]/p[5]/strong") %>%
-        rvest::html_text()
-    
-    if(!str_detect(res_pop, "(?i)total resident population")){
-        warning("Resident population value expected but not detected. Please inspect")
-    }
+        rvest::html_nodes("p") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)resident population")]} %>% 
+        str_split("=|as") %>% 
+        unlist() %>% 
+        .[2] %>% 
+        string_to_clean_numeric()
     
     staff_pop <- x %>%
-        rvest::html_node(xpath = "/html/body/div[2]/div/main/div/div/div/div[2]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[2]/p[2]") %>% 
-        rvest::html_text()
-    
-    if(!str_detect(staff_pop, "(?i)total number of nhdoc staff")){
-        warning("Staff population value expected but not detected. Please inspect")
-    }
-    
+        rvest::html_nodes("p") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "(?i)nhdoc staff")]} %>% 
+        str_split("=|as") %>% 
+        unlist() %>% 
+        .[2] %>% 
+        string_to_clean_numeric()
+        
     list(
         staff = tab_set[[staff_idx]] %>%
             rvest::html_table(header = TRUE) %>%
