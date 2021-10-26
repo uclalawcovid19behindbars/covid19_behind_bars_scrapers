@@ -19,45 +19,48 @@ west_virginia_check_date <- function(x, date = Sys.Date()){
 }
 
 west_virginia_pull <- function(x){
-    tsv_src <- get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "txt$") %>%
-        {.[!str_detect(., "vaccine")]}
+    latest_pdf <- get_src_by_attr(
+        x, "a", attr = "href", attr_regex = "pdf$") %>%
+        {.[!str_detect(., "vaccine")]} %>%
+        {.[str_detect(., "https://dhhr.wv.gov/COVID-19/Documents/COVID19_DCR_2021")]} %>%
+        last()
     
-    dev_null <- suppressWarnings(out <- read_tsv(
-        tsv_src, skip = 1, col_types = cols()))
-    
-    out
+    return(latest_pdf)
 }
 
 west_virginia_restruct <- function(x){
-    df_ <- x
-    
-    replace_col <- unname(unlist(df_[1,]))
-    rcol_idx <- which(!is.na(replace_col))
-    
-    names(df_)[rcol_idx] <- replace_col[rcol_idx]
-    
-    df_
+    z <-  magick::image_read_pdf(x, pages = 1) %>%
+        magick::image_crop("1800x2220+190+280") %>%
+        ExtractTable()
+    return(z)
 }
 
 west_virginia_extract <- function(x){
-    exp_cols <- c(
-        Name = "Regional jails", 
-        Drop.County = "County", 
-        Residents.Population = "Pop.",
-        Residents.Active = "Active cases",
-        Residents.Recovered = "Recovered",
-        Residents.Confirmed = "Cumulative Positives",
-        Residents.Negative = "Negative",
-        Residents.Pending = "Results Pending",
-        Residents.Tadmin = "Total Tests",
-        Residents.Quarantine = "Quarantine"
-    )
+    col_name_mat <- matrix(c(
+        "Regional jails", "X0", "Name", 
+        "County", "X1", "Drop.County", 
+        "Pop.", "X2", "Residents.Population", 
+        "Active cases", "X3", "Residents.Active", 
+        "Recovered", "X4", "Residents.Recovered",
+        "Cumulative Positives", "X5", "Residents.Confirmed",
+        "Negative", "X6", "Residents.Negative",
+        "Results Pending", "X7", "Residents.Pending",
+        "Total Tests", "X8", "Residents.Tadmin",
+        "Quarantine", "X9", "Residents.Quarantine"
+    ), ncol = 3, nrow = 10, byrow = TRUE)
     
-    check_names(x, exp_cols)
-    names(x) <- names(exp_cols)
+    colnames(col_name_mat) <- c("check", "raw", "clean")
+    col_name_df <- as_tibble(col_name_mat)
     
-    fac_df <- x %>%
+    df_ <- as.data.frame(x)
+    
+    check_names_extractable(df_, col_name_df)
+    
+    x <- rename_extractable(df_, col_name_df) %>% 
+        as_tibble() %>%
+        filter(Drop.County != "County")
+        
+    fac_df <- x %>% 
         filter(
             !is.na(Residents.Population) & 
                 !str_detect(Residents.Population, "(?i)total") &
@@ -67,41 +70,41 @@ west_virginia_extract <- function(x){
         clean_scraped_df() %>%
         mutate(
             Residents.Quarantine = Residents.Quarantine + Residents.Pending) %>%
-        select(-starts_with("Drop"))
+        select(-starts_with("Drop")) %>%
+        filter(!Name %in% c("Regional jails", "Correctional Centers", "Community Corrections", "Juvenile" ))
     
     # get deaths
     resident_deaths <- x %>%
         filter(
-            str_starts(Name, "(?i)inmate deaths") | 
-                str_starts(Name, "(?i)confirmed inmate deaths")) %>%
-        pull(Name) %>%
-        # remove items in parenthesis
-        str_remove_all("\\([^)]*\\)") %>%
-        str_split("\\.") %>%
-        unlist() %>%
-        .[1] %>%
-        # remove commas
-        str_remove_all(",") %>%
-        str_extract_all("[0-9]+") %>%
-        unlist() %>%
-        string_to_clean_numeric() %>%
-        sum()
+            str_starts(Name, "(?i)deaths")) %>%
+        ## the column this is listed in happens to fall within the "Residents.Negative"
+        ## NB this is subject to change
+        pull(Residents.Negative) %>%
+        as.numeric()
+    
+    if((resident_deaths > 25) | (resident_deaths < 18) | (is.na(resident_deaths))){
+        warning("Deaths number seems to have been mis-scraped, please inspect")
+    }
     
     # see which row starts employee data
     emp_idx <- first(which(str_detect(x$Name, "(?i)employee")))
-    staff_df <- x[emp_idx:nrow(x),] 
+    staff_df <- x[emp_idx:(emp_idx+5),] 
     names(staff_df) <- str_replace(names(staff_df), "Residents", "Staff")
     
-    staff_df %>% 
+    staff_out <- staff_df %>% 
         select(-starts_with("Drop"), -Staff.Population, Staff.Active) %>%
         filter(!is.na(Staff.Confirmed)) %>% 
         filter(!str_detect(Staff.Confirmed, "(?i)cumulative")) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
         mutate(Name = str_c(clean_fac_col_txt(Name), " staff total")) %>% 
-        clean_scraped_df() %>% 
+        clean_scraped_df() 
+    
+    out <- staff_out %>%
         bind_rows(fac_df) %>%
         rename(Staff.Tested = Staff.Tadmin) %>% 
         bind_rows(tibble(Name = "State-Wide", Residents.Deaths = resident_deaths))
+    
+    return(out)
 }
 
 #' Scraper class for general West Virginia COVID data
@@ -139,7 +142,7 @@ west_virginia_scraper <- R6Class(
             log,
             url = "https://dhhr.wv.gov/COVID-19/Pages/Correctional-Facilities.aspx",
             id = "west_virginia",
-            type = "csv",
+            type = "pdf",
             state = "WV",
             jurisdiction = "state",
             check_date = west_virginia_check_date,

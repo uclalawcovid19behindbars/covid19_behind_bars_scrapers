@@ -41,7 +41,7 @@ wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
 wisconsin_vaccine_pull <- function(x){
     # if this is giving you trouble, try save-as'ing it in 
     # excel with UTF-8 .csv file encoding
-    read.csv("/tmp/sel_dl/Vaccines.csv")
+    read.csv("/tmp/sel_dl/PIOC Vaccinated.csv")
 }
 
 wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
