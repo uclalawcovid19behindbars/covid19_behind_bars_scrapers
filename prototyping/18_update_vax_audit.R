@@ -35,13 +35,17 @@ federal_ice_rows <- state_df %>%
 # Get counts, rates with date associated 
 vax_audit_df <- state_jur_df %>% 
     filter(Web.Group == "Prison") %>%
-    select(-Web.Group) %>%
+    # select(-Web.Group) %>%
     filter(Measure %in% c("Residents.Initiated", 
                           "Residents.Completed",
                           "Staff.Initiated", 
                           "Staff.Completed")) %>%
-    pivot_wider(names_from = Measure, values_from = c(Val, Rate)) %>%
+    filter((!is.na(Val)) & (!is.na(Rate))) %>%
+    pivot_wider(id_cols = c(State, Date), 
+                names_from = Measure, 
+                values_from = c(Val, Rate)) %>%
     rename_all(~stringr::str_replace(.,"Val_","")) %>%
+    group_by_coalesce(State) %>%
     left_join(state_df_small, by = "State") %>%
     bind_rows(federal_ice_rows) %>%
     mutate(`Source` = "",
@@ -49,6 +53,9 @@ vax_audit_df <- state_jur_df %>%
            `Does website report staff rates?` = "",
            `Notes` = "",
            `Volunteer` = "")
+
+# Write data locally
+write_csv(vax_audit_df, "~/Desktop/vax_audit.csv", na = "")
 
 # Write data to google sheet
 gs4_auth("ucla.law.covid.staff@gmail.com")
