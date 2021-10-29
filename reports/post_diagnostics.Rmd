@@ -348,6 +348,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 ``` {r echo = F}
 new_df %>% 
     filter(is.na(Facility.ID)) %>% 
+    filter(!Jurisdiction %in% c("psychiatric")) %>% 
     select(State, Name, Jurisdiction, Residents.Confirmed, Staff.Confirmed) %>% 
     arrange(State, Name) %>% 
     kable() %>% 

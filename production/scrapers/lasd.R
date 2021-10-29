@@ -54,8 +54,8 @@ lasd_restruct <- function(x){
     w_ <- magick::image_info(x)$width
     h_ <- magick::image_info(x)$height
     
-    # If image is way too big, resize it down 
-    if (h_ > 1700){
+    # If image is way too big or small, resize it  
+    if (h_ > 1700 | h_ < 1000){
         x <- magick::image_scale(x, "1200")
         
         w_ <- magick::image_info(x)$width

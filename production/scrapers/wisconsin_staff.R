@@ -7,7 +7,8 @@ wisconsin_staff_check_date <- function(x, date = Sys.Date()){
     z %>%
         rvest::html_node(xpath = "//em[contains(text(),'Updated')]") %>%
         rvest::html_text() %>%
-        str_remove_all("Updated|\\)|\\(") %>%
+        str_remove_all("Updated|\\)|\\(|as of") %>%
+        clean_fac_col_txt() %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }
