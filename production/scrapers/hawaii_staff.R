@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 hawaii_staff_date_check <- function(x, date = Sys.Date()){
     img <- get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)active-recovered") %>%
+        x, "img", attr = "src", attr_regex = "(?i)facility-testing") %>%
         {gsub("-[0-9]+x[0-9]+", "", .)} %>%
         magick::image_read() 
     
@@ -21,7 +21,7 @@ hawaii_staff_date_check <- function(x, date = Sys.Date()){
 
 hawaii_staff_pull <- function(x) {
     get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)active-recovered") %>%
+        x, "img", attr = "src", attr_regex = "(?i)facility-testing") %>%
         {gsub("-[0-9]+x[0-9]+", "", .)} %>%
         magick::image_read()
 }

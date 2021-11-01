@@ -50,7 +50,7 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
         janitor::clean_names()
     
     check_names(x_, c(
-        "facility1", 
+        "facility", 
         "as_of_date_vaccinated_pioc", 
         "number_partially_vaccinated",
         "percent_partially_vaccinated", 
@@ -68,7 +68,7 @@ wisconsin_vaccine_extract <- function(x){
     x %>% 
         select(Residents.Initiated = number_partially_or_fully_vaccinated, 
                Residents.Completed = number_fully_vaccinated, 
-               Name = facility1) %>% 
+               Name = facility) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
         clean_scraped_df()
 }

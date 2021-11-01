@@ -34,7 +34,7 @@ california_check_date <- function(x, date = Sys.Date()){
     error_on_date(site_date, date)
 }
 
-california_pull <- function(x, wait = 10){
+california_pull <- function(x, wait = 20){
     # scrape from the power bi iframe directly
     y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(

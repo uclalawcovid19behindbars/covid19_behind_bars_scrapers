@@ -43,7 +43,8 @@ arizona_restruct <- function(x){
             rvest::html_table() %>%
             rename(
                 "Staff.Confirmed" = "Self-Reported Staff Positive",
-                "Staff.Recovered" = "Staff Certified Recovered") %>%
+                "Staff.Recovered" = "Staff Certified Recovered", 
+                "Residents.Released" = "Total number of inmates released since COVID-19 (March 2020)") %>%
             mutate(Name = "State-Wide")) %>%
         clean_scraped_df() %>%
         as_tibble()
@@ -52,7 +53,7 @@ arizona_restruct <- function(x){
 arizona_extract <- function(x){
     x %>%
         mutate(Residents.Deaths = Resident.Deaths1 + Resident.Deaths2) %>%
-        select(-Resident.Deaths1, -Resident.Deaths2)
+        select(-Resident.Deaths1, -Resident.Deaths2, -Residents.Released)
 }
 
 #' Scraper class for general Arizona COVID data

@@ -93,9 +93,9 @@ cook_county_restruct <- function(x){
         Staff.Deaths = staff_sub_text[3] %>%
             str_split(" ") %>%
             unlist() %>%
-            str_extract("[0-9]+") %>%
-            as.numeric() %>%
-            sum_na_rm()
+            str_extract("six|seven|eight|nine|ten") %>% 
+            .[!is.na(.)] %>% 
+            word_to_numeric()
     )
     
     bind_cols(resident_df, staff_df)

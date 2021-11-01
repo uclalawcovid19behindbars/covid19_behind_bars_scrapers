@@ -18,7 +18,6 @@ south_dakota_pull <- function(x){
 }
 
 south_dakota_restruct <- function(x){
-  x <- "https://doc.sd.gov/documents/COVID19PositiveCaseInformationbyFacility09282021.pdf"
     sd_pgs <- magick::image_read_pdf(x)
     
     img_width <- magick::image_info(sd_pgs)$width
