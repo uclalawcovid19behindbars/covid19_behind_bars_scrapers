@@ -62,6 +62,7 @@ sf_county_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Confirmed = `Confirmed Cases Incarcerated Population Cumulative`,
             Residents.Active = `Active Cases Incarcerated Population Current`,
             Residents.Tadmin = `Tests Incarcerated Population Cumulative`, 
+            Residents.Population = `Population Incarcerated Population Current`,
             # Staff.Population = `Total Sfso Employees`, 
             # Staff.Confirmed = `Sfso Employees Total Positive Results`, 
             # Residents.Partial.Drop = `Partially Vaccinated Incarcerated Population Current`, 
