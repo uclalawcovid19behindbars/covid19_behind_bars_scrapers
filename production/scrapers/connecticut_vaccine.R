@@ -31,7 +31,13 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    in_txt <- magick::image_crop(x, "200x120+0+740") %>%
+    res_h_txt <- 250
+    res_w_txt <- 200
+    res_xoff_txt <- 50
+    res_yoff_txt <- 1240
+    
+    in_txt <- magick::image_crop(x, str_c(res_h_txt, "x", res_w_txt, "+", 
+                                          res_xoff_txt, "+", res_yoff_txt)) %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -41,8 +47,13 @@ connecticut_vaccine_restruct <- function(x){
     
     h_ <- round(dim(magick::image_data(x))[3] * .9)
     
-    # st_txt <- magick::image_crop(x, "190x120+240+640") %>%
-    st_txt <- magick::image_crop(x, "190x120+250+740") %>%
+    st_h_txt <- 450
+    st_w_txt <- 200
+    st_xoff_txt <- 280
+    st_yoff_txt <- 1240
+    
+    st_txt <- magick::image_crop(x, str_c(st_h_txt, "x", st_w_txt, "+", 
+                                          st_xoff_txt, "+", st_yoff_txt)) %>%
         magick::image_modulate(brightness = 200) %>% 
         magick::image_ocr()
     
@@ -50,17 +61,33 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for staff, please inspect scrape")
     }
     
-    tibble(
-        Res = magick::image_crop(x, str_c("170x80+28+", h_)) %>%
+    res_h_num <- res_h_txt - (res_h_txt / 4)
+    res_w_num <- res_w_txt
+    res_xoff_num <- (res_xoff_txt * 1/4) + res_xoff_txt
+    st_h_num <- st_h_txt - (st_h_txt / 4)
+    st_w_num <- st_w_txt - (st_w_txt / 4)
+    st_xoff_num <- (st_xoff_txt * 1/4) + st_xoff_txt
+        
+    out <- tibble(
+        Res = magick::image_crop(x, str_c(res_h_num, "x", res_w_num, "+",
+                                          res_xoff_num, "+", h_)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric(),
     
-        Staff = magick::image_crop(x, str_c("200x110+240+", h_)) %>%
+        Staff = magick::image_crop(x, str_c(st_h_num, "x", st_w_num, "+",
+                                          st_xoff_num, "+", h_)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric()
     )
+    
+    if(out$Res < out$Staff){
+        stop("Vaccination numbers not as expected, please inspect")
+    }
+    
+    return(out)
+    
 }
 
 connecticut_vaccine_extract <- function(x){

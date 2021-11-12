@@ -25,7 +25,7 @@ mississippi_restruct <- function(x){
 mississippi_extract <- function(x){
     col_name_mat <- matrix(c(
         "State Institutions", "X0", "Name",
-        "Total Yearly Positives", "X1", "Residents.Confirmed",
+        "Total Cumulative Positives", "X1", "Residents.Confirmed",
         "Current Active", "X2", "Residents.Active"
         ), ncol = 3, nrow = 3, byrow = TRUE)
     

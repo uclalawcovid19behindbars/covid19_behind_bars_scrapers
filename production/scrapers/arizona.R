@@ -5,10 +5,8 @@ arizona_check_date <- function(x, date = Sys.Date()){
     base_page <- xml2::read_html(x)
     
     site_date <- base_page %>%
-        rvest::html_nodes("p") %>%
+        rvest::html_nodes(xpath = "//*[@id='block-views-covid-19-data-table-block-5']/div/div/div/div/span[2]") %>%
         rvest::html_text() %>%
-        {.[str_starts(., "(?i)last updated")]} %>%
-        str_remove("(?i)last updated ") %>%
         lubridate::mdy()
     
     error_on_date(site_date, date)

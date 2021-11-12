@@ -40,14 +40,14 @@ west_virginia_vaccine_restruct <- function(x){
     names(df_)[1] <- "Name"
     names(df_) <- paste(names(df_), df_[1, ], sep = "_")
 
-    check_names(df_, c("name", "county", "pop", "both","johnson"), 
+    check_names(df_, c("name", "county", "pop", "moderna","johnson"), 
                 detect = TRUE)
     
     names(df_) <- c(
         "Name", 
         "Drop.County", 
         "Drop.Population",
-        "Moderna.Completed", 
+        "Moderna.Initiated", 
         "Johnson"
         )
     
@@ -61,8 +61,8 @@ west_virginia_vaccine_extract <- function(x){
     res_df <- x[1:(emp_idx-1),] %>%
         select(!starts_with("Drop")) %>%
         clean_scraped_df() %>% 
-        mutate(Residents.Initiated = vector_sum_na_rm(Moderna.Completed, Johnson)) %>% 
-        filter(!across(c(Moderna.Completed, Johnson), ~ is.na(.x))) %>% 
+        mutate(Residents.Initiated = vector_sum_na_rm(Moderna.Initiated, Johnson)) %>% 
+        filter(!across(c(Moderna.Initiated, Johnson), ~ is.na(.x))) %>% 
         filter(!str_detect(Name, "(?i)total")) 
     
     staff_df <- x[emp_idx:nrow(x),] %>%
@@ -72,7 +72,7 @@ west_virginia_vaccine_extract <- function(x){
         select(!starts_with("Drop")) %>%
         filter(!str_detect(Staff.Population, "(?i)staffing")) %>% 
         clean_scraped_df() %>% 
-        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Completed, Johnson)) 
+        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Initiated, Johnson)) 
     
     if(nrow(res_df) != 34){
         warning(stringr::str_c(

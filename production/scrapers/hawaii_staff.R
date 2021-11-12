@@ -34,11 +34,11 @@ hawaii_staff_extract <- function(x){
     dat_mat <- x[[1]]
     dat_mat[1,] <- last_not_na(
         unlist(ifelse(dat_mat[1,] == "", NA, dat_mat[1,])))
-    new_names <- apply(dat_mat[1:3,], 2, function(x){
+    new_names <- apply(dat_mat[1:2,], 2, function(x){
         str_squish(str_c(na.omit(x), collapse = " "))
     })
     
-    sub_mat <- dat_mat[3:nrow(dat_mat),]
+    sub_mat <- dat_mat[2:nrow(dat_mat),]
     sub_mat[1,] <- new_names
     
     col_name_mat <- matrix(c(
