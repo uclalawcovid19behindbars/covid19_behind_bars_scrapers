@@ -119,7 +119,7 @@ replace_os <- function(cell){
 }
 
 ## Function to Check credits usage
-check_credits <- function(api_key=NULL, verbose=FALSE) {
+check_extractable_credits <- function(api_key=NULL, verbose=FALSE) {
     if(is.null(api_key)){
         api_key <- Sys.getenv("EXTRACTABLE_API_KEY")
     }
