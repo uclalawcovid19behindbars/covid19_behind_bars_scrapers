@@ -71,7 +71,8 @@ wisconsin_population_extract <- function(x){
         "3 TOTAL ON-GROUNDS POPULATION", 
         "TOTAL ON-GROUNDS POPULATION 3", 
         "SUBTOTAL-MALES", 
-        "SUBTOTAL-FEMALES")
+        "SUBTOTAL-FEMALES",
+        "INSTITUTIONS CENTERS MSDF AODA PIOCS TRANS UNITS")
     
     exp_names <- c("x", "design_capacity", "total_population", "dai", "dcc")
     clean_names <- c("Name", "Capacity.Drop", "Residents.Population", "DAI.Drop", "DCC.Drop")

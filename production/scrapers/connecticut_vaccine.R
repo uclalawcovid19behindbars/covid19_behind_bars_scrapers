@@ -31,10 +31,14 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    res_h_txt <- 250
-    res_w_txt <- 200
-    res_xoff_txt <- 50
-    res_yoff_txt <- 1240
+    # res_h_txt <- 250
+    # res_w_txt <- 200
+    # res_xoff_txt <- 50
+    # res_yoff_txt <- 1240
+    res_h_txt <- 200
+    res_w_txt <- 120
+    res_xoff_txt <- 0
+    res_yoff_txt <- 740
     
     in_txt <- magick::image_crop(x, str_c(res_h_txt, "x", res_w_txt, "+", 
                                           res_xoff_txt, "+", res_yoff_txt)) %>%
@@ -47,10 +51,10 @@ connecticut_vaccine_restruct <- function(x){
     
     h_ <- round(dim(magick::image_data(x))[3] * .9)
     
-    st_h_txt <- 450
-    st_w_txt <- 200
-    st_xoff_txt <- 280
-    st_yoff_txt <- 1240
+    st_h_txt <- res_h_txt
+    st_w_txt <- res_w_txt
+    st_xoff_txt <- res_xoff_txt + 250
+    st_yoff_txt <- res_yoff_txt
     
     st_txt <- magick::image_crop(x, str_c(st_h_txt, "x", st_w_txt, "+", 
                                           st_xoff_txt, "+", st_yoff_txt)) %>%
@@ -65,8 +69,8 @@ connecticut_vaccine_restruct <- function(x){
     res_w_num <- res_w_txt
     res_xoff_num <- (res_xoff_txt * 1/4) + res_xoff_txt
     st_h_num <- st_h_txt - (st_h_txt / 4)
-    st_w_num <- st_w_txt - (st_w_txt / 4)
-    st_xoff_num <- (st_xoff_txt * 1/4) + st_xoff_txt
+    st_w_num <- st_w_txt 
+    st_xoff_num <- st_xoff_txt
         
     out <- tibble(
         Res = magick::image_crop(x, str_c(res_h_num, "x", res_w_num, "+",

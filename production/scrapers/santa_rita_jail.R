@@ -43,13 +43,11 @@ santa_rita_jail_extract <- function(x, exp_date = Sys.Date()){
             Residents.Population = `Population Incarcerated Population Current`,
             # Staff.Confirmed = `Confirmed Cases Staff Cumulative`,
             # Staff.Active = `Active Cases Staff Current`, 
-            Residents.Partial.Drop = `Partially Vaccinated Total Incarcerated Population Current`,
-            Residents.Completed = `Fully Vaccinated Total Incarcerated Population Cumulative`, 
+            # Residents.Partial.Drop = `Partially Vaccinated Total Incarcerated Population Current`,
+            Residents.Completed = `Fully Vaccinated Incarcerated Population Cumulative`, 
             ) %>% 
         rowwise() %>% 
-        mutate(Residents.Initiated = sum(Residents.Partial.Drop, Residents.Completed, na.rm = T)) %>% 
-        mutate(Residents.Initiated = ifelse(
-            is.na(Residents.Partial.Drop) & is.na(Residents.Completed), NA, Residents.Initiated)) %>% 
+        mutate(Residents.Initiated = Residents.Completed) %>% 
         mutate_all(as.numeric) %>%
         select(-ends_with("Drop")) %>% 
         mutate(Name = "SANTA RITA JAIL") 
