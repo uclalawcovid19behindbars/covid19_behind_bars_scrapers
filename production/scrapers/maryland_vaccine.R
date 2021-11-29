@@ -74,14 +74,9 @@ get_maryland_facility_vaccine_table <- function(x){
     dat_df <- do.call(rbind, dat_list[sapply(dat_list, is.matrix)]) %>%
         as.data.frame()
 
-    names(dat_df) <- tab %>%
-        rvest::html_node(".columnHeaders") %>%
-        rvest::html_node("div") %>%
-        rvest::html_nodes("div") %>% 
-        rvest::html_attr("title") %>%
-        na.omit() %>%
-        as.vector() %>% 
-        head(ncol(dat_df))
+    names(dat_df) <- c("Facility (Administered)", "First Doses Administered",
+                       "First Dose Refusals", "Second Doses Administered",
+                       "Second Dose Refusals")
     
     dat_df %>%
         rename(Name = "Facility (Administered)") %>%
@@ -133,7 +128,7 @@ maryland_vaccine_restruct <- function(x){
     exp_staff_names <- c(
         Staff.Initiated = "First Shot",
         Staff.Completed = "Second Shot", 
-        Staff.Single.Drop = "Single Shot"
+        Staff.Booster.Drop = "Booster Shots"
     )
     
     exp_res_names <- c(
@@ -177,8 +172,6 @@ maryland_vaccine_restruct <- function(x){
 
 maryland_vaccine_extract <- function(x){
     x %>%
-        mutate(Staff.Initiated = Staff.Initiated + Staff.Single.Drop, 
-               Staff.Completed = Staff.Completed + Staff.Single.Drop) %>%  
         select(-ends_with(("Drop"))) %>% 
         clean_scraped_df() 
 }
