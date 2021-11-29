@@ -28,7 +28,6 @@ tx_ids <- fac_info %>%
     select(Facility.ID, State, Name)
 
 tx_plus_fac_vetting <- bind_rows(tx_ids, facs_from_vetting)
-    
 
 # ------------------------------------------------------------------------------
 
@@ -87,5 +86,5 @@ facs_bad_drop <- issues_df %>%
     bind_rows(tx_plus_fac_vetting)
 
 # Write to csv
-write.csv(facs_bad_drop, file.path("~", "Desktop", "exclude_dashboard_facilities.csv"), 
+write.csv(facs_bad_drop, file.path("prototyping", "exclude_dashboard_facilities.csv"), 
                                    row.names = FALSE, na = "")
