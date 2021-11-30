@@ -17,7 +17,7 @@ missouri_statewide_restruct <- function(x){
             xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
         rvest::html_text() %>%
         # Pull number before ([%])  
-        word(1, sep = "\\(") %>% 
+        word(1, sep = "\n") %>% 
         string_to_clean_numeric()
     
     all_deaths <- x %>%
@@ -29,7 +29,6 @@ missouri_statewide_restruct <- function(x){
     if(!(grepl("Offender", all_deaths[1]) & grepl("Staff", all_deaths[2]))){
         warning("Web data for residents and staff not formatted as expected")
     }
-    
     
     Staff.Deaths <- str_split(all_deaths[2], ":")[[1]] %>%
         last() %>%
