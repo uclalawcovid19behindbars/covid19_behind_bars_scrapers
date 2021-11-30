@@ -20,7 +20,8 @@ facs_from_vetting <- tibble(Facility.ID = c(2336,
                        1771,
                        1770,
                        1671,
-                       1670))
+                       1670,
+                       1878)) ## rm all ice because it comes from state agg counts
 
 fac_info <- read_fac_info()
 tx_ids <- fac_info %>% 
