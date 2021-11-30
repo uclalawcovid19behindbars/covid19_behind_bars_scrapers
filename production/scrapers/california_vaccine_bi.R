@@ -103,6 +103,20 @@ get_california_vaccine_bi_table <- function(x, idx){
     dat_df
 }
 
+get_california_vaccine_bi_percentages <- function(x){
+    tab <- x %>%
+        rvest::html_nodes(".tableEx") %>%
+        .[1] %>% 
+        rvest::html_node(".innerContainer")
+    x %>% 
+        # rvest::html_node(xpath="//*[@id='pvExplorationHost']/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[11]/transform/div/div[3]/div/visual-modern/div/svg/g[2]/text") %>%
+        rvest::html_nodes(".mainText") %>%
+        rvest::html_text()
+    
+        
+        
+}
+
 california_vaccine_bi_restruct <- function(x){
     sub_files <- x %>%
         rvest::html_nodes("iframe") %>%
@@ -155,7 +169,23 @@ california_vaccine_bi_restruct <- function(x){
             "longer work. Please inspect.")
     }
     
-    as_tibble(full_join(vac_list[[1]], vac_list[[2]], by = "Name"))
+    fac_tab <- as_tibble(full_join(vac_list[[1]], vac_list[[2]], by = "Name"))
+    
+    ## get statewide percentages
+    statewide_pct <- lhtml %>% 
+        .[[1]] %>%
+        rvest::html_nodes(".mainText") 
+    res_part_pct <- statewide_pct %>% .[1] %>% rvest::html_text() %>% string_to_clean_numeric()
+    res_full_pct <- statewide_pct %>% .[2] %>% rvest::html_text() %>% string_to_clean_numeric()
+    staff_part_pct <- statewide_pct %>% .[3] %>% rvest::html_text() %>% string_to_clean_numeric()
+    staff_full_pct <- statewide_pct %>% .[4] %>% rvest::html_text() %>% string_to_clean_numeric()
+    statewide_pct <- tibble(Name = "STATEWIDE",
+                            Residents.Initiated.Pct = (res_part_pct + res_full_pct)/100,
+                            Staff.Initiated.Pct = (staff_part_pct + staff_full_pct)/100)
+    out <- fac_tab %>%
+        bind_rows(statewide_pct)
+    return(out)
+
 }
 
 
