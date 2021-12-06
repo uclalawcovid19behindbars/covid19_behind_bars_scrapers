@@ -62,17 +62,25 @@ nevada_pull <- function(x){
     Sys.sleep(10)
     remDr$findElement(
         "xpath", 
-        str_c("//div[@class='slicerItemContainer']",
-              "/span[@title='Correctional']"))$clickElement()
+        str_c("/html/body/div[6]/div[1]/div/div[2]/div/div[1]/div/div/div[5]/div/div",
+              ""))$clickElement()
     Sys.sleep(10)
     remDr$findElement(
-        "xpath", "//div[@aria-label='Facility Name,  All']")$clickElement()
+        "xpath", 
+        str_c(
+            "//div[@aria-label='Facility Name Slicer Drop down box to ",
+            "select one or more facilities.']"))$clickElement()
     Sys.sleep(10)
+    # old selector
+    #remDr$findElement(
+    #    "xpath", "//div[@aria-label='Facility Name,  All']")$clickElement()
+    #Sys.sleep(10)
 
     nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
+    
     box_options <- nv_page %>%
-        rvest::html_nodes(".slicerText") %>%
+        rvest::html_nodes(".slicerItemContainer") %>%
         rvest::html_text()
     
     valid_prison_options <- box_options %>%
@@ -104,10 +112,13 @@ nevada_pull <- function(x){
         for(j in valid_prison_options){
             fac_name <- nevada_clean_fac_text(box_options[j])
             if(!(fac_name %in% names(html_list))){
-                
+                # old selector
+                #src_str <- str_c(
+                #    "//div[@class=\"slicerItemContainer\" and @aria-label=\"",
+                #    box_options[j], "\"]/div")
                 src_str <- str_c(
-                    "//div[@class=\"slicerItemContainer\" and @aria-label=\"",
-                    box_options[j], "\"]/div")
+                    "/html/body/div[5]/div[1]/div/div[2]/div/div[1]/div/div/div[",
+                    j, "]/div")
                 
                 elCB <- remDr$findElement("xpath", src_str)
                 
