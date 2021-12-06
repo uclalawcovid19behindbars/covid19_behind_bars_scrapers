@@ -71,10 +71,6 @@ nevada_pull <- function(x){
             "//div[@aria-label='Facility Name Slicer Drop down box to ",
             "select one or more facilities.']"))$clickElement()
     Sys.sleep(10)
-    # old selector
-    #remDr$findElement(
-    #    "xpath", "//div[@aria-label='Facility Name,  All']")$clickElement()
-    #Sys.sleep(10)
 
     nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
@@ -112,10 +108,6 @@ nevada_pull <- function(x){
         for(j in valid_prison_options){
             fac_name <- nevada_clean_fac_text(box_options[j])
             if(!(fac_name %in% names(html_list))){
-                # old selector
-                #src_str <- str_c(
-                #    "//div[@class=\"slicerItemContainer\" and @aria-label=\"",
-                #    box_options[j], "\"]/div")
                 src_str <- str_c(
                     "/html/body/div[5]/div[1]/div/div[2]/div/div[1]/div/div/div[",
                     j, "]/div")
