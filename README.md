@@ -61,7 +61,7 @@ Rscript production/pre_run.R
 mkdir /tmp/sel_dl
 
 docker run -d -p 4445:4444 -p 5901:5900 -v /tmp/sel_dl:/home/seluser/Downloads \
-    selenium/standalone-firefox:latest
+    selenium/standalone-firefox:2.53.0
 ```
 
 **STOP! DID YOU UPDATE THE MANUAL SCRAPER DATA YET?**: Visit the [manual data Google Sheet](https://docs.google.com/spreadsheets/d/1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ/edit#gid=1527592402) and update the sad scrapers for which we must use our own eyes.
