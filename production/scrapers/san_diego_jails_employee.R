@@ -47,12 +47,14 @@ san_diego_jails_employee_extract <- function(x) {
     
     check_names_extractable(df_, col_name_df)
     
-    rename_extractable(df_, col_name_df) %>% 
+    out <- rename_extractable(df_, col_name_df) %>% 
         filter(!str_detect(Staff.Confirmed, "(?i)cases")) %>% 
         mutate(Name = "San Diego County Jails") %>% 
         clean_scraped_df() %>%
         select(-starts_with("Drop")) %>%
         as_tibble()
+    
+    return(out)
 }
 
 #' Scraper class for general San Diego County jails COVID data

@@ -48,7 +48,7 @@ connecticut_vaccine_restruct <- function(x){
     else{
         ##### h = 944, w = 422
         res_h_txt <- 200
-        res_w_txt <- 120
+        res_w_txt <- 140
         res_xoff_txt <- 0
         res_yoff_txt <- 740
         st_xoff_txt <- 250
