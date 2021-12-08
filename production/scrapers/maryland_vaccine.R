@@ -1,8 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-maryland_vaccine_date_check <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+maryland_vaccine_date_check <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     
     base_html %>%
         rvest::html_nodes("p") %>%
@@ -16,51 +16,40 @@ maryland_vaccine_date_check <- function(x, date = Sys.Date()){
         error_on_date(date)
 }
 
-maryland_vaccine_pull <- function(x){
-    src_url <- str_c(
-        "https://app.powerbigov.us/view?r=", 
-        "eyJrIjoiMjdlZjZmNzAtOGYxNS00ODA4LThhMzktOGYyZDEw", 
-        "YTMwMDZkIiwidCI6IjYwYWZlOWUyLTQ5Y2QtNDliMS04ODUx", 
-        "LTY0ZGYwMjc2YTJlOCJ9&pageName=ReportSectionac5a5322ab94d53d5fca")
-
-    fprof <- RSelenium::makeFirefoxProfile(list(
-        browser.startup.homepage = "about:blank",
-        startup.homepage_override_url = "about:blank",
-        startup.homepage_welcome_url = "about:blank",
-        startup.homepage_welcome_url.additional = "about:blank",
-        browser.download.dir = "/home/seluser/Downloads",
-        browser.download.folderList = 2L,
-        browser.download.manager.showWhenStarting = FALSE,
-        browser.download.manager.focusWhenStarting = FALSE,
-        browser.download.manager.closeWhenDone = TRUE,
-        browser.helperApps.neverAsk.saveToDisk = 
-            "application/pdf, application/octet-stream",
-        pdfjs.disabled = TRUE,
-        plugin.scan.plid.all = FALSE,
-        plugin.scan.Acrobat = 99L))
+maryland_vaccine_pull <- function(url){
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
-        browserName = "firefox",
-        extraCapabilities=fprof
+        browserName = "firefox"
     )
-    
     del_ <- capture.output(remDr$open())
-    remDr$navigate(src_url)
-    Sys.sleep(15)
     
-    base_html <- remDr$getPageSource()
+    remDr$navigate(url)
+    # If driver can't find elements we care about within 10 seconds, error out
+    remDr$setImplicitWaitTimeout(milliseconds = 10000)
+    # Check for table with desired Ids
+    remDr$findElement(using = 'xpath',
+                      ("//*[contains(text(),'Staff Vaccinations')]"))
+    remDr$findElement(using = 'xpath',
+                      ("//*[contains(text(),'Inmate Vaccinations')]"))
+    remDr$findElement(using = 'xpath',
+                      ("//*[contains(text(),'Facility (Administered)')]"))
+
+    base_html <- remDr$getPageSource()[[1]]
     
-    xml2::read_html(base_html[[1]])
+    remDr$quit()
+
+    xml2::read_html(base_html)
+
 }
 
-get_maryland_facility_vaccine_table <- function(x){
-    tab <- x %>%
+get_maryland_facility_vaccine_table <- function(raw_html){
+    table <- raw_html %>%
         rvest::html_nodes(".tableEx") %>%
         rvest::html_nodes(".innerContainer")
     
-    col_dat <- tab %>%
+    col_dat <- table %>%
         rvest::html_nodes(".bodyCells") %>%
         rvest::html_nodes("div") %>%
         rvest::html_children()
@@ -88,15 +77,15 @@ get_maryland_facility_vaccine_table <- function(x){
         filter(!str_detect(Name, "(?i)total"))
 }
 
-get_maryland_vaccine_table <- function(x, str){
-    tab <- x %>% 
+get_maryland_vaccine_table <- function(raw_html, str){
+    table <- raw_html %>% 
         rvest::html_node(xpath = stringr::str_c(
             "//*[contains(@title,", str, ")]/parent::*")
         ) %>% 
         rvest::html_node(".tableEx") %>%
         rvest::html_node(".innerContainer")
     
-    col_dat <- tab %>%
+    col_dat <- table %>%
         rvest::html_node(".bodyCells") %>%
         rvest::html_node("div") %>%
         rvest::html_children()
@@ -108,7 +97,7 @@ get_maryland_vaccine_table <- function(x, str){
                 rvest::html_attr("title")})})) %>%
         as.data.frame()
     
-    names(dat_df) <- tab %>%
+    names(dat_df) <- table %>%
         rvest::html_node(".columnHeaders") %>%
         rvest::html_node("div") %>%
         rvest::html_nodes("div") %>% 
@@ -119,12 +108,10 @@ get_maryland_vaccine_table <- function(x, str){
     dat_df 
 }
 
-maryland_vaccine_restruct <- function(x){
-        
+maryland_vaccine_restruct <- function(raw_html){
     # Need single quotes for the xpath 
-    staff_total <- get_maryland_vaccine_table(x, "'Staff Vaccinations'") 
-    res_total <- get_maryland_vaccine_table(x, "'Inmate Vaccinations'")
-
+    staff_total <- get_maryland_vaccine_table(raw_html, "'Staff Vaccinations'") 
+    res_total <- get_maryland_vaccine_table(raw_html, "'Inmate Vaccinations'")
     exp_staff_names <- c(
         Staff.Initiated = "First Shot",
         Staff.Completed = "Second Shot", 
@@ -146,7 +133,7 @@ maryland_vaccine_restruct <- function(x){
         mutate(Name = "STATEWIDE")
     res_total <- mutate_all(res_total, string_to_clean_numeric)
 
-    res_facility <- get_maryland_facility_vaccine_table(x)
+    res_facility <- get_maryland_facility_vaccine_table(raw_html)
     
     exp_names <- c(
         Name = "Name", 
@@ -170,8 +157,8 @@ maryland_vaccine_restruct <- function(x){
     bind_rows(res_facility, staff_total)
 }
 
-maryland_vaccine_extract <- function(x){
-    x %>%
+maryland_vaccine_extract <- function(restructured_data){
+    restructured_data %>%
         select(-ends_with(("Drop"))) %>% 
         clean_scraped_df() 
 }
@@ -199,7 +186,11 @@ maryland_vaccine_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://news.maryland.gov/dpscs/covid-19/",
+            url = str_c(
+                "https://app.powerbigov.us/view?r=", 
+                "eyJrIjoiMjdlZjZmNzAtOGYxNS00ODA4LThhMzktOGYyZDEw", 
+                "YTMwMDZkIiwidCI6IjYwYWZlOWUyLTQ5Y2QtNDliMS04ODUx", 
+                "LTY0ZGYwMjc2YTJlOCJ9&pageName=ReportSectionac5a5322ab94d53d5fca"),
             id = "maryland_vaccine",
             type = "html",
             state = "MD",
@@ -222,7 +213,8 @@ maryland_vaccine_scraper <- R6Class(
 
 if(sys.nframe() == 0){
     maryland_vaccine <- maryland_vaccine_scraper$new(log=TRUE)
-    maryland_vaccine$run_check_date()
+    # The update date is stored on a landing page with no dashboard data
+    maryland_vaccine$run_check_date("https://news.maryland.gov/dpscs/covid-19/")
     maryland_vaccine$raw_data
     maryland_vaccine$pull_raw()
     maryland_vaccine$raw_data
