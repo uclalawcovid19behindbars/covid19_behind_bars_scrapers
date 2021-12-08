@@ -1,8 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-colorado_check_date <- function(x, date = Sys.Date()){
-    base_page <- xml2::read_html(x)
+colorado_check_date <- function(url, date = Sys.Date()){
+    base_page <- xml2::read_html(url)
     
     site_date <- base_page %>%
         rvest::html_node("article") %>%
@@ -109,7 +109,12 @@ colorado_extract_col <- function(sub_col, numeric = TRUE){
     return(extract_vals)
 }
 
-colorado_pull <- function(x){
+colorado_pull <- function(url){
+    out_file <- "/tmp/sel_dl/Story 1.pdf"
+
+    if(file.exists(out_file)){
+        file.remove(out_file)
+    }
     
     fprof <- RSelenium::makeFirefoxProfile(list(
         browser.startup.homepage = "about:blank",
@@ -134,34 +139,26 @@ colorado_pull <- function(x){
         extraCapabilities=fprof
     )
     
-    del_ <- capture.output(remDr$open())
-    remDr$navigate(x)
-    Sys.sleep(6)
+    # Suppress terminal output
+    capture.output(remDr$open())
+    remDr$navigate(url)
     
-    base_html <- remDr$getPageSource()
+    # If driver can't find elements we care about within 10 seconds, error out
+    remDr$setImplicitWaitTimeout(milliseconds = 10000)
     
-    app_src <- xml2::read_html(base_html[[1]])%>%
-        rvest::html_element("iframe") %>%
-        rvest::html_attr("src")
-    
-    remDr$navigate(app_src)
-    Sys.sleep(6)
-    
-    out_file <- "/tmp/sel_dl/Story 1.pdf"
-    
-    if(file.exists(out_file)){
-        file.remove(out_file)
-    }
-    
+    tableau_url <- remDr$findElement("css", "iframe")$getElementAttribute('src')[[1]]
+    remDr$navigate(tableau_url)
+
     remDr$findElement(
         "css", "[id='download-ToolbarButton']")$clickElement()
-    Sys.sleep(10)
     remDr$findElement(
         "css", "[data-tb-test-id='DownloadPdf-Button']")$clickElement()
-    Sys.sleep(10)
-    remDr$findElement( 
-        "css", "[data-tb-test-id='PdfDialogCreatePdf-Button']")$clickElement()
-    Sys.sleep(10)
+    remDr$findElement(
+        using = 'xpath', ("//button[contains(text(),'Download')]"))$clickElement()
+
+    # Take some time to allow file to download
+    Sys.sleep(6)
+    remDr$quit()
     
     if(!file.exists(out_file)){
         stop("CO unable to download pdf")
@@ -170,8 +167,8 @@ colorado_pull <- function(x){
     return(out_file)
 }
 
-colorado_restruct <- function(x){
-    z <-  magick::image_read_pdf(x, pages = 1)
+colorado_restruct <- function(scraped_pdf){
+    z <-  magick::image_read_pdf(scraped_pdf, pages = 1)
     
     # TESTS, TOTAL POSITIVE, ACTIVE CASES  
     sub_col_list <- list(
@@ -250,9 +247,9 @@ colorado_restruct <- function(x){
         bind_rows(tibble(Name = "STATEWIDE", Residents.Initiated = vac_num))
 }
 
-colorado_extract <- function(x){
+colorado_extract <- function(restructured_data){
     
-    df_ <- x
+    df_ <- restructured_data
     
     exp_names <- c(
         Residents.Tadmin = "TESTS",
