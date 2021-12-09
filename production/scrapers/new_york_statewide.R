@@ -1,35 +1,25 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-new_york__statewide_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+new_york__statewide_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, "h4") %>%
         rvest::html_text()
-    
+
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
 }
 
-new_york_statewide_pull <- function(x, wait = 5){
+new_york_statewide_pull <- function(url){
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
-    del_ <- capture.output(remDr$open())
-    remDr$navigate(x)
-    Sys.sleep(wait)
-    
-    xml2::read_html(remDr$getPageSource()[[1]])
+    base_html <- xml2::read_html(url)
     
 }
 
-new_york_statewide_restruct <- function(x){
-    tables <- x %>%
+new_york_statewide_restruct <- function(raw_html){
+    tables <- raw_html %>%
         rvest::html_nodes("table")
     
     is_confirmed <- tables[[1]] %>%
@@ -46,15 +36,15 @@ new_york_statewide_restruct <- function(x){
         select(Staff.Confirmed = Staff) %>%
         mutate(Name = "State-Wide") %>%
         mutate(
-            Staff.Deaths = x %>%
+            Staff.Deaths = raw_html %>%
                 rvest::html_node(
                     xpath="//h5[contains(text(),'DEATH')]/following::table") %>%
                    rvest::html_table() %>%
                    pull(Staff))
 }
 
-new_york_statewide_extract <- function(x){
-    x %>%
+new_york_statewide_extract <- function(restructured_data){
+    restructured_data %>%
         clean_scraped_df() %>%
         as_tibble()
 }
