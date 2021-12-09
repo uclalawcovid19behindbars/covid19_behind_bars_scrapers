@@ -77,14 +77,26 @@ issues_df <- long_df %>%
     filter((Diff < (DIFF_THRESHOLD * -1)) & (Pct.Diff < (PCT_THRESHOLD * -1))) 
 
 # Write to csv
-write.csv(issues_df, "facility-data-issues.csv",  row.names = FALSE, na = "")
+# write.csv(issues_df, "facility-data-issues.csv",  row.names = FALSE, na = "")
+
+# Find facilities that are all NA in .confirmed and .active
+all_na_facs <- fac_df %>%
+    select(Facility.ID, Name, State, ends_with(".Confirmed"), ends_with(".Active")) %>% 
+    group_by(Facility.ID, Name, State) %>% 
+    summarise(across(everything(), ~ all(is.na(.x)))) %>%
+    ungroup() %>%
+    rowwise() %>%
+    mutate(all_vars_all_na = sum(Residents.Active + Residents.Confirmed + 
+                                 Staff.Active + Staff.Confirmed)) %>%
+    filter(all_vars_all_na == 4)
 
 # Create updated list of facility IDs to exclude
 facs_bad_drop <- issues_df %>% 
     filter(Diff < -100) %>%
     select(Facility.ID, State, Name) %>%
     unique() %>% 
-    bind_rows(tx_plus_fac_vetting)
+    bind_rows(tx_plus_fac_vetting) %>%
+    bind_rows(all_na_facs %>% select(Facility.ID, State, Name))
 
 # Write to csv
 write.csv(facs_bad_drop, file.path("prototyping", "exclude_dashboard_facilities.csv"), 
