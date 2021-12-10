@@ -1,8 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-oregon_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+oregon_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, 
                                   xpath="//*[@id=\"ctl00_MainContentPlaceHolder_PageContentPlaceHolder_RichHtmlField1__ControlWrapper_OregonRichHtmlField\"]/ul/li[1]") %>%
         rvest::html_text()
@@ -16,7 +16,7 @@ oregon_check_date <- function(x, date = Sys.Date()){
         error_on_date(expected_date = date)
 }
 
-oregon_pull <- function(x){
+oregon_pull <- function(url){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
@@ -24,26 +24,26 @@ oregon_pull <- function(x){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(x)
+    remDr$navigate(url)
     
     remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
 }
 
-oregon_restruct <- function(x){
-    x %>%
+oregon_restruct <- function(raw_html){
+    raw_html %>%
         rvest::html_node("table") %>%
         rvest::html_table() %>%
         mutate(Location = ifelse(
             Location == "STATE TOTAL", "State-Wide", Location)) %>% 
         mutate(Staff.Recovered = ifelse(
             Location != "State-Wide", NA,
-            numeric_from_css(x, '.ms-rteElement-Heading4:nth-child(5)')
+            numeric_from_css(raw_html, '.ms-rteElement-Heading4:nth-child(5)')
             ))
 }
 
-oregon_extract <- function(x){
-    x %>%
+oregon_extract <- function(restructured_data){
+    restructured_data %>%
         select(Name = Location,
                Staff.Confirmed = "Staff Positives",
                Staff.Recovered,
