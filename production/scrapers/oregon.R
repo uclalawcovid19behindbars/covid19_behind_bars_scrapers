@@ -22,12 +22,16 @@ oregon_pull <- function(url){
         port = 4445,
         browserName = "firefox"
     )
-    
+
     del_ <- capture.output(remDr$open())
     remDr$navigate(url)
-    
-    remDr$getPageSource() %>%
+
+    raw_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
+    
+    remDr$quit()
+    
+    return(raw_html)
 }
 
 oregon_restruct <- function(raw_html){
