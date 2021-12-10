@@ -1,8 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-north_dakota_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+north_dakota_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, 
                                   xpath="/html/body/div[1]/div[5]/div/section/div[2]/article/div/div[2]/div/div[2]/div/div/div/div[1]/h3") %>%
         rvest::html_text()
@@ -14,7 +14,7 @@ north_dakota_check_date <- function(x, date = Sys.Date()){
         error_on_date(expected_date = date)
 }
 
-north_dakota_pull <- function(x){
+north_dakota_pull <- function(url){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
@@ -22,18 +22,18 @@ north_dakota_pull <- function(x){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(x)
+    remDr$navigate(url)
     
     remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
     
 }
 
-north_dakota_restruct <- function(x){
-    svg_charts <- x %>%
+north_dakota_restruct <- function(scraped_html){
+    svg_charts <- scraped_html %>%
         rvest::html_nodes("svg")
     
-    table_names <- x %>%
+    table_names <- scraped_html %>%
         rvest::html_nodes(xpath="//h3[@id='']") %>%
         rvest::html_text()
 
@@ -79,9 +79,9 @@ north_dakota_restruct <- function(x){
     out_df
 }
 
-north_dakota_extract <- function(x){
+north_dakota_extract <- function(restructured_data){
     
-    check_names(x, c(
+    check_names(restructured_data, c(
         "Name" = "Name", 
         "Residents.Positive", 
         "Residents.Recovered", 
@@ -96,7 +96,7 @@ north_dakota_extract <- function(x){
         "Staff.Total.Individuals.Tested", 
         "Staff.Total.Individuals.Tested.Twice"))
     
-    x %>%
+    restructured_data %>%
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
