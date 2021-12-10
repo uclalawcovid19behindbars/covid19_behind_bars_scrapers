@@ -24,9 +24,12 @@ north_dakota_pull <- function(url){
     del_ <- capture.output(remDr$open())
     remDr$navigate(url)
     
-    remDr$getPageSource() %>%
+    raw_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
     
+    remDr$quit()
+
+    return(raw_html)
 }
 
 north_dakota_restruct <- function(scraped_html){
@@ -48,12 +51,12 @@ north_dakota_restruct <- function(scraped_html){
             rvest::html_text() %>%
             str_replace_all(" ", ".") %>%
             {str_c(group_, ., sep = ".")}
-    
+
         fac <- sub_svg %>%
             rvest::html_node(".highcharts-xaxis-labels") %>%
             rvest::html_nodes("text") %>%
             rvest::html_text()
-    
+
         data_labels <- sub_svg %>%
             rvest::html_nodes(".highcharts-data-labels")
     
