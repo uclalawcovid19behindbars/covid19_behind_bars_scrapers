@@ -204,7 +204,7 @@ nevada_restruct <- function(x){
         rvest::html_attr("src") %>%
         str_replace("\\./", "./results/raw_files/")
     
-    bind_rows(lapply(sub_files, function(hl){
+    out.data <- bind_rows(lapply(sub_files, function(hl){
     
         op_page <- xml2::read_html(hl)
         
@@ -213,57 +213,89 @@ nevada_restruct <- function(x){
             unlist() %>%
             last() %>%
             str_remove("\\.html")
+        element.front <- '/html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p['
+        element.end.value1 <- ']/span[1]'
+        element.end.title.val <- ']/span[2]'
+        element.end.title1 <- ']/span[4]'
         
-        # get the values of confirmed
-        confirmed <- op_page %>%
-            rvest::html_nodes(".labelGraphicsContext") %>%
-            .[[1]] %>%
-            rvest::html_nodes("text") %>%
+        ## pres //*[@id="pvExplorationHost"]/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[4]/span[4]
+        ## pres /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[4]/span[2]
+        ## ires /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[7]/span[4]
+        ## pstaff /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[5]/span[1]
+        
+        
+        ## Pull Values and Titles
+        residents.confirmed.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 2, element.end.value1)) %>%
             rvest::html_text() %>%
             as.numeric()
-        # make sure labels match what we expect
-        confirmed_labels <- op_page %>%
-            rvest::html_nodes(".legend-item-container") %>%
-            .[[1]] %>%
-            rvest::html_nodes("text") %>%
+        residents.confirmed.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 2, element.end.title.val)) %>%
             rvest::html_text()
-        names(confirmed) <- confirmed_labels
-        
-        basic_check(
-            confirmed_labels, c("Residents/Patients", "Staff", "Imported"))
-
-        svg_cards <- op_page %>%
-            rvest::html_nodes(".card")
-        
-        resident_deaths <- svg_cards %>%
-            rvest::html_attr("aria-label") %>%
-            # get the card that has resident in it but isnt a percentage
-            {which(str_detect(., "Resident") & !str_detect(., "%"))} %>%
-            {svg_cards[.]} %>%
-            rvest::html_node("title") %>%
+        residents.probable.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 4, element.end.title.val)) %>%
             rvest::html_text() %>%
             as.numeric()
-        
-        staff_deaths <- svg_cards %>%
-            rvest::html_attr("aria-label") %>%
-            # get the card that has staff in it but isnt a percentage
-            {which(str_detect(., "Staff") & !str_detect(., "%"))} %>%
-            {svg_cards[.]} %>%
-            rvest::html_node("title") %>%
+        residents.probable.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 4, element.end.title1)) %>%
+            rvest::html_text()
+        residents.imported.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 7, element.end.title.val)) %>%
             rvest::html_text() %>%
             as.numeric()
+        residents.imported.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 7, element.end.title1)) %>%
+            rvest::html_text()
+        staff.confirmed.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 3, element.end.value1)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        staff.confirmed.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 5, element.end.title.val)) %>%
+            rvest::html_text()
+        staff.probable.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 5, element.end.value1)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        staff.probable.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 5, element.end.title.val)) %>%
+            rvest::html_text()
+        residents.deaths.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 10, element.end.title.val)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        residents.deaths.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 10, element.end.title1)) %>%
+            rvest::html_text()
+        staff.deaths.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 11, element.end.title.val)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        staff.deaths.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 11, element.end.title1)) %>%
+            rvest::html_text()
         
-        if(any(is.null(c(confirmed, staff_deaths, resident_deaths)))){
+        if(any(is.null(c(residents.confirmed.value, staff.deaths.value, residents.deaths.value)))){
             warning(
                 "NA values extracted where there should not be. Please inspect")
         }
+        
+        if(!str_detect(residents.confirmed.title, 'PATIENT CASES') | !str_detect(staff.confirmed.title, 'STAFF CASES') | !str_detect(residents.deaths.title, 'PATIENT DEATHS') | !str_detect(staff.deaths.title, 'STAFF DEATHS') |
+           !str_detect(residents.probable.title, 'PROBABLE') | !str_detect(residents.imported.title, 'IMPORTED') | !str_detect(staff.probable.title, 'PROBABLE')){
+            warning(
+                "Pulled Element Titles are not as expected. The order of elements may have changed. Please inspect"
+            )
+        }
+        
+        residents.confirmed.total <- sum(residents.confirmed.value, residents.probable.value, residents.imported.value)
+        staff.confirmed.total <- sum(staff.confirmed.value, staff.probable.value)
     
         tibble(
             Name = facility,
-            Residents.Confirmed = confirmed["Residents/Patients"],
-            Residents.Deaths = resident_deaths,
-            Staff.Confirmed = confirmed["Staff"],
-            Staff.Deaths = staff_deaths) %>%
+            Residents.Confirmed = residents.confirmed.total,
+            Residents.Deaths = residents.deaths.value,
+            Staff.Confirmed = staff.confirmed.total,
+            Staff.Deaths = staff.deaths.value) %>%
             clean_scraped_df()
     }))
 }
