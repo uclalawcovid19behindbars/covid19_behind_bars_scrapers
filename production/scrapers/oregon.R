@@ -8,7 +8,7 @@ oregon_check_date <- function(url, date = Sys.Date()){
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         str_split(., "(?i)as of:") %>%
         unlist() %>%
         .[2] %>%
