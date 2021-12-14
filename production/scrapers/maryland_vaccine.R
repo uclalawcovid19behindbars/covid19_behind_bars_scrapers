@@ -1,21 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-maryland_vaccine_date_check <- function(url, date = Sys.Date()){
-    base_html <- xml2::read_html(url)
-    
-    base_html %>%
-        rvest::html_nodes("p") %>%
-        rvest::html_text() %>% 
-        {.[str_detect(., "(?i)updated")]} %>% 
-        {.[str_detect(., "21")]} %>% 
-        str_split("(?i)next") %>% 
-        unlist() %>% 
-        {.[!str_detect(., "(?i)schedule")]} %>% 
-        lubridate::mdy() %>% 
-        error_on_date(date)
-}
-
 maryland_vaccine_pull <- function(url){
     
     remDr <- RSelenium::remoteDriver(
@@ -195,7 +180,7 @@ maryland_vaccine_scraper <- R6Class(
             type = "html",
             state = "MD",
             jurisdiction = "state",
-            check_date = maryland_vaccine_date_check,
+            check_date = NULL,
             # pull the JSON data directly from the API
             pull_func = maryland_vaccine_pull,
             # restructuring the data means pulling out the data portion of the json
