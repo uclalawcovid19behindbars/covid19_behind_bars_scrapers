@@ -41,7 +41,7 @@ wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
 wisconsin_vaccine_pull <- function(x){
     # if this is giving you trouble, try save-as'ing it in 
     # excel with UTF-8 .csv file encoding
-    read.csv("/tmp/sel_dl/PIOC_Vaccinated_Full_Data_data.csv")
+    read.csv("/tmp/sel_dl/PIOC Vaccinated.csv")
 }
 
 wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
@@ -66,7 +66,7 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
 
 wisconsin_vaccine_extract <- function(x){
     x %>% 
-        select(Residents.Initiated = number_partially_fully_vaccinated, 
+        select(Residents.Initiated = number_partially_or_fully_vaccinated, 
                Residents.Completed = number_fully_vaccinated, 
                Name = facility) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 

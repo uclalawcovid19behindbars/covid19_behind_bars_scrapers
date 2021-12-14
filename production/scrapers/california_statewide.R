@@ -64,7 +64,7 @@ california_statewide_pull <- function(x, wait = 25){
 
 california_statewide_restruct <- function(x){
     tadmin_txt <- x %>%
-        magick::image_crop("360x110+400+120") %>%
+        magick::image_crop("360x110+380+100") %>%
         magick::image_ocr() %>%
         clean_fac_col_txt()
     

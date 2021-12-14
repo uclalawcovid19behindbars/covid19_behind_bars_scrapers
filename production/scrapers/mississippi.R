@@ -5,9 +5,19 @@ mississippi_date_check <- function(x, date = Sys.Date()){
     pdf <- get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases") %>%
         first()
     
-    magick::image_read_pdf(pdf, pages = 1) %>% 
-        magick::image_crop("1000x200+400+2700") %>% 
-        magick::image_ocr() %>% 
+    pdf_read <- magick::image_read_pdf(pdf, pages = 1) 
+    h_ <- magick::image_info(pdf_read)$height
+    height_offset <- h_ - (1/8*h_)
+    full_date <- pdf_read %>%
+        magick::image_crop(str_c(height_offset, "x200+400+", height_offset)) %>%
+        magick::image_ocr() %>%
+        {.[str_detect(., "(?i)last update")]} %>%
+        str_split("Update: ") %>%
+        unlist() %>%
+        .[2]
+        str_split(":") %>% ## this is not a working solution but attempt to make it better
+        unlist() %>%
+        .[1] %>%
         lubridate::mdy() %>% 
         error_on_date(date)
 }

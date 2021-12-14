@@ -18,7 +18,7 @@ connecticut_vaccine_check_date <- function(x, date = Sys.Date()){
         lubridate::mdy() %>%
         error_on_date(date)
 }
-
+x <- 
 connecticut_vaccine_pull <- function(x){
     ct_img2 <- xml2::read_html(x) %>%
         rvest::html_nodes("img") %>%
@@ -48,8 +48,8 @@ connecticut_vaccine_restruct <- function(x){
     else{
         ##### h = 944, w = 422
         res_h_txt <- 200
-        res_w_txt <- 140
-        res_xoff_txt <- 0
+        res_w_txt <- 160
+        res_xoff_txt <- 10
         res_yoff_txt <- 740
         st_xoff_txt <- 250
     }

@@ -29,17 +29,26 @@ indiana_restruct <- function(x){
     
     # Wrangle Data
     if (length(results) == 2) {
-        if("0" %in% names(results[[1]])){
+        ## get the columns in the correct order 
+        ##  check success with the following code:
+        ## clean_fac_col_txt(unname(unlist(d[1,]))
+        
+        if (str_detect(results[[1]][1, 1], "(?i)correctional facility")) {
+            names(results[[2]]) <- as.character(
+                max(as.numeric(names(results[[1]]))) +
+                    as.numeric(names(results[[1]])) + 1)
+            d <- cbind(results[[1]], results[[2]])
+        }
+        else {
             names(results[[1]]) <- as.character(
                 max(as.numeric(names(results[[2]]))) +
                     as.numeric(names(results[[1]])) + 1)
+            d <- cbind(results[[2]], results[[1]])
         }
-        d <- cbind(results[[2]],results[[1]])
     } else {
         d <- results[[1]]
     }
-
-    d
+    return(d)
 }
 
 indiana_extract <- function(x){
