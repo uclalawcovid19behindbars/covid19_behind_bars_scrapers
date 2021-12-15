@@ -12,7 +12,6 @@ pennsylvania_bi_cases_pull <- function(url, wait = 7){
     )
     
     del_ <- capture.output(remDr$open())
-    
     remDr$navigate(cases_page)
     
     Sys.sleep(wait)
