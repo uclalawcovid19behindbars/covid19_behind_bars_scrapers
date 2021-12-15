@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-pennsylvania_bi_vaccination_pull <- function(x, wait = 10){
+pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
     # scrape from the power bi iframe directly
     y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(
