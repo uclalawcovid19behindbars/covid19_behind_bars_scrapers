@@ -1,7 +1,7 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-pennsylvania_bi_testing_pull <- function(url, wait = 10){
+pennsylvania_bi_testing_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     testing_page <- str_c(url,"&pageName=ReportSection2804d81ebd8989abad15")
     
