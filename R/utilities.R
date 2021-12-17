@@ -598,7 +598,7 @@ sum_na_rm <- function(x){
 
 COVID_SUFFIXES <- c(
     ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
-    ".Initiated", ".Completed", ".Vadmin"
+    ".Initiated", ".Initiated.Pct", ".Completed", ".Completed.Pct", ".Vadmin"
 )
 
 rowAny <- function(x) rowSums(x) > 0
@@ -635,15 +635,34 @@ write_national_agg_data <- function(write_historical = TRUE){
 write_state_agg_data <- function(write_historical = TRUE){
     latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) 
     aggregate_pop <- read_aggregate_pop_data() 
-    
-    latest_state %>%
+
+    latest_state_tmp <- latest_state %>%
         filter(!is.na(Val)) %>%
         select(State, Measure, Val) %>%
         pivot_wider(names_from = "Measure", values_from = "Val") %>%
         arrange(State) %>%
         select(State, ends_with(COVID_SUFFIXES)) %>% 
         select(-Staff.Tested) %>% 
-        left_join(aggregate_pop, by = "State") %>% 
+        left_join(aggregate_pop, by = "State") 
+    # Create vaccine rate variables:
+    # coalesce vaccine rates (scraped) and vaccine rates (calculated)
+    latest_state_tmp %>%
+      ## add vax rate cols if none reported for a given day
+      mutate(Residents.Initiated.Pct = if("Residents.Initiated.Pct" %in% names(latest_state_tmp)) 
+        Residents.Initiated.Pct else NA_real_,
+        Residents.Completed.Pct = if("Residents.Completed.Pct" %in% names(latest_state_tmp)) 
+          Residents.Completed.Pct else NA_real_,
+        Staff.Initiated.Pct = if("Staff.Initiated.Pct" %in% names(latest_state_tmp)) 
+          Staff.Initiated.Pct else NA_real_,
+             ) %>% 
+      ## prioritize reported rates
+      mutate(Residents.Initiated.Pct = coalesce(Residents.Initiated.Pct,
+                                                (Residents.Initiated / Residents.Population)),
+             Residents.Completed.Pct = coalesce(Residents.Completed.Pct,
+                                                (Residents.Completed / Residents.Population)),
+             Staff.Initiated.Pct = coalesce(Staff.Initiated.Pct,
+                                            (Staff.Initiated / Staff.Population))
+        ) %>%
         select(-Date) %>% 
         write_csv("./data/latest-data/latest_state_counts.csv", na = "")
     
@@ -669,7 +688,9 @@ write_facility_data <- function(write_historical = TRUE){
         "Residents.Active", "Staff.Active",
         "Population.Feb20", "Residents.Population", 
         "Residents.Initiated", "Staff.Initiated", 
+        "Residents.Initiated.Pct", "Staff.Initiated.Pct",
         "Residents.Completed", "Staff.Completed", 
+        "Residents.Completed.Pct",
         "Residents.Vadmin", "Staff.Vadmin", "Web.Group", 
         "Address", "Zipcode", "City", "County", "Latitude",
         "Longitude", "County.FIPS", "ICE.Field.Office"
