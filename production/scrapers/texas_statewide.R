@@ -7,8 +7,8 @@ texas_statewide_check_date <- function(x, date = Sys.Date()){
 
 texas_statewide_pull <- function(x){
     str_c(
-        "https://maps.tdem.texas.gov/koop/googlesheets/tdcjCovidCounts/",
-        "TDCJ!A1:W/FeatureServer/0/query?f=json&where=(",
+        "https://maps.tdem.texas.gov/koop/googlesheets/1TZj84WQEKz5N5XWHwEuYWu3ZDl1DlFDuCjm94ER6OcU/",
+        "TDCJ!A1:X/FeatureServer/0/query?f=json&where=(",
         "(Unit%20%3D%20%27Deceased%27)%20OR%20",
         "(Unit%20%3D%20%27Mass%20Testing%27)%20OR%20",
         "(Unit%20%3D%20%27No%20Longer%20in%20Custody%27)%20OR%20",
@@ -19,7 +19,6 @@ texas_statewide_pull <- function(x){
         "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*"
         ) %>%
         jsonlite::read_json(simplifyVector = TRUE)
-        
 }
 
 texas_statewide_restruct <- function(x){
