@@ -1,13 +1,9 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-pennsylvania_bi_testing_pull <- function(x, wait = 10){
+pennsylvania_bi_testing_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
-    y <- "https://app.powerbigov.us/view?r=" %>%
-        str_c(
-            "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
-            "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9&",
-            "pageName=ReportSection2804d81ebd8989abad15")
+    testing_page <- str_c(url,"&pageName=ReportSection2804d81ebd8989abad15")
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost", 
@@ -16,11 +12,13 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(y)
+    remDr$navigate(testing_page)
     
     Sys.sleep(wait)
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    remDr$quit()
     
     is_covid_testing <- raw_html %>%
         rvest::html_nodes("h3.preTextWithEllipsis") %>%
@@ -35,14 +33,14 @@ pennsylvania_bi_testing_pull <- function(x, wait = 10){
     raw_html
 }
 
-pennsylvania_bi_testing_restruct  <- function(x){
+pennsylvania_bi_testing_restruct  <- function(raw_html){
   
-    labs <- x %>%
+    labs <- raw_html %>%
         rvest::html_nodes("text.setFocusRing") %>%
         sapply(function(z){
             rvest::html_text(rvest::html_node(z, "title"))})
     
-    windows <- x %>%
+    windows <- raw_html %>%
         rvest::html_nodes(".labelGraphicsContext")
     
     
@@ -66,8 +64,8 @@ pennsylvania_bi_testing_restruct  <- function(x){
     )    
 }
 
-pennsylvania_bi_testing_extract <- function(x){
-    x %>%
+pennsylvania_bi_testing_extract <- function(restructured_data){
+    restructured_data %>%
         clean_scraped_df()
 }
 
@@ -91,7 +89,11 @@ pennsylvania_bi_testing_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.cor.pa.gov/Pages/COVID-19.aspx",
+            # The landing page for the BI report is https://www.cor.pa.gov/Pages/COVID-19.aspx
+            url = str_c(
+                "https://app.powerbigov.us/view?r=",
+                "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
+                "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
             id = "pennsylvania_bi_testing",
             type = "html",
             state = "PA",

@@ -1,13 +1,9 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-pennsylvania_bi_population_pull <- function(x, wait = 10){
+pennsylvania_bi_population_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
-    y <- "https://app.powerbigov.us/view?r=" %>%
-        str_c(
-            "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
-            "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9",
-            "&pageName=ReportSection")
+    population_page <- str_c(url, "&pageName=ReportSection")
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -16,11 +12,13 @@ pennsylvania_bi_population_pull <- function(x, wait = 10){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(y)
+    remDr$navigate(population_page)
     
     Sys.sleep(wait)
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
+
+    remDr$quit()
     
     is_population <- raw_html %>%
         rvest::html_nodes(xpath="//h3[@class='preTextWithEllipsis']") %>%
@@ -35,16 +33,16 @@ pennsylvania_bi_population_pull <- function(x, wait = 10){
     raw_html
 }
 
-pennsylvania_bi_population_restruct  <- function(x){
+pennsylvania_bi_population_restruct  <- function(raw_html){
     val_sr_str <- "//text[@class='label' and contains(@transform,'translate')]"
     lab_sr_str <- "//text[@class='setFocusRing']//title"
 
     tibble(
-        Name = x %>%
+        Name = raw_html %>%
             rvest::html_nodes(xpath=lab_sr_str) %>%
             rvest::html_text(),
         
-        Residents.Population = x %>%
+        Residents.Population = raw_html %>%
             rvest::html_nodes(xpath=val_sr_str) %>%
             rvest::html_text())
 }
@@ -52,8 +50,8 @@ pennsylvania_bi_population_restruct  <- function(x){
 
 
 
-pennsylvania_bi_population_extract <- function(x){
-    x %>%
+pennsylvania_bi_population_extract <- function(restructured_data){
+    restructured_data %>%
         clean_scraped_df()
 }
 
@@ -76,7 +74,11 @@ pennsylvania_bi_population_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.cor.pa.gov/Pages/COVID-19.aspx",
+            # The landing page for the BI report is https://www.cor.pa.gov/Pages/COVID-19.aspx
+            url = str_c(
+                "https://app.powerbigov.us/view?r=",
+                "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
+                "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
             id = "pennsylvania_bi_population",
             type = "html",
             state = "PA",
