@@ -50,7 +50,7 @@ get_maryland_facility_vaccine_table <- function(raw_html){
 
     names(dat_df) <- c("Facility (Administered)", "First Doses Administered",
                        "First Dose Refusals", "Second Doses Administered",
-                       "Second Dose Refusals")
+                       "Second Dose Refusals", "Boosters Administered")
     
     dat_df %>%
         rename(Name = "Facility (Administered)") %>%
@@ -105,7 +105,8 @@ maryland_vaccine_restruct <- function(raw_html){
     
     exp_res_names <- c(
         Residents.Initiated =  "First Shot", 
-        Residents.Completed = "Second Shot"
+        Residents.Completed = "Second Shot",
+        Residents.Booster.Drop = "Boosters"
     )
     
     check_names(staff_total, exp_staff_names)
@@ -125,7 +126,8 @@ maryland_vaccine_restruct <- function(raw_html){
         Residents.Initiated =  "First Doses Administered", 
         Residents.First.Refusal.Drop = "First Dose Refusals", 
         Residents.Completed = "Second Doses Administered", 
-        Residents.Second.Refusal.Drop = "Second Dose Refusals"
+        Residents.Second.Refusal.Drop = "Second Dose Refusals",
+        Residents.Booster.Drop = "Boosters Administered"
     )
     
     check_names(res_facility, exp_names)
@@ -139,7 +141,8 @@ maryland_vaccine_restruct <- function(raw_html){
         warning("Sum of facilities does not match total. Check dashboard for changes.")
     }
     
-    bind_rows(res_facility, staff_total)
+    restructured_data <- bind_rows(res_facility, staff_total)
+    return(restructured_data)
 }
 
 maryland_vaccine_extract <- function(restructured_data){

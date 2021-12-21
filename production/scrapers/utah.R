@@ -14,7 +14,7 @@ utah_check_date <- function(x, date = Sys.Date()){
 }
 
 utah_pull <- function(x){
-    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)screen_shot") %>%
+    get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)screen-shot") %>%
         .[[1]] %>%
         magick::image_read()
 }
@@ -93,7 +93,7 @@ utah_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://corrections.utah.gov/index.php/home/alerts-2/1237-udc-coronavirus-updates",
+            url = "https://corrections.utah.gov/covid-19-updates/",
             id = "utah",
             type = "img",
             state = "UT",

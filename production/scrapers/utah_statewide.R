@@ -85,7 +85,7 @@ utah_statewide_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://corrections.utah.gov/index.php/home/alerts-2/1237-udc-coronavirus-updates",
+            url = "https://corrections.utah.gov/covid-19-updates/",
             id = "utah_statewide",
             type = "html",
             state = "UT",

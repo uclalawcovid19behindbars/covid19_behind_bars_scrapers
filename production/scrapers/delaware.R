@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 delaware_check_date <- function(x, date = Sys.Date()){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "DE", col_types = "Dccccccccccccc") %>%
+        googlesheets4::read_sheet(sheet = "DE", col_types = "Dcccccccccccc") %>%
         pull(Date) %>%
         max(na.rm=TRUE) %>%
         error_on_date(date)
@@ -12,7 +12,7 @@ delaware_check_date <- function(x, date = Sys.Date()){
 delaware_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "DE", 
-                                  col_types = "Dccccccccccccc")
+                                  col_types = "Dcccccccccccc")
 }
 
 delaware_restruct <- function(x){

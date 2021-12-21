@@ -58,13 +58,19 @@ new_jersey_statewide_restruct <- function(x){
 new_jersey_statewide_extract <- function(x){
     
     exp_names <- c(
-        "Test Completed Residents", 
+        "Tests Residents", 
         "Cumulative Positives Residents", 
-        "Vaccine Doses Distributed Residents", 
+        "Fully vaccinated Residents", 
+        "Vaccine Doses Distributed Residents",
+        "First Dose Residents",
+        "Second Dose Residents",
+        "Booster Residents",
         "Deaths Residents", 
-        "Test Completed Staff", 
+        "Tests Staff", 
         "Cumulative Positives Staff", 
-        "Vaccine Doses Distributed Staff"
+        "Vaccine Doses Distributed Staff",
+        "First Dose Staff",
+        "Second Dose Staff"
     )
     
     check_names(x, exp_names)
@@ -72,11 +78,17 @@ new_jersey_statewide_extract <- function(x){
     names(x) <- c(
         "Residents.Tadmin.Aug.Drop", # Cumulative since July, not true cumulative  
         "Residents.Confirmed",
+        "Residents.Completed.Pct.Drop",
         "Residents.Vadmin", 
+        "Residents.Initiated",
+        "Residents.Completed",
+        "Residents.Booster.Drop",
         "Residents.Deaths", 
         "Staff.Tadmin.Drop", # We don't collect Staff.Tadmin 
         "Staff.Confirmed", # Collecting facility-level in main scraper 
-        "Staff.Vadmin"
+        "Staff.Vadmin",
+        "Staff.Initiated",
+        "Staff.Completed"
     )
     
     x %>% 
