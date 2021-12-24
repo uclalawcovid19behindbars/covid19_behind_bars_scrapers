@@ -46,10 +46,14 @@ west_virginia_extract <- function(x){
         Drop.County = "County", 
         Residents.Population = "Pop.",
         Residents.Active = "Active cases",
-        Residents.Recovered = "Recovered",
-        Residents.Confirmed = "Cumulative Positives",
-        Residents.Negative = "Negative",
-        Residents.Pending = "Results Pending",
+        Residents.Recovered = "Recovered cases",
+        Residents.Confirmed = "Positive test results",
+        Residents.Negative = "Negative test results",
+        Tests.Intake.Drop = "Tests at intake",
+        Positive.Intake.Drop = "Positive intake results",
+        Tests.Drop = "Tests at release",
+        Positive.Release.Drop = "Positive release results",
+        Residents.Pending = "Results pending (all tests)",
         Residents.Tadmin = "Total Tests",
         Residents.Quarantine = "Quarantine"
     )
@@ -98,10 +102,13 @@ west_virginia_extract <- function(x){
         filter(!str_detect(Staff.Confirmed, "(?i)cumulative")) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
         mutate(Name = str_c(clean_fac_col_txt(Name), " staff total")) %>% 
-        clean_scraped_df() %>% 
+        select(-ends_with(".Drop")) %>%
+        clean_scraped_df() %>%
         bind_rows(fac_df) %>%
         rename(Staff.Tested = Staff.Tadmin) %>% 
-        bind_rows(tibble(Name = "State-Wide", Residents.Deaths = resident_deaths))
+        bind_rows(tibble(Name = "State-Wide", Residents.Deaths = resident_deaths)) %>%
+        select(-ends_with(".Drop")) %>%
+        clean_scraped_df() 
 }
 
 #' Scraper class for general West Virginia COVID data

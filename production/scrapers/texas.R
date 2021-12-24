@@ -7,7 +7,7 @@ texas_check_date <- function(x, date = Sys.Date()){
 
 texas_pull <- function(x){
     str_c(
-        "https://maps.tdem.texas.gov/koop/googlesheets/tdcjCovidCounts/TDCJ",
+        "https://gis.tdem.texas.gov/koop/googlesheets/1TZj84WQEKz5N5XWHwEuYWu3ZDl1DlFDuCjm94ER6OcU/TDCJ",
         "!A1:W/FeatureServer/0/query?f=json&where=",
         "(Unit%20%3C%3E%20%27Deceased%27)%20AND%20",
         "(Unit%20%3C%3E%20%27Mass%20Testing%27)%20AND%20",
