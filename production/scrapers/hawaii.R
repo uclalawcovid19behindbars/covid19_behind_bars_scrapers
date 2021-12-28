@@ -1,18 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-hawaii_date_check <- function(x, date = Sys.Date()){
+hawaii_date_check <- function(url, date = Sys.Date()){
     img <- get_src_by_attr(
-        x, "img", attr = "src", attr_regex = "(?i)Inmate-Test-Report") %>%
+        url, "img", attr = "src", attr_regex = "(?i)Inmate-Test-Report") %>%
         {gsub("-[0-9]+x[0-9]+", "", .)} %>%
         magick::image_read()
     
     img %>%
-        magick::image_crop("700x100+300+200") %>%
+        magick::image_crop("700x100+400+200") %>%
         magick::image_ocr() %>%
         str_split("Updated|[:space:]") %>%
         unlist() %>%
-        {.[str_detect(., "21")]} %>%
+        {.[str_detect(., "20")]} %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }
