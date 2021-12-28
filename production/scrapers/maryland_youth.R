@@ -10,7 +10,7 @@ maryland_youth_date_check <- function(x, date = Sys.Date()){
         magick::image_ocr() %>% 
         str_split("(?i)date") %>% 
         unlist() %>%
-        {.[str_detect(., "21")]} %>% 
+        {.[str_detect(., "20")]} %>% # look for year 20xx 
         lubridate::mdy() %>% 
         error_on_date(date)
 }
