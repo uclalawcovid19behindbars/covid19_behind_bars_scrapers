@@ -5,7 +5,7 @@ utah_check_date <- function(x, date = Sys.Date()){
     z <- xml2::read_html(x)
     
     z %>%
-        rvest::html_nodes("p") %>% 
+        rvest::html_nodes("h3") %>% 
         rvest::html_text() %>%
         {.[str_detect(., "(?i)page updated")]} %>% 
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 

@@ -81,8 +81,8 @@ wisconsin_pull <- function(x){
    remDr$findElement(
        "css", "[data-tb-test-id='DownloadPdf-Button']")$clickElement()
    Sys.sleep(10)
-   remDr$findElement( 
-       "css", "[data-tb-test-id='PdfDialogCreatePdf-Button']")$clickElement()
+   remDr$findElement(
+       using = 'xpath', ("//button[contains(text(),'Download')]"))$clickElement()
    Sys.sleep(10)
    
    if(!file.exists(out_file)){
@@ -95,7 +95,7 @@ wisconsin_pull <- function(x){
 
 wisconsin_restruct <- function(x){
     pdf_area <- list(c(104.64249, 43.36788, 431.90674, 566.58031))
-    
+
     tabulizer::extract_tables(
         x, pages = 1, area = pdf_area)[[1]]
     

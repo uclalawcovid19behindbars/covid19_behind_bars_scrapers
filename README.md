@@ -16,7 +16,7 @@ You can find each of our scrapers in the folder `production/scrapers`. More deta
 
 ## Getting started
 
-In order to run the scraper you will need the following:
+### Requirements
 
 - Docker (for selenium web scraping) installed and running
 - A direct installation of the r package `tabulizer` and its dependencies. To install, run `remotes::install_github(c("ropensci/tabulizerjars", "ropensci/tabulizer"))`
@@ -28,6 +28,13 @@ host {{hostname}}
     IdentityFile {{~/.ssh/some_private_key}}
     User {{username}}
 ```
+
+### Prepare the submodule
+
+This project stores its data in a submodule. When you first clone this project, you get the data directory which should contain the data submodule, but none of the files within yet. 
+
+1. Run `git submodule init` to initialize your local configuration file. 
+2. Run `git submodule update` to fetch all the data. 
 
 ## Running the scraper
 
