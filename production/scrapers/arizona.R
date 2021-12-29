@@ -9,7 +9,7 @@ arizona_check_date <- function(url, date = Sys.Date()){
         rvest::html_node(".field-content") %>% 
         rvest::html_text() %>%
         lubridate::mdy()
-
+    
     error_on_date(site_date, date)
 }
 
