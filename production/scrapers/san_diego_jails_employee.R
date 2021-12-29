@@ -5,7 +5,7 @@ san_diego_jails_employee_check_date <- function(x, date = Sys.Date()){
     html_obj <- xml2::read_html(x)
     
     html_obj %>%
-        rvest::html_nodes("a") %>%
+        rvest::html_nodes("ul") %>%
         .[str_detect(rvest::html_text(.), "(?i)employee status")] %>%
         rvest::html_text() %>%
         str_split("(?i)as of") %>%
