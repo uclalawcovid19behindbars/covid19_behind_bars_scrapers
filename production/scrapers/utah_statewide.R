@@ -1,17 +1,17 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-utah_statewide_check_date <- function(x, date = Sys.Date()){
-    z <- xml2::read_html(x)
+utah_statewide_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     
-    z %>%
+    base_html %>%
         rvest::html_nodes("p") %>% 
         rvest::html_text() %>% 
         {.[str_detect(., "(?i)updated")]} %>% 
         first() %>% 
         str_split("updated") %>% 
         unlist() %>% 
-        {.[str_detect(., "21")]} %>% 
+        {.[str_detect(., "20")]} %>% # look for year 20xx
         lubridate::mdy() %>%
         error_on_date(date)
 }
