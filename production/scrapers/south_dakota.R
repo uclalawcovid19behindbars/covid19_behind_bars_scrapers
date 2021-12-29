@@ -1,10 +1,10 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-south_dakota_check_date <- function(x, date = Sys.Date()){
-    get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)case") %>%
+south_dakota_check_date <- function(url, date = Sys.Date()){
+    get_src_by_attr(url, "a", attr = "href", attr_regex = "(?i)case") %>%
         magick::image_read_pdf() %>%
-        magick::image_crop("800x45+2700+320") %>%
+        magick::image_crop("800x50+2700+320") %>%
         magick::image_ocr() %>%
         str_split(" ") %>%
         unlist() %>%
