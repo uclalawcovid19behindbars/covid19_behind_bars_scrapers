@@ -8,9 +8,7 @@ indiana_date_check <- function(url, date = Sys.Date()){
         rvest::html_nodes("p") %>%
         rvest::html_text() %>% 
         {.[str_detect(., "(?i)current as of")]} %>% 
-        str_split("updated") %>% 
         unlist() %>% 
-        {.[str_detect(., "20")]} %>% # look for year 20xx
         lubridate::mdy() %>%
         error_on_date(date)
 }

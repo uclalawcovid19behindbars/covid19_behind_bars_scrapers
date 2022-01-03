@@ -14,6 +14,8 @@ montana_check_date <- function(url, date = Sys.Date()){
 
     date_check <- lubridate::mdy(date_check_txt) %>%
         error_on_date(expected_date = date)
+    
+    return(date_check)
 }
 
 montana_pull <- function(x){
