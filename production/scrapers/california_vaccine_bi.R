@@ -109,7 +109,6 @@ get_california_vaccine_bi_percentages <- function(x){
         .[1] %>% 
         rvest::html_node(".innerContainer")
     x %>% 
-        # rvest::html_node(xpath="//*[@id='pvExplorationHost']/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[11]/transform/div/div[3]/div/visual-modern/div/svg/g[2]/text") %>%
         rvest::html_nodes(".mainText") %>%
         rvest::html_text()
     

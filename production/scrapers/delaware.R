@@ -18,7 +18,7 @@ delaware_pull <- function(x){
 delaware_restruct <- function(x){
     x %>%
         filter(!is.na(Date)) %>% 
-        filter(Date == max(Date)) 
+        filter(Date == max(Date))
 }
 
 delaware_extract <- function(x){
