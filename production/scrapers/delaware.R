@@ -22,7 +22,6 @@ delaware_restruct <- function(x){
 }
 
 delaware_extract <- function(x){
-    
     x %>% 
         filter(!is.na(Name)) %>% 
         select(
@@ -30,8 +29,10 @@ delaware_extract <- function(x){
             Residents.Tadmin, Residents.Deaths, 
             Staff.Active, Residents.Active, 
             Staff.Recovered, Residents.Recovered, 
-            Residents.Initiated, Residents.Completed) %>% 
-        clean_scraped_df()
+            Residents.Initiated, Residents.Initiated.Pct,
+            Residents.Completed) %>% 
+        mutate(Residents.Initiated.Pct = (as.numeric(Residents.Initiated.Pct)/100)) %>%
+        clean_scraped_df() 
 }
 
 #' Scraper class for general delaware COVID data

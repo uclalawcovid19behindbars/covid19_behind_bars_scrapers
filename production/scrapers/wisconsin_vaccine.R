@@ -68,6 +68,8 @@ wisconsin_vaccine_extract <- function(x){
     x %>% 
         select(Residents.Initiated = number_partially_or_fully_vaccinated, 
                Residents.Completed = number_fully_vaccinated, 
+               Residents.Initiated.Pct = percent_partially_or_fully_vaccinated,
+               Residents.Completed.Pct = percent_fully_vaccinated,
                Name = facility) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
         clean_scraped_df()
