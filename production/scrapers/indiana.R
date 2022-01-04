@@ -1,16 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-indiana_date_check <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+indiana_date_check <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     
     base_html %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>% 
-        {.[str_detect(., "(?i)last updated")]} %>% 
-        str_split("updated") %>% 
+        {.[str_detect(., "(?i)current as of")]} %>% 
         unlist() %>% 
-        {.[str_detect(., "21")]} %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }

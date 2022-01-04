@@ -8,12 +8,11 @@ hawaii_staff_date_check <- function(x, date = Sys.Date()){
         magick::image_read() 
     
     img %>% 
-        magick::image_crop("500x200") %>% 
+        magick::image_crop("200x90") %>% 
         magick::image_ocr() %>% 
-        str_split("Updated") %>% 
+        str_split("\n") %>% 
         unlist() %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_squish() %>% 
+        {.[str_detect(., "\\d")]} %>%
         str_extract("\\d{1,2}/\\d{1,2}/\\d{1,2}") %>%
         lubridate::mdy() %>%
         error_on_date(date)

@@ -10,7 +10,7 @@ kentucky_date_check <- function(x, date = Sys.Date()){
         {.[str_detect(., "(?i)as of")]} %>% 
         str_split("as of") %>% 
         unlist() %>% 
-        {.[str_detect(., "21")]}%>% 
+        .[[2]] %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }

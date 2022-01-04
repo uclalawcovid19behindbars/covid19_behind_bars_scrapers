@@ -8,9 +8,6 @@ michigan_vaccine_date_check <- function(x, date = Sys.Date()){
         rvest::html_nodes("caption") %>% 
         rvest::html_text() %>% 
         {.[str_detect(., "(?i)correction")]} %>% 
-        stringr::str_split("(?i)through") %>% 
-        unlist() %>% 
-        {.[str_detect(., "21")]} %>% 
         lubridate::mdy() %>% 
         error_on_date(date)
 }

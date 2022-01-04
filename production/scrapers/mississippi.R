@@ -1,24 +1,27 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-mississippi_date_check <- function(x, date = Sys.Date()){
-    pdf <- get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases") %>%
+mississippi_date_check <- function(url, date = Sys.Date()){
+    pdf <- get_src_by_attr(url, "a", attr="href", attr_regex = "(?i)cases") %>%
         first()
     
-    pdf_read <- magick::image_read_pdf(pdf, pages = 1) 
+    pdf_read <- magick::image_read_pdf(pdf, pages = 1)
     h_ <- magick::image_info(pdf_read)$height
     height_offset <- h_ - (1/8*h_)
-    full_date <- pdf_read %>%
+    
+    date_string <- pdf_read %>%
         magick::image_crop(str_c(height_offset, "x200+400+", height_offset)) %>%
         magick::image_ocr() %>%
         {.[str_detect(., "(?i)last update")]} %>%
-        str_split("Update: ") %>%
+        str_split("Last Update: ") %>%
         unlist() %>%
-        .[2]
-        str_split(":") %>% ## this is not a working solution but attempt to make it better
-        unlist() %>%
-        .[1] %>%
-        lubridate::mdy() %>% 
+        .[2] %>% 
+        str_remove("\n")
+        
+    date_string %>%
+        lubridate::mdy_h() %>% 
+        lubridate::floor_date(unit = "days") %>%
+        lubridate::as_date() %>%
         error_on_date(date)
 }
 

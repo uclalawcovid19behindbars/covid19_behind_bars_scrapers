@@ -1,17 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-utah_statewide_check_date <- function(x, date = Sys.Date()){
-    z <- xml2::read_html(x)
+utah_statewide_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     
-    z %>%
+    p_headers <- base_html %>%
         rvest::html_nodes("p") %>% 
-        rvest::html_text() %>% 
+        rvest::html_text()
+    
+    ## looking for staff update date
+    ## first look for where on the page this is
+    staff_cases_idx <- p_headers %>%
+        str_which(., "(?i)total confirmed staff cases")
+    
+    ## limit dates that will come up in search results
+    p_headers[c(staff_cases_idx:length(p_headers))] %>%
         {.[str_detect(., "(?i)updated")]} %>% 
         first() %>% 
         str_split("updated") %>% 
         unlist() %>% 
-        {.[str_detect(., "21")]} %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }

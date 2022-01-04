@@ -2,14 +2,14 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 
-north_carolina_youth_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+north_carolina_youth_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, 
                                   xpath="//*[@id=\"node-13727\"]/div/div/div/div/div[2]/section/section/div[2]/div/div/div/p[1]") %>%
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
 }

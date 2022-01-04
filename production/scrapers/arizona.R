@@ -1,11 +1,12 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-arizona_check_date <- function(x, date = Sys.Date()){
-    base_page <- xml2::read_html(x)
+arizona_check_date <- function(url, date = Sys.Date()){
+    base_page <- xml2::read_html(url)
     
     site_date <- base_page %>%
-        rvest::html_nodes(xpath = "//*[@id='block-views-covid-19-data-table-block-5']/div/div/div/div/span[2]") %>%
+        rvest::html_nodes(".views-field-changed") %>%
+        rvest::html_node(".field-content") %>% 
         rvest::html_text() %>%
         lubridate::mdy()
     

@@ -6,13 +6,7 @@ nevada_clean_fac_text <- function(x){
         clean_fac_col_txt()
 }
 
-nevada_check_date <- function(x, date = Sys.Date()){
-    # scrape from the power bi iframe directly
-    y <- str_c(
-            "https://app.powerbigov.us/view?r=",
-            "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
-            "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9")
-    
+nevada_check_date <- function(url, date = Sys.Date()){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
@@ -20,20 +14,16 @@ nevada_check_date <- function(x, date = Sys.Date()){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(y)
+    remDr$navigate(url)
+    # If driver can't find elements we care about within 10 seconds, error out
+    remDr$setImplicitWaitTimeout(milliseconds = 10000)
     
-    Sys.sleep(10)
-    
-    base_page <- xml2::read_html(remDr$getPageSource()[[1]])
-    
-    site_date <- base_page %>%
-        rvest::html_nodes(xpath="//*[@id=\"pvExplorationHost\"]/div/div/exploration/div/explore-canvas-modern/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container-modern[1]/transform/div/div[3]/div/visual-modern/div/div/div/p[2]/span[1]") %>%
-        rvest::html_text() %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_remove("(?i)data were last updated on ") %>%
-        lubridate::mdy_hm() %>%
-        lubridate::floor_date(unit="day") %>%
-        as.Date()
+    site_date <- remDr$findElement(using = "css", "transform")$getElementText() %>% 
+        unlist() %>%
+        {.[str_detect(., "20")]} %>% # look for year 20xx
+        lubridate::mdy()
+
+    remDr$quit()
     
     error_on_date(site_date, date)
 }
@@ -336,7 +326,11 @@ nevada_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "http://doc.nv.gov/About/Press_Release/covid19_updates/",
+            # DOC press releases are here: http://doc.nv.gov/About/Press_Release/covid19_updates/
+            url = str_c(
+                "https://app.powerbigov.us/view?r=",
+                "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
+                "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9"),
             id = "nevada",
             type = "html",
             state = "NV",
