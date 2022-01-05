@@ -72,7 +72,9 @@ wisconsin_vaccine_extract <- function(x){
                Residents.Completed.Pct = percent_fully_vaccinated,
                Name = facility) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        mutate(Residents.Initiated.Pct = as.numeric(Residents.Initiated.Pct) / 100,
+               Residents.Completed.Pct = as.numeric(Residents.Completed.Pct) / 100 ) 
 }
 
 #' Scraper class for general COVID data

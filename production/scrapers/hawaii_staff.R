@@ -41,7 +41,7 @@ hawaii_staff_extract <- function(x){
     sub_mat[1,] <- new_names
     
     col_name_mat <- matrix(c(
-        "CORRECTIONS DIVISION", "0", "Name",
+        "", "0", "Name",
         "STAFF ACTIVE", "1", "Staff.Active",
         "STAFF RECOVERED", "2", "Staff.Recovered",
         "INMATES ACTIVE", "3", "Drop.Dup1",

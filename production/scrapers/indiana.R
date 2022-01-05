@@ -28,13 +28,14 @@ indiana_restruct <- function(x){
     # Wrangle Data
     if (length(results) == 2) {
         ## get the columns in the correct order 
-        ##  check success with the following code:
-        ## clean_fac_col_txt(unname(unlist(d[1,]))
+        ## check success with the following code:
+        ## first create `d` by following if/else logic below, then:
+        ## clean_fac_col_txt(unname(unlist(d[1,])))
         
         if (str_detect(results[[1]][1, 1], "(?i)correctional facility")) {
             names(results[[2]]) <- as.character(
                 max(as.numeric(names(results[[1]]))) +
-                    as.numeric(names(results[[1]])) + 1)
+                    as.numeric(names(results[[2]])) + 1)
             d <- cbind(results[[1]], results[[2]])
         }
         else {
