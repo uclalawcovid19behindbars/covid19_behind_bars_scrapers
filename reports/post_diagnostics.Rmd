@@ -329,6 +329,59 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
     labs(tag = "") 
 ```
 
+# Recent State Increases 
+
+## Incarcerated people
+
+**Which states have seen the greatest increase in cumulative cases among incarcerated residents over the last 7 days?** 
+``` {r, echo = F, fig.width = 15, fig.height = 7, warning = F}
+state_df <- read_csv("../data/historical-data/historical_state_counts.csv") %>%
+  mutate(Name = State)
+
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+**Which states have seen the greatest increase in active cases among incarcerated residents over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          metric = "Residents.Active", 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+## Staff
+
+**Which states have seen the greatest increase in active cases among staff over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          metric = "Staff.Active", 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+**Which states have seen the greatest increase in cumulative cases among staff over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          metric = "Staff.Confirmed", 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+---
+
 **Update Google Sheet with latest outbreaks**
 
 ```{r, echo = F}
