@@ -51,55 +51,121 @@ ohio_population_pull <- function(x, exp_date = Sys.Date()){
 }
 
 ohio_population_restruct <- function(x){
-    list(pg1 = x %>% 
-             tabulizer::extract_tables(pages = 1, area = list(c(129, 49, 753, 564))), 
-         pg2 = x %>% 
-            tabulizer::extract_tables(pages = 2, area = list(c(45, 50, 345, 565)))
-    )
+    
+    # the resturucture for this code is tricky as the file went through a
+    # pretty big change in the way that it was formatted at some point so there
+    # are two code paths the screaper could take
+    
+    # this is the set of code corresponding to the newer file structure
+    restruct_out <- list(
+        pg1c1 = x %>%
+             tabulizer::extract_tables(
+                 pages = 1,
+                 area = list(c(108.81565, 33.26855, 764.22317, 284.02295))) %>%
+            .[[1]], 
+        pg2c2 = x %>% 
+             tabulizer::extract_tables(
+                 pages = 2,
+                 area = list(c(25.87326, 31.64027, 155.97897, 287.27950))) %>%
+            .[[1]],
+        pg1c1 = x %>% 
+            tabulizer::extract_tables(
+                pages = 1,
+                area = list(c(115.7680, 313.4366, 765.1223, 566.0635))) %>%
+            .[[1]], 
+        pg2c2 = x %>% 
+            tabulizer::extract_tables(
+                pages = 2,
+                area = list(c(27.42261, 315.65104, 290.50435, 563.66939))) %>%
+            .[[1]]
+        )
+    
+    exp_cols <- c("Institution", "Count")
+    obs_cols <- colnames(restruct_out$pg1c1)
+    
+    # if these checks dont pass then revert to using the old way of extracting
+    # the data
+    if(ncol(restruct_out$pg1c1)!= 2 | !all(obs_cols == exp_cols)){
+        z <- x %>%
+            tabulizer::extract_tables(
+                pages = 2, area = list(c(45, 50, 345, 565)))
+        
+        restruct_out <- list(
+            pg1c1 = cbind(
+                x %>%
+                    tabulizer::extract_tables(
+                        pages = 1,
+                        area = list(c(136.88, 55.0377, 745.5641, 238.3666))) %>%
+                    unlist(),
+                x %>%
+                    tabulizer::extract_tables(
+                        pages = 1,
+                        area = list(c(134, 252.6058, 750.9034, 306.00264))) %>%
+                    unlist()
+            ),
+            pg2c1 = z[[2]][,1:2],
+            pg1c2 = cbind(
+                x %>%
+                    tabulizer::extract_tables(
+                        pages = 1,
+                        area = list(c(136.88, 308.4626, 745.5641, 505.281))) %>%
+                    unlist(),
+                x %>%
+                    tabulizer::extract_tables(
+                        pages = 1,
+                        area = list(c(134, 506.9218, 750.9034, 569.2479))) %>%
+                    unlist()
+            ),
+            pg2c2 = cbind(str_c(z[[2]][,3], z[[2]][,4]), z[[2]][,5])
+        )
+    }
+
+    restruct_out
 }
 
 ohio_population_extract <- function(x){
     
-    exp <- c("", "Institution", "Count", "", "Institution", "Count") 
-    if (!all(exp == x$pg1[[1]][1,])){
+    binded_mat <- do.call(rbind, x)
+    
+    if(ncol(binded_mat) != 2){
+        warning(
+            "Column structure not as expected. ",
+            "See if raw file structure changed." 
+        )
+    }
+
+    exp_cols <- c("Institution", "Count")
+    if (!all(exp_cols == binded_mat[1,])){
         warning(
             "Column names not as expected. See if raw file structure changed." 
         )
     }
     
-    if (!str_detect(x$pg2[[2]][nrow(x$pg2[[2]]),4], "(?i)total population")){
+    if (!str_detect(binded_mat[nrow(binded_mat),1], "(?i)total population")){
         warning(
-            "Total column on second page not as expected. See if raw file structure changed." 
+            "Total column on second page not as expected. ",
+            "See if raw file structure changed." 
         )
     }
     
-    total <- x$pg2[[2]][nrow(x$pg2[[2]]),5] %>% string_to_clean_numeric()
+    total <- string_to_clean_numeric(binded_mat[nrow(binded_mat),2])
     
-    # Hard-coding 
-    out <- tibble(
-        Name = c(
-            x$pg1[[1]][,1], 
-            x$pg1[[1]][,4], 
-            x$pg2[[2]][,1], 
-            x$pg2[[2]][,3]), 
-        Residents.Population = c(
-            x$pg1[[1]][,3], 
-            x$pg1[[1]][,6], 
-            x$pg2[[2]][,2], 
-            x$pg2[[2]][,5])
-    ) %>% 
+    colnames(binded_mat) <- c("Name", "Residents.Population")
+    
+    out_df <- as_tibble(binded_mat) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
         filter(!str_detect(Residents.Population, "(?i)count")) %>% 
         filter(Name != "") %>% 
         clean_scraped_df() 
     
-    if (sum_na_rm(out$Residents.Population) != total) {
+    if (sum_na_rm(out_df$Residents.Population) != total) {
         warning(
-            "Total doesn't match sum of facilities. See if raw file structure changed." 
+            "Total doesn't match sum of facilities. ",
+            "See if raw file structure changed." 
         )
     }
     
-    out
+    out_df
 }
 
 #' Scraper class for Ohio population data 
