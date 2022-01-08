@@ -28,18 +28,19 @@ tennessee_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Name", "V1", "By Location",
-        "Residents.Tadmin", "V2", "#Tested",
         "Residents.Active", "V3", "#Positive",
-        "Residents.Negative", "V4", "#Negative",
         "Residents.Pending", "V5", "Pending",
-        "Residents.Recovered", "V6", "Recovered",
-        "Residents.Deaths", "V7", "Deaths"
-    ), ncol = 3, nrow = 7, byrow = TRUE)
+        "Residents.Recovered", "V7", "Recovered",
+        "Residents.Deaths", "V9", "Deaths"
+    ), ncol = 3, nrow = 5, byrow = TRUE)
     
     colnames(col_name_mat) <- c("clean", "raw", "check")
     col_name_df <- as_tibble(col_name_mat)
     
-    tab1 <- x[[1]][4:nrow(x[[1]]),]
+    tab1 <- x[[1]][4:nrow(x[[1]]),] 
+    tab1 <- tab1 %>%
+            as.data.frame() %>%
+            select(-c(V2, V4, V6, V8))
     # remove columns that are all empty
     df_ <- as.data.frame(tab1[,apply(tab1, 2, function(x) !all(x == ""))])
     
@@ -56,8 +57,9 @@ tennessee_extract <- function(x){
         "Name", "V1", "TESTING NUMBERS",
         "Staff.Confirmed", "V2", "# Positive COVID-19 Tests",
         "Staff.Recovered", "V3", "# Positive Return To Work",
-        "Staff.Deaths", "V4", "Deaths"
-    ), ncol = 3, nrow = 4, byrow = TRUE)
+        "Staff.Active", "V4", "# Current Positive",
+        "Staff.Deaths", "V5", "Deaths"
+    ), ncol = 3, nrow = 5, byrow = TRUE)
     
     colnames(col_name_mat2) <- c("clean", "raw", "check")
     col_name_df2 <- as_tibble(col_name_mat2)
