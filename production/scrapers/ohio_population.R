@@ -50,7 +50,44 @@ ohio_population_pull <- function(x, exp_date = Sys.Date()){
     )
 }
 
-ohio_population_restruct <- function(x){
+.alt_ohio_population_restruct <- function(raw_pdf){
+    alt_extract_pg2 <- raw_pdf %>%
+        tabulizer::extract_tables(
+            pages = 2, area = list(c(45, 50, 345, 565)))
+    
+    list(
+        pg1c1 = cbind(
+            raw_pdf %>%
+                tabulizer::extract_tables(
+                    pages = 1,
+                    area = list(c(136.88, 55.0377, 745.5641, 238.3666))) %>%
+                unlist(),
+            raw_pdf %>%
+                tabulizer::extract_tables(
+                    pages = 1,
+                    area = list(c(134, 252.6058, 750.9034, 306.00264))) %>%
+                unlist()
+        ),
+        pg2c1 = alt_extract_pg2[[2]][,1:2],
+        pg1c2 = cbind(
+            raw_pdf %>%
+                tabulizer::extract_tables(
+                    pages = 1,
+                    area = list(c(136.88, 308.4626, 745.5641, 505.281))) %>%
+                unlist(),
+            raw_pdf %>%
+                tabulizer::extract_tables(
+                    pages = 1,
+                    area = list(c(134, 506.9218, 750.9034, 569.2479))) %>%
+                unlist()
+        ),
+        pg2c2 = cbind(str_c(
+            alt_extract_pg2[[2]][,3], 
+            alt_extract_pg2[[2]][,4]), alt_extract_pg2[[2]][,5])
+    )
+}
+
+ohio_population_restruct <- function(raw_pdf){
     
     # the resturucture for this code is tricky as the file went through a
     # pretty big change in the way that it was formatted at some point so there
@@ -58,22 +95,22 @@ ohio_population_restruct <- function(x){
     
     # this is the set of code corresponding to the newer file structure
     restruct_out <- list(
-        pg1c1 = x %>%
+        pg1c1 = raw_pdf %>%
              tabulizer::extract_tables(
                  pages = 1,
                  area = list(c(108.81565, 33.26855, 764.22317, 284.02295))) %>%
             .[[1]], 
-        pg2c2 = x %>% 
+        pg2c1 = raw_pdf %>% 
              tabulizer::extract_tables(
                  pages = 2,
-                 area = list(c(25.87326, 31.64027, 155.97897, 287.27950))) %>%
+                 area = list(c(25.87326, 31.64027, 290.97897, 287.27950))) %>%
             .[[1]],
-        pg1c1 = x %>% 
+        pg1c1 = raw_pdf %>% 
             tabulizer::extract_tables(
                 pages = 1,
                 area = list(c(115.7680, 313.4366, 765.1223, 566.0635))) %>%
             .[[1]], 
-        pg2c2 = x %>% 
+        pg2c2 = raw_pdf %>% 
             tabulizer::extract_tables(
                 pages = 2,
                 area = list(c(27.42261, 315.65104, 290.50435, 563.66939))) %>%
@@ -86,38 +123,7 @@ ohio_population_restruct <- function(x){
     # if these checks dont pass then revert to using the old way of extracting
     # the data
     if(ncol(restruct_out$pg1c1)!= 2 | !all(obs_cols == exp_cols)){
-        z <- x %>%
-            tabulizer::extract_tables(
-                pages = 2, area = list(c(45, 50, 345, 565)))
-        
-        restruct_out <- list(
-            pg1c1 = cbind(
-                x %>%
-                    tabulizer::extract_tables(
-                        pages = 1,
-                        area = list(c(136.88, 55.0377, 745.5641, 238.3666))) %>%
-                    unlist(),
-                x %>%
-                    tabulizer::extract_tables(
-                        pages = 1,
-                        area = list(c(134, 252.6058, 750.9034, 306.00264))) %>%
-                    unlist()
-            ),
-            pg2c1 = z[[2]][,1:2],
-            pg1c2 = cbind(
-                x %>%
-                    tabulizer::extract_tables(
-                        pages = 1,
-                        area = list(c(136.88, 308.4626, 745.5641, 505.281))) %>%
-                    unlist(),
-                x %>%
-                    tabulizer::extract_tables(
-                        pages = 1,
-                        area = list(c(134, 506.9218, 750.9034, 569.2479))) %>%
-                    unlist()
-            ),
-            pg2c2 = cbind(str_c(z[[2]][,3], z[[2]][,4]), z[[2]][,5])
-        )
+        restruct_out <- .alt_ohio_population_restruct(raw_pdf)
     }
 
     restruct_out
