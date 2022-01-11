@@ -857,7 +857,7 @@ track_recent_covid_increases <- function(
     filter(raw_change > 0) 
   if(str_detect(metric, ".Deaths")) {
     fac_data <- fac_data %>%
-      filter(start_val > 1)
+      filter(start_val > 0)
   }
   keep_facs_pct_increase <- fac_data %>%
     arrange(desc(pct_increase), Name) %>% 
@@ -883,7 +883,7 @@ track_recent_covid_increases <- function(
     distinct(State, start_val, last_val, raw_change, pct_increase) %>%
     filter(raw_change > 0)
   if(str_detect(metric, ".Deaths")) {
-    fac_data <- fac_data %>%
+    state_data <- state_data %>%
       filter(start_val > 0)
   }
   keep_states_pct_increase <- state_data %>%
