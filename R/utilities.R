@@ -848,14 +848,12 @@ track_recent_covid_increases <- function(
   fac_data <- scrape_df %>%
     filter(!(stringr::str_detect(Name, "(?i)state") & stringr::str_detect(Name, "(?i)wide"))) %>%
     filter(Date >= delta_start_date) %>%
-    filter(State == "Pennsylvania") %>%
     group_by(Name, State) %>%
     mutate(start_val = first(!!sym(metric)),
            last_val = last(!!sym(metric)),
            raw_change = last_val - start_val,
            pct_increase = (raw_change / start_val)*100) %>%
     distinct(Facility.ID, Name, State, start_val, last_val, raw_change, pct_increase) %>% 
-    ## NEED TO CHANGE THIS AWAY FOR .DEATHS
     filter(raw_change > 0) 
   if(str_detect(metric, ".Deaths")) {
     fac_data <- fac_data %>%
@@ -906,8 +904,6 @@ track_recent_covid_increases <- function(
   out <- bind_rows(keep_facs, keep_states) %>%
     mutate(pct_increase = na_if(pct_increase, Inf),
            pct_increase = na_if(pct_increase, -Inf))
-  
-  ##TO DO: add date to sheet title
   if(overwrite_data){
     range_write(
       data = out, 
