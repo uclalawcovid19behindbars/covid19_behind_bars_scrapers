@@ -5,9 +5,9 @@ wisconsin_staff_check_date <- function(url, date = Sys.Date()){
     base_html <- xml2::read_html(url)
 
     base_html %>%
-        rvest::html_node(xpath = "//em[contains(text(),'updated')]") %>%
+        rvest::html_node(xpath = "//em[contains(text(),'pdated')]") %>%
+        # Hacky "case-insensitive search" for updated ^
         rvest::html_text() %>%
-        str_remove_all("Last updated on") %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }
