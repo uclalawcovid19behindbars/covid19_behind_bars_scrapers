@@ -84,7 +84,7 @@ wisconsin_deaths_pull <- function(x){
         "css", "[data-tb-test-id='DownloadPdf-Button']")$clickElement()
     Sys.sleep(10)
     remDr$findElement( 
-        "css", "[data-tb-test-id='PdfDialogCreatePdf-Button']")$clickElement()
+        "css", "[data-tb-test-id='export-pdf-export-Button']")$clickElement()
     Sys.sleep(10)
     
     if(!file.exists(out_file)){
