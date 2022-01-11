@@ -54,7 +54,7 @@ west_virginia_extract <- function(x){
         Tests.Drop = "Tests at release",
         Positive.Release.Drop = "Positive release results",
         Residents.Pending = "Results pending (all tests)",
-        Residents.Tadmin = "Total Tests",
+        Residents.Tadmin = "Total tests",
         Residents.Quarantine = "Quarantine"
     )
     

@@ -28,6 +28,7 @@ tennessee_vaccine_pull <- function(x){
 }
 
 tennessee_vaccine_restruct <- function(x){
+    browser()
     res_txt <- x %>% 
         magick::image_read_pdf(pages = 1) %>% 
         magick::image_crop("2000x175+500+2250") %>% 
