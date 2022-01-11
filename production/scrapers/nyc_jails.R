@@ -9,8 +9,7 @@ nyc_jails_check_date <- function(url, date = Sys.Date()){
         magick::image_ocr() 
     
     date_box %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        str_extract("\\d{1,}/\\d{1,}/\\d{2,}") %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }
