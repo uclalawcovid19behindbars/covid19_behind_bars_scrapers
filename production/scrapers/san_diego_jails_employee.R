@@ -5,7 +5,7 @@ san_diego_jails_employee_check_date <- function(x, date = Sys.Date()){
     html_obj <- xml2::read_html(x)
     
     html_obj %>%
-        rvest::html_nodes("a") %>%
+        rvest::html_nodes("ul") %>%
         .[str_detect(rvest::html_text(.), "(?i)employee status")] %>%
         rvest::html_text() %>%
         str_split("(?i)as of") %>%
@@ -47,12 +47,14 @@ san_diego_jails_employee_extract <- function(x) {
     
     check_names_extractable(df_, col_name_df)
     
-    rename_extractable(df_, col_name_df) %>% 
+    out <- rename_extractable(df_, col_name_df) %>% 
         filter(!str_detect(Staff.Confirmed, "(?i)cases")) %>% 
         mutate(Name = "San Diego County Jails") %>% 
         clean_scraped_df() %>%
         select(-starts_with("Drop")) %>%
         as_tibble()
+    
+    return(out)
 }
 
 #' Scraper class for general San Diego County jails COVID data

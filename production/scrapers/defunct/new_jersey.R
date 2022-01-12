@@ -1,21 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-new_jersey_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+new_jersey_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, 
                                   xpath="/html/body/div[3]/div[4]/div[1]/div/div[2]/p[1]") %>%
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
 }
 
 new_jersey_pull <- function(x){
-    xml2::read_html(x)
+    stop_defunct_scraper(x)
 }
 
 new_jersey_restruct <- function(x){

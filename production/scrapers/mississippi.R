@@ -1,14 +1,27 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-mississippi_date_check <- function(x, date = Sys.Date()){
-    pdf <- get_src_by_attr(x, "a", attr="href", attr_regex = "(?i)cases") %>%
+mississippi_date_check <- function(url, date = Sys.Date()){
+    pdf <- get_src_by_attr(url, "a", attr="href", attr_regex = "(?i)cases") %>%
         first()
     
-    magick::image_read_pdf(pdf, pages = 1) %>% 
-        magick::image_crop("1000x200+400+2700") %>% 
-        magick::image_ocr() %>% 
-        lubridate::mdy() %>% 
+    pdf_read <- magick::image_read_pdf(pdf, pages = 1)
+    h_ <- magick::image_info(pdf_read)$height
+    height_offset <- h_ - (1/8*h_)
+    
+    date_string <- pdf_read %>%
+        magick::image_crop(str_c(height_offset, "x200+400+", height_offset)) %>%
+        magick::image_ocr() %>%
+        {.[str_detect(., "(?i)last update")]} %>%
+        str_split("Last Update: ") %>%
+        unlist() %>%
+        .[2] %>% 
+        str_remove("\n")
+        
+    date_string %>%
+        lubridate::mdy_h() %>% 
+        lubridate::floor_date(unit = "days") %>%
+        lubridate::as_date() %>%
         error_on_date(date)
 }
 
@@ -25,7 +38,7 @@ mississippi_restruct <- function(x){
 mississippi_extract <- function(x){
     col_name_mat <- matrix(c(
         "State Institutions", "X0", "Name",
-        "Total Yearly Positives", "X1", "Residents.Confirmed",
+        "Cumulative Positives", "X1", "Residents.Confirmed",
         "Current Active", "X2", "Residents.Active"
         ), ncol = 3, nrow = 3, byrow = TRUE)
     

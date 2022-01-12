@@ -7,8 +7,9 @@ texas_statewide_check_date <- function(x, date = Sys.Date()){
 
 texas_statewide_pull <- function(x){
     str_c(
-        "https://maps.tdem.texas.gov/koop/googlesheets/tdcjCovidCounts/",
-        "TDCJ!A1:W/FeatureServer/0/query?f=json&where=(",
+        "https://gis.tdem.texas.gov/koop/googlesheets/1TZj84WQEKz5N5XWHwEuYWu3ZDl1DlFDuCjm94ER6OcU/TDCJ",
+        # "https://maps.tdem.texas.gov/koop/googlesheets/1TZj84WQEKz5N5XWHwEuYWu3ZDl1DlFDuCjm94ER6OcU/",
+        "!A1:X/FeatureServer/0/query?f=json&where=(",
         "(Unit%20%3D%20%27Deceased%27)%20OR%20",
         "(Unit%20%3D%20%27Mass%20Testing%27)%20OR%20",
         "(Unit%20%3D%20%27No%20Longer%20in%20Custody%27)%20OR%20",
@@ -19,7 +20,6 @@ texas_statewide_pull <- function(x){
         "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*"
         ) %>%
         jsonlite::read_json(simplifyVector = TRUE)
-        
 }
 
 texas_statewide_restruct <- function(x){
@@ -29,8 +29,6 @@ texas_statewide_restruct <- function(x){
 texas_statewide_extract <- function(x){
     x %>%
         mutate(Name = "State-Wide", 
-               Residents.Deaths = Offender_Deceased__Presumed_COVID + 
-                   Offender_Deceased_Confirmed_COVID, 
                Residents.Confirmed = Offender_Total_Positive_Cases, 
                Residents.Tadmin = Offender_Total_Tests, 
                Residents.Active = Offender_Active_Cases, 
@@ -80,7 +78,7 @@ texas_statewide_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.tdcj.texas.gov/covid-19/index.html",
+            url = "https://tdem.maps.arcgis.com/apps/dashboards/2ff5d30a425345938e2806eef44c3cbf",
             id = "texas_statewide",
             type = "json",
             state = "TX",

@@ -43,7 +43,7 @@ tennessee_vaccine_restruct <- function(x){
     
     staff_txt <- x %>% 
         magick::image_read_pdf(pages = 2) %>% 
-        magick::image_crop("2200x175+800+800") %>% 
+        magick::image_crop("1900x200+1100+900") %>% 
         magick::image_ocr() %>% 
         str_to_upper()
     

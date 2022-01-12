@@ -119,7 +119,7 @@ replace_os <- function(cell){
 }
 
 ## Function to Check credits usage
-check_credits <- function(api_key=NULL, verbose=FALSE) {
+check_extractable_credits <- function(api_key=NULL, verbose=FALSE) {
     if(is.null(api_key)){
         api_key <- Sys.getenv("EXTRACTABLE_API_KEY")
     }
@@ -152,6 +152,8 @@ numeric_from_css <- function(web, css_selector) {
         string_to_clean_numeric()
     return(out)
 }
+
+
 
 clean_string <- function(string) {
     
@@ -237,6 +239,57 @@ string_to_clean_numeric <- function(column) {
         as.numeric()
     
     return(column_clean)
+}
+
+# Borrowed from here! https://stackoverflow.com/a/18333845 
+# ex: word_to_numeric("six") -> 6 
+word_to_numeric <- function(word){
+    wsplit <- strsplit(tolower(word)," ")[[1]]
+    one_digits <- list(zero=0, one=1, two=2, three=3, four=4, five=5,
+                       six=6, seven=7, eight=8, nine=9)
+    teens <- list(eleven=11, twelve=12, thirteen=13, fourteen=14, fifteen=15,
+                  sixteen=16, seventeen=17, eighteen=18, nineteen=19)
+    ten_digits <- list(ten=10, twenty=20, thirty=30, forty=40, fifty=50,
+                       sixty=60, seventy=70, eighty=80, ninety=90)
+    doubles <- c(teens,ten_digits)
+    out <- 0
+    i <- 1
+    while(i <= length(wsplit)){
+        j <- 1
+        if(i==1 && wsplit[i]=="hundred")
+            temp <- 100
+        else if(i==1 && wsplit[i]=="thousand")
+            temp <- 1000
+        else if(wsplit[i] %in% names(one_digits))
+            temp <- as.numeric(one_digits[wsplit[i]])
+        else if(wsplit[i] %in% names(teens))
+            temp <- as.numeric(teens[wsplit[i]])
+        else if(wsplit[i] %in% names(ten_digits))
+            temp <- (as.numeric(ten_digits[wsplit[i]]))
+        if(i < length(wsplit) && wsplit[i+1]=="hundred"){
+            if(i>1 && wsplit[i-1] %in% c("hundred","thousand"))
+                out <- out + 100*temp
+            else
+                out <- 100*(out + temp)
+            j <- 2
+          }
+        else if(i < length(wsplit) && wsplit[i+1]=="thousand"){
+            if(i>1 && wsplit[i-1] %in% c("hundred","thousand"))
+                out <- out + 1000*temp
+            else
+                out <- 1000*(out + temp)
+            j <- 2
+        }
+        else if(i < length(wsplit) && wsplit[i+1] %in% names(doubles)){
+            temp <- temp*100
+            out <- out + temp
+        }
+        else{
+            out <- out + temp
+        }
+        i <- i + j
+      }
+      return(out)
 }
 
 clean_scraped_df <- function(df) {
@@ -545,7 +598,7 @@ sum_na_rm <- function(x){
 
 COVID_SUFFIXES <- c(
     ".Confirmed", ".Deaths", ".Tadmin", ".Tested", ".Active",
-    ".Initiated", ".Completed", ".Vadmin"
+    ".Initiated", ".Initiated.Pct", ".Completed", ".Completed.Pct", ".Vadmin"
 )
 
 rowAny <- function(x) rowSums(x) > 0
@@ -582,15 +635,34 @@ write_national_agg_data <- function(write_historical = TRUE){
 write_state_agg_data <- function(write_historical = TRUE){
     latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) 
     aggregate_pop <- read_aggregate_pop_data() 
-    
-    latest_state %>%
+
+    latest_state_tmp <- latest_state %>%
         filter(!is.na(Val)) %>%
         select(State, Measure, Val) %>%
         pivot_wider(names_from = "Measure", values_from = "Val") %>%
         arrange(State) %>%
         select(State, ends_with(COVID_SUFFIXES)) %>% 
         select(-Staff.Tested) %>% 
-        left_join(aggregate_pop, by = "State") %>% 
+        left_join(aggregate_pop, by = "State") 
+    # Create vaccine rate variables:
+    # coalesce vaccine rates (scraped) and vaccine rates (calculated)
+    latest_state_tmp %>%
+      ## add vax rate cols if none reported for a given day
+      mutate(Residents.Initiated.Pct = if("Residents.Initiated.Pct" %in% names(latest_state_tmp)) 
+        Residents.Initiated.Pct else NA_real_,
+        Residents.Completed.Pct = if("Residents.Completed.Pct" %in% names(latest_state_tmp)) 
+          Residents.Completed.Pct else NA_real_,
+        Staff.Initiated.Pct = if("Staff.Initiated.Pct" %in% names(latest_state_tmp)) 
+          Staff.Initiated.Pct else NA_real_,
+             ) %>% 
+      ## prioritize reported rates
+      mutate(Residents.Initiated.Pct = coalesce(Residents.Initiated.Pct,
+                                                (Residents.Initiated / Residents.Population)),
+             Residents.Completed.Pct = coalesce(Residents.Completed.Pct,
+                                                (Residents.Completed / Residents.Population)),
+             Staff.Initiated.Pct = coalesce(Staff.Initiated.Pct,
+                                            (Staff.Initiated / Staff.Population))
+        ) %>%
         select(-Date) %>% 
         write_csv("./data/latest-data/latest_state_counts.csv", na = "")
     
@@ -616,7 +688,9 @@ write_facility_data <- function(write_historical = TRUE){
         "Residents.Active", "Staff.Active",
         "Population.Feb20", "Residents.Population", 
         "Residents.Initiated", "Staff.Initiated", 
+        "Residents.Initiated.Pct", "Staff.Initiated.Pct",
         "Residents.Completed", "Staff.Completed", 
+        "Residents.Completed.Pct",
         "Residents.Vadmin", "Staff.Vadmin", "Web.Group", 
         "Address", "Zipcode", "City", "County", "Latitude",
         "Longitude", "County.FIPS", "ICE.Field.Office"
@@ -626,7 +700,7 @@ write_facility_data <- function(write_historical = TRUE){
     lastest_fac %>%
         filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
         filter(!is.na(Facility.ID)) %>% 
-        # filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
+        filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>%
         select(fac_sel_vars) %>% 
         filter(Web.Group != "Psychiatric") %>% 
         write_csv("./data/latest-data/latest_facility_counts.csv", na = "")
@@ -636,7 +710,7 @@ write_facility_data <- function(write_historical = TRUE){
         historical_fac %>%
             filter(rowAny(across(ends_with(COVID_SUFFIXES), ~ !is.na(.x)))) %>%
             filter(!is.na(Facility.ID)) %>% 
-            # filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>% 
+            filter(!(stringr::str_detect(Name, "(?i)state|county") & stringr::str_detect(Name, "(?i)wide"))) %>%
             select(fac_sel_vars) %>% 
             filter(Web.Group != "Psychiatric") %>% 
             write_csv("./data/historical-data/historical_facility_counts.csv", na = "") 

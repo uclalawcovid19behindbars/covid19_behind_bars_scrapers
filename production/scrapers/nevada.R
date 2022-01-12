@@ -6,13 +6,7 @@ nevada_clean_fac_text <- function(x){
         clean_fac_col_txt()
 }
 
-nevada_check_date <- function(x, date = Sys.Date()){
-    # scrape from the power bi iframe directly
-    y <- str_c(
-            "https://app.powerbigov.us/view?r=",
-            "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
-            "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9")
-    
+nevada_check_date <- function(url, date = Sys.Date()){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
@@ -20,20 +14,16 @@ nevada_check_date <- function(x, date = Sys.Date()){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(y)
+    remDr$navigate(url)
+    # If driver can't find elements we care about within 10 seconds, error out
+    remDr$setImplicitWaitTimeout(milliseconds = 10000)
     
-    Sys.sleep(10)
-    
-    base_page <- xml2::read_html(remDr$getPageSource()[[1]])
-    
-    site_date <- base_page %>%
-        rvest::html_nodes(xpath="//*[@id=\"pvExplorationHost\"]/div/div/exploration/div/explore-canvas-modern/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container-modern[1]/transform/div/div[3]/div/visual-modern/div/div/div/p[2]/span[1]") %>%
-        rvest::html_text() %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_remove("(?i)data were last updated on ") %>%
-        lubridate::mdy_hm() %>%
-        lubridate::floor_date(unit="day") %>%
-        as.Date()
+    site_date <- remDr$findElement(using = "css", "transform")$getElementText() %>% 
+        unlist() %>%
+        {.[str_detect(., "20")]} %>% # look for year 20xx
+        lubridate::mdy()
+
+    remDr$quit()
     
     error_on_date(site_date, date)
 }
@@ -62,17 +52,21 @@ nevada_pull <- function(x){
     Sys.sleep(10)
     remDr$findElement(
         "xpath", 
-        str_c("//div[@class='slicerItemContainer']",
-              "/span[@title='Correctional']"))$clickElement()
+        str_c("/html/body/div[6]/div[1]/div/div[2]/div/div[1]/div/div/div[5]/div/div",
+              ""))$clickElement()
     Sys.sleep(10)
     remDr$findElement(
-        "xpath", "//div[@aria-label='Facility Name,  All']")$clickElement()
+        "xpath", 
+        str_c(
+            "//div[@aria-label='Facility Name Slicer Drop down box to ",
+            "select one or more facilities.']"))$clickElement()
     Sys.sleep(10)
 
     nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
+    
     box_options <- nv_page %>%
-        rvest::html_nodes(".slicerText") %>%
+        rvest::html_nodes(".slicerItemContainer") %>%
         rvest::html_text()
     
     valid_prison_options <- box_options %>%
@@ -104,10 +98,9 @@ nevada_pull <- function(x){
         for(j in valid_prison_options){
             fac_name <- nevada_clean_fac_text(box_options[j])
             if(!(fac_name %in% names(html_list))){
-                
                 src_str <- str_c(
-                    "//div[@class=\"slicerItemContainer\" and @aria-label=\"",
-                    box_options[j], "\"]/div")
+                    "/html/body/div[5]/div[1]/div/div[2]/div/div[1]/div/div/div[",
+                    j, "]/div")
                 
                 elCB <- remDr$findElement("xpath", src_str)
                 
@@ -201,7 +194,7 @@ nevada_restruct <- function(x){
         rvest::html_attr("src") %>%
         str_replace("\\./", "./results/raw_files/")
     
-    bind_rows(lapply(sub_files, function(hl){
+    out.data <- bind_rows(lapply(sub_files, function(hl){
     
         op_page <- xml2::read_html(hl)
         
@@ -210,57 +203,89 @@ nevada_restruct <- function(x){
             unlist() %>%
             last() %>%
             str_remove("\\.html")
+        element.front <- '/html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p['
+        element.end.value1 <- ']/span[1]'
+        element.end.title.val <- ']/span[2]'
+        element.end.title1 <- ']/span[4]'
         
-        # get the values of confirmed
-        confirmed <- op_page %>%
-            rvest::html_nodes(".labelGraphicsContext") %>%
-            .[[1]] %>%
-            rvest::html_nodes("text") %>%
+        ## pres //*[@id="pvExplorationHost"]/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[4]/span[4]
+        ## pres /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[4]/span[2]
+        ## ires /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[7]/span[4]
+        ## pstaff /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[5]/span[1]
+        
+        
+        ## Pull Values and Titles
+        residents.confirmed.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 2, element.end.value1)) %>%
             rvest::html_text() %>%
             as.numeric()
-        # make sure labels match what we expect
-        confirmed_labels <- op_page %>%
-            rvest::html_nodes(".legend-item-container") %>%
-            .[[1]] %>%
-            rvest::html_nodes("text") %>%
+        residents.confirmed.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 2, element.end.title.val)) %>%
             rvest::html_text()
-        names(confirmed) <- confirmed_labels
-        
-        basic_check(
-            confirmed_labels, c("Residents/Patients", "Staff", "Imported"))
-
-        svg_cards <- op_page %>%
-            rvest::html_nodes(".card")
-        
-        resident_deaths <- svg_cards %>%
-            rvest::html_attr("aria-label") %>%
-            # get the card that has resident in it but isnt a percentage
-            {which(str_detect(., "Resident") & !str_detect(., "%"))} %>%
-            {svg_cards[.]} %>%
-            rvest::html_node("title") %>%
+        residents.probable.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 4, element.end.title.val)) %>%
             rvest::html_text() %>%
             as.numeric()
-        
-        staff_deaths <- svg_cards %>%
-            rvest::html_attr("aria-label") %>%
-            # get the card that has staff in it but isnt a percentage
-            {which(str_detect(., "Staff") & !str_detect(., "%"))} %>%
-            {svg_cards[.]} %>%
-            rvest::html_node("title") %>%
+        residents.probable.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 4, element.end.title1)) %>%
+            rvest::html_text()
+        residents.imported.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 7, element.end.title.val)) %>%
             rvest::html_text() %>%
             as.numeric()
+        residents.imported.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 7, element.end.title1)) %>%
+            rvest::html_text()
+        staff.confirmed.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 3, element.end.value1)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        staff.confirmed.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 5, element.end.title.val)) %>%
+            rvest::html_text()
+        staff.probable.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 5, element.end.value1)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        staff.probable.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 5, element.end.title.val)) %>%
+            rvest::html_text()
+        residents.deaths.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 10, element.end.title.val)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        residents.deaths.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 10, element.end.title1)) %>%
+            rvest::html_text()
+        staff.deaths.value <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 11, element.end.title.val)) %>%
+            rvest::html_text()%>%
+            as.numeric()
+        staff.deaths.title <- op_page %>%
+            rvest::html_nodes(xpath = str_c(element.front, 11, element.end.title1)) %>%
+            rvest::html_text()
         
-        if(any(is.null(c(confirmed, staff_deaths, resident_deaths)))){
+        if(any(is.null(c(residents.confirmed.value, staff.deaths.value, residents.deaths.value)))){
             warning(
                 "NA values extracted where there should not be. Please inspect")
         }
+        
+        if(!str_detect(residents.confirmed.title, 'PATIENT CASES') | !str_detect(staff.confirmed.title, 'STAFF CASES') | !str_detect(residents.deaths.title, 'PATIENT DEATHS') | !str_detect(staff.deaths.title, 'STAFF DEATHS') |
+           !str_detect(residents.probable.title, 'PROBABLE') | !str_detect(residents.imported.title, 'IMPORTED') | !str_detect(staff.probable.title, 'PROBABLE')){
+            warning(
+                "Pulled Element Titles are not as expected. The order of elements may have changed. Please inspect"
+            )
+        }
+        
+        residents.confirmed.total <- sum(residents.confirmed.value, residents.probable.value, residents.imported.value)
+        staff.confirmed.total <- sum(staff.confirmed.value, staff.probable.value)
     
         tibble(
             Name = facility,
-            Residents.Confirmed = confirmed["Residents/Patients"],
-            Residents.Deaths = resident_deaths,
-            Staff.Confirmed = confirmed["Staff"],
-            Staff.Deaths = staff_deaths) %>%
+            Residents.Confirmed = residents.confirmed.total,
+            Residents.Deaths = residents.deaths.value,
+            Staff.Confirmed = staff.confirmed.total,
+            Staff.Deaths = staff.deaths.value) %>%
             clean_scraped_df()
     }))
 }
@@ -301,7 +326,11 @@ nevada_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "http://doc.nv.gov/About/Press_Release/covid19_updates/",
+            # DOC press releases are here: http://doc.nv.gov/About/Press_Release/covid19_updates/
+            url = str_c(
+                "https://app.powerbigov.us/view?r=",
+                "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
+                "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9"),
             id = "nevada",
             type = "html",
             state = "NV",

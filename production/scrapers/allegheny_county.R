@@ -27,7 +27,7 @@ allegheny_county_restruct <- function(x){
         rvest::html_nodes("table") %>%
         .[c(1, 3)] %>%
         rvest::html_table()
-    
+
     if(!any(str_detect(tabs[[1]][[1]], "(?i)incarc"))){
         warning("Website structure may have changed. Please check.")
     }

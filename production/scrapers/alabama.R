@@ -7,8 +7,8 @@ alabama_check_date <- function(x, date = Sys.Date()){
         rvest::html_text()
     
     site_date <- headers %>%
-        {.[str_detect(., "(?i)update ")]} %>%
-        str_split("\\(Update ") %>%
+        {.[str_detect(., "(?i)updated")]} %>%
+        str_split("\\(Updated ") %>%
         unlist() %>%
         .[2] %>%
         str_remove("\\)") %>%

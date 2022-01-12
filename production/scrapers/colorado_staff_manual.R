@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 colorado_staff_check_date <- function(x, date = Sys.Date()){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "CO Staff", col_types = "Dccc") %>%
+        googlesheets4::read_sheet(sheet = "CO Staff", col_types = "Dcccc") %>%
         pull(Date) %>%
         max(na.rm = TRUE) %>%
         error_on_date(date)
@@ -12,7 +12,7 @@ colorado_staff_check_date <- function(x, date = Sys.Date()){
 colorado_staff_manual_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "CO Staff", 
-                                  col_types = "Dccc")
+                                  col_types = "Dcccc")
 }
 
 colorado_staff_manual_restruct <- function(x){
@@ -29,14 +29,16 @@ colorado_staff_manual_extract <- function(x, exp_date = Sys.Date()){
         "Date",
         "Name", 
         "Staff Positive Cases", 
-        "Staff Vaccinations")
+        "Staff Vaccinations", 
+        "Staff Active Cases")
     )
     
     x %>%
         select(
             Name = `Name`,
             Staff.Confirmed = `Staff Positive Cases`,
-            Staff.Initiated = `Staff Vaccinations`) %>%
+            Staff.Initiated = `Staff Vaccinations`, 
+            Staff.Active = `Staff Active Cases`) %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Staff")), as.numeric))} %>%
         clean_scraped_df()

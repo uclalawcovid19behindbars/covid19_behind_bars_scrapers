@@ -71,7 +71,8 @@ wisconsin_population_extract <- function(x){
         "3 TOTAL ON-GROUNDS POPULATION", 
         "TOTAL ON-GROUNDS POPULATION 3", 
         "SUBTOTAL-MALES", 
-        "SUBTOTAL-FEMALES")
+        "SUBTOTAL-FEMALES",
+        "INSTITUTIONS CENTERS MSDF AODA PIOCS TRANS UNITS")
     
     exp_names <- c("x", "design_capacity", "total_population", "dai", "dcc")
     clean_names <- c("Name", "Capacity.Drop", "Residents.Population", "DAI.Drop", "DCC.Drop")
@@ -158,12 +159,6 @@ wisconsin_population_extract <- function(x){
         warning(
             stringr::str_c("Total population ", sum(out$Residents.Population), 
                            " is higher than expected. Inspect for total rows that were not dropped."))
-    }
-    # Check number of facilities for the same reason 
-    if (nrow(out) > 60){
-        warning(
-            stringr::str_c("Number of rows ", nrow(out), " does not match expected. ", 
-                           "Inspect for total rows that were not dropped."))
     }
     
     out %>% 

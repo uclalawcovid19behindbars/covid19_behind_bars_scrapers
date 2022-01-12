@@ -3,7 +3,7 @@ source("./R/utilities.R")
 
 delaware_check_date <- function(x, date = Sys.Date()){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
-        googlesheets4::read_sheet(sheet = "DE", col_types = "Dccccccccccccccc") %>%
+        googlesheets4::read_sheet(sheet = "DE", col_types = "Dcccccccccccc") %>%
         pull(Date) %>%
         max(na.rm=TRUE) %>%
         error_on_date(date)
@@ -12,7 +12,7 @@ delaware_check_date <- function(x, date = Sys.Date()){
 delaware_pull <- function(x){
     "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
         googlesheets4::read_sheet(sheet = "DE", 
-                                  col_types = "Dccccccccccccccc")
+                                  col_types = "Dcccccccccccc")
 }
 
 delaware_restruct <- function(x){
@@ -22,16 +22,17 @@ delaware_restruct <- function(x){
 }
 
 delaware_extract <- function(x){
-    
     x %>% 
         filter(!is.na(Name)) %>% 
         select(
-            Name, Staff.Confirmed, Residents.Confirmed, Residents.Active, 
-            Staff.Deaths, Staff.Recovered, Residents.Recovered, 
-            Residents.Deaths = Resident.Deaths, Residents.Initiated,
-            Staff.Initiated, Residents.Completed, Staff.Completed,
-            Residents.Vadmin, Staff.Vadmin, Staff.Active) %>% 
-        clean_scraped_df()
+            Name, Staff.Confirmed, Residents.Confirmed, 
+            Residents.Tadmin, Residents.Deaths, 
+            Staff.Active, Residents.Active, 
+            Staff.Recovered, Residents.Recovered, 
+            Residents.Initiated, Residents.Initiated.Pct,
+            Residents.Completed) %>% 
+        mutate(Residents.Initiated.Pct = (as.numeric(Residents.Initiated.Pct)/100)) %>%
+        clean_scraped_df() 
 }
 
 #' Scraper class for general delaware COVID data

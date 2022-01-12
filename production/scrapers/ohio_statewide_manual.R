@@ -2,12 +2,10 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 ohio_statewide_date_check <- function(x, date = Sys.Date()){
-    x %>% 
-        magick::image_read_pdf() %>% 
-        magick::image_crop("600x50+800+200") %>% 
-        magick::image_ocr() %>% 
-        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
-        lubridate::mdy() %>%
+    "1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ" %>%
+        googlesheets4::read_sheet(sheet = "OH Statewide", col_types = "DDciiii") %>%
+        pull(`Site updated date`) %>% 
+        lubridate::ymd() %>%
         error_on_date(date)
 }
 

@@ -1,21 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-new_jersey_statewide_check_date <- function(x, date = Sys.Date()){
-    png <- get_src_by_attr(x, "img", attr = "src", attr_regex = "COVID_Chart") %>%
+new_jersey_statewide_check_date <- function(url, date = Sys.Date()){
+    png <- get_src_by_attr(url, "img", attr = "src", attr_regex = "COVID_Chart") %>%
         last()
-    
+
     png %>%
         magick::image_read() %>%
-        magick::image_crop("1200x800+0+400") %>%
+        magick::image_crop("1400x800+0+657") %>%
         magick::image_ocr() %>%
-        {.[str_detect(., "(?i)20")]} %>%
-        str_split(., "(?i)updated as of |\nPercent") %>%
+        str_split(., "(?i)updated as of") %>%
         unlist() %>%
         .[2] %>%
-        str_split(., "(?i)and include week") %>% 
-        .[[1]] %>% 
-        {.[str_detect(., "(?i)2021")]} %>% 
+        str_split(., "(?i). Between") %>%
+        unlist() %>%
+        .[1] %>%
         lubridate::mdy() %>% 
         error_on_date(date)
 }
@@ -58,25 +57,37 @@ new_jersey_statewide_restruct <- function(x){
 new_jersey_statewide_extract <- function(x){
     
     exp_names <- c(
-        "Test Completed Residents", 
+        "Tests Residents", 
         "Cumulative Positives Residents", 
-        "Vaccine Doses Distributed Residents", 
+        "Fully vaccinated Residents", 
+        "Vaccine Doses Distributed Residents",
+        "First Dose Residents",
+        "Second Dose Residents",
+        "Booster Residents",
         "Deaths Residents", 
-        "Test Completed Staff", 
+        "Tests Staff", 
         "Cumulative Positives Staff", 
-        "Vaccine Doses Distributed Staff"
+        "Vaccine Doses Distributed Staff",
+        "First Dose Staff",
+        "Second Dose Staff"
     )
     
     check_names(x, exp_names)
     
     names(x) <- c(
         "Residents.Tadmin.Aug.Drop", # Cumulative since July, not true cumulative  
-        "Residents.Confirmed.Drop", # Collecting facility-level in main scraper 
-        "Residents.Initiated", 
-        "Residents.Deaths.Drop", # Collecting facility-level in main scraper 
+        "Residents.Confirmed",
+        "Residents.Completed.Pct.Drop",
+        "Residents.Vadmin", 
+        "Residents.Initiated",
+        "Residents.Completed",
+        "Residents.Booster.Drop",
+        "Residents.Deaths", 
         "Staff.Tadmin.Drop", # We don't collect Staff.Tadmin 
-        "Staff.Confirmed.Drop", # Collecting facility-level in main scraper 
-        "Staff.Initiated"
+        "Staff.Confirmed", # Collecting facility-level in main scraper 
+        "Staff.Vadmin",
+        "Staff.Initiated",
+        "Staff.Completed"
     )
     
     x %>% 

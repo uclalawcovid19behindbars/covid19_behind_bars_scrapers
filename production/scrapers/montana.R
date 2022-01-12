@@ -1,22 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-montana_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
-    date_check_txt <- rvest::html_nodes(base_html, xpath = "//*[@id=\"content-wrapper\"]/main/div/div[2]/div/p[4]/em/text()") %>%
-        rvest::html_text()
-
-    date_check_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_split("Data last updated at") %>%
-        unlist() %>%
-        .[2] %>%
+montana_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
+    date_check_txt <- rvest::html_nodes(base_html, css = 'em') %>%
+        rvest::html_text() %>% 
         str_split("on") %>%
         unlist() %>%
         .[2] %>%
-        str_remove("\\.") %>%
-        lubridate::mdy() %>%
+        str_replace("Sept", "Sep")
+           
+    date_check_txt <- gsub("[[:punct:]]", "", date_check_txt)
+
+    date_check <- lubridate::mdy(date_check_txt) %>%
         error_on_date(expected_date = date)
+    
+    return(date_check)
 }
 
 montana_pull <- function(x){

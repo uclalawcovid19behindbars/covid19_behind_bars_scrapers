@@ -1,13 +1,13 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-orange_county_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+orange_county_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, xpath = "//*[@id=\"block-countyoc-content\"]/article/div/div/div/div/h3[1]") %>%
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         str_split(., "(?i)Updated ") %>%
         unlist() %>%
         .[2] %>%

@@ -14,12 +14,29 @@ Part of this project includes scraping state DOC websites, the federal BOP websi
 
 You can find each of our scrapers in the folder `production/scrapers`. More detailed documentation can be found [here](https://uclalawcovid19behindbars.github.io/covid19-behind-bars-public-docs/scraper_documentation/) for each of our scrapers. If you would like to recreate the documentation with the latest information you can run the function `document_all_scrapers()`. In order to run these scrapers, you will need to install the libraries listed at the top of the file `R/generic_scraper.R` as well as our teams own library [behindbarstools](https://github.com/uclalawcovid19behindbars/behindbarstools). Individual scrapers may require additional libraries which are listen in the individual scraper files themselves through explicit library calls.
 
+## Getting started
+
+### Requirements
+
+- Docker (for selenium web scraping) installed and running
+- A direct installation of the r package `tabulizer` and its dependencies. To install, run `remotes::install_github(c("ropensci/tabulizerjars", "ropensci/tabulizer"))`
+- API keys for the services we utilize, Extractable (`EXTRACTABLE_API_KEY`) and PERMACC (`PERMACC_API_KEY`)
+- SSH key for UCLA server if you will be adding scraped data to the server. The following configuration should be added to your local `.ssh/config`:
+```
+host {{hostname}}
+    HostName {{address}}
+    IdentityFile {{~/.ssh/some_private_key}}
+    User {{username}}
+```
+
+### Prepare the submodule
+
+This project stores its data in a submodule. When you first clone this project, you get the data directory which should contain the data submodule, but none of the files within yet. 
+
+1. Run `git submodule init` to initialize your local configuration file. 
+2. Run `git submodule update` to fetch all the data. 
+
 ## Running the scraper
-
-In order to run the scraper you will need the following: 
-
-* Docker (for selenium web scraping) installed and running
-* API and SSH keys for the services we utilize, Extractable, PERMACC, and UCLA server
 
 The following steps should be completed in order to ensure the scraper will run properly.
 
@@ -51,7 +68,7 @@ Rscript production/pre_run.R
 mkdir /tmp/sel_dl
 
 docker run -d -p 4445:4444 -p 5901:5900 -v /tmp/sel_dl:/home/seluser/Downloads \
-    selenium/standalone-firefox:latest
+    selenium/standalone-firefox:2.53.0
 ```
 
 **STOP! DID YOU UPDATE THE MANUAL SCRAPER DATA YET?**: Visit the [manual data Google Sheet](https://docs.google.com/spreadsheets/d/1VhAAbzipvheVRG0UWKMLT6mCVQRMdV98lUUkk-PCYtQ/edit#gid=1527592402) and update the sad scrapers for which we must use our own eyes.

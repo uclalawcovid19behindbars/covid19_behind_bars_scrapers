@@ -39,4 +39,4 @@ remotes::install_github("uclalawcovid19behindbars/behindbarstools")
 
 # check your credits before we begin
 source("./R/utilities.R")
-check_credits()
+check_extractable_credits()

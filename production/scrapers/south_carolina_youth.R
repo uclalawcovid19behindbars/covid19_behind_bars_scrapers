@@ -2,7 +2,6 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 south_carolina_youth_pull <- function(x){
-    stop_defunct_scraper(x)
     xml2::read_html(x)
 }
 

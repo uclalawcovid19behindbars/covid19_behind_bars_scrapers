@@ -17,7 +17,7 @@ missouri_statewide_restruct <- function(x){
             xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
         rvest::html_text() %>%
         # Pull number before ([%])  
-        word(1, sep = "\\(") %>% 
+        word(1, sep = "\n") %>% 
         string_to_clean_numeric()
     
     all_deaths <- x %>%
@@ -30,7 +30,6 @@ missouri_statewide_restruct <- function(x){
         warning("Web data for residents and staff not formatted as expected")
     }
     
-    
     Staff.Deaths <- str_split(all_deaths[2], ":")[[1]] %>%
         last() %>%
         string_to_clean_numeric()
@@ -41,31 +40,31 @@ missouri_statewide_restruct <- function(x){
     Name <- "State-wide"
     MOSW <- data.frame(Name, Staff.Deaths, Residents.Deaths, Residents.Tadmin, Residents.Initiated)
     
+    ## commenting this out once vax rate was removed from dashboard
     # Check vaccinate rate 
-    pop_denoms <- read_aggregate_pop_data()
-    mo_pop <- pop_denoms %>% 
-        filter(State == "Missouri") %>% 
-        pull(Residents.Population)
-    
-    vax_rate <- x %>% 
-        rvest::html_node(
-            xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
-        rvest::html_text() %>%
-        # Pull number before ([%])  
-        word(2, sep = "\\(") %>% 
-        sub("\\%.*", "", .) %>% 
-        string_to_clean_numeric() 
-    
-    diff <- abs((vax_rate / 100) - (Residents.Initiated / mo_pop))
-
-    if(diff > 0.02){
-        stop(
-            paste0("Website vaccination rate, ", scales::percent(vax_rate / 100),
-                  ", far away the rate calculated with the value scraped (",
-                  scales::percent(Residents.Initiated / mo_pop),
-                  ")")
-        )
-    }
+    # pop_denoms <- read_aggregate_pop_data()
+    # mo_pop <- pop_denoms %>% 
+    #     filter(State == "Missouri") %>% 
+    #     pull(Residents.Population)
+    # vax_rate <- x %>% 
+    #     rvest::html_node(
+    #         xpath="//h3[contains(text(),'Offenders Vaccinated')]/following::ul") %>%
+    #     rvest::html_text() %>%
+    #     # Pull number before ([%])  
+    #     word(2, sep = "\\(") %>% 
+    #     sub("\\%.*", "", .) %>% 
+    #     string_to_clean_numeric() 
+    # 
+    # diff <- abs((vax_rate / 100) - (Residents.Initiated / mo_pop))
+    # 
+    # if(diff > 0.02){
+    #     stop(
+    #         paste0("Website vaccination rate, ", scales::percent(vax_rate / 100),
+    #               ", far away the rate calculated with the value scraped (",
+    #               scales::percent(Residents.Initiated / mo_pop),
+    #               ")")
+    #     )
+    # }
     
     MOSW
 }

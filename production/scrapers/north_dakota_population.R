@@ -1,14 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-nd_pop_check_date <- function(x, date = Sys.Date()){
-    img <- magick::image_read_pdf(x, pages = 1) 
+nd_pop_check_date <- function(url, date = Sys.Date()){
+    img <- magick::image_read_pdf(url, pages = 1) 
     
     date_box <- magick::image_crop(img, "500x240+2000+160") %>% 
         magick::image_ocr() 
     
     date_box %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
@@ -18,7 +18,8 @@ nd_pop_crop <- function(img, crop, detect){
 
     sub_txt <- img %>% 
         magick::image_crop(crop) %>% 
-        magick::image_ocr() 
+        magick::image_ocr() %>% 
+        first()
     
     if(!str_detect(sub_txt, detect)){
         warning("Field does mot match expected text")

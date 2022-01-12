@@ -8,12 +8,11 @@ hawaii_staff_date_check <- function(x, date = Sys.Date()){
         magick::image_read() 
     
     img %>% 
-        magick::image_crop("500x200") %>% 
+        magick::image_crop("200x90") %>% 
         magick::image_ocr() %>% 
-        str_split("Updated") %>% 
+        str_split("\n") %>% 
         unlist() %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_squish() %>% 
+        {.[str_detect(., "\\d")]} %>%
         str_extract("\\d{1,2}/\\d{1,2}/\\d{1,2}") %>%
         lubridate::mdy() %>%
         error_on_date(date)
@@ -34,15 +33,15 @@ hawaii_staff_extract <- function(x){
     dat_mat <- x[[1]]
     dat_mat[1,] <- last_not_na(
         unlist(ifelse(dat_mat[1,] == "", NA, dat_mat[1,])))
-    new_names <- apply(dat_mat[1:3,], 2, function(x){
+    new_names <- apply(dat_mat[1:2,], 2, function(x){
         str_squish(str_c(na.omit(x), collapse = " "))
     })
     
-    sub_mat <- dat_mat[3:nrow(dat_mat),]
+    sub_mat <- dat_mat[2:nrow(dat_mat),]
     sub_mat[1,] <- new_names
     
     col_name_mat <- matrix(c(
-        "CORRECTIONS DIVISION", "0", "Name",
+        "", "0", "Name",
         "STAFF ACTIVE", "1", "Staff.Active",
         "STAFF RECOVERED", "2", "Staff.Recovered",
         "INMATES ACTIVE", "3", "Drop.Dup1",

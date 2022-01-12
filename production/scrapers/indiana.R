@@ -1,16 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-indiana_date_check <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+indiana_date_check <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     
     base_html %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>% 
-        {.[str_detect(., "(?i)last updated")]} %>% 
-        str_split("updated") %>% 
+        {.[str_detect(., "(?i)current as of")]} %>% 
         unlist() %>% 
-        {.[str_detect(., "21")]} %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }
@@ -29,17 +27,27 @@ indiana_restruct <- function(x){
     
     # Wrangle Data
     if (length(results) == 2) {
-        if("0" %in% names(results[[1]])){
+        ## get the columns in the correct order 
+        ## check success with the following code:
+        ## first create `d` by following if/else logic below, then:
+        ## clean_fac_col_txt(unname(unlist(d[1,])))
+        
+        if (str_detect(results[[1]][1, 1], "(?i)correctional facility")) {
+            names(results[[2]]) <- as.character(
+                max(as.numeric(names(results[[1]]))) +
+                    as.numeric(names(results[[2]])) + 1)
+            d <- cbind(results[[1]], results[[2]])
+        }
+        else {
             names(results[[1]]) <- as.character(
                 max(as.numeric(names(results[[2]]))) +
                     as.numeric(names(results[[1]])) + 1)
+            d <- cbind(results[[2]], results[[1]])
         }
-        d <- cbind(results[[2]],results[[1]])
     } else {
         d <- results[[1]]
     }
-
-    d
+    return(d)
 }
 
 indiana_extract <- function(x){

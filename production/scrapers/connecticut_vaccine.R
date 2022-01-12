@@ -18,7 +18,7 @@ connecticut_vaccine_check_date <- function(x, date = Sys.Date()){
         lubridate::mdy() %>%
         error_on_date(date)
 }
-
+x <- 
 connecticut_vaccine_pull <- function(x){
     ct_img2 <- xml2::read_html(x) %>%
         rvest::html_nodes("img") %>%
@@ -31,7 +31,31 @@ connecticut_vaccine_pull <- function(x){
 }
 
 connecticut_vaccine_restruct <- function(x){
-    in_txt <- magick::image_crop(x, "200x120+10+720") %>%
+    x <- magick::image_trim(x) %>% 
+        magick::image_modulate(brightness = 120)
+    
+    w_ <- magick::image_info(x)$width
+    h_ <- magick::image_info(x)$height
+
+    if (h_ >= 1000){
+        ##### h = 1650, w = 700
+        res_h_txt <- 250
+        res_w_txt <- 250
+        res_xoff_txt <- 50
+        res_yoff_txt <- 1240
+        st_xoff_txt <- 450
+    }
+    else{
+        ##### h = 944, w = 422
+        res_h_txt <- 200
+        res_w_txt <- 160
+        res_xoff_txt <- 10
+        res_yoff_txt <- 740
+        st_xoff_txt <- 250
+    }
+    
+    in_txt <- magick::image_crop(x, str_c(res_h_txt, "x", res_w_txt, "+", 
+                                          res_xoff_txt, "+", res_yoff_txt)) %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -39,26 +63,48 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    h_ <- round(dim(magick::image_data(x))[3] * .9)
+    st_h_txt <- res_h_txt
+    st_w_txt <- res_w_txt
+    st_yoff_txt <- res_yoff_txt
     
-    st_txt <- magick::image_crop(x, "190x120+260+710") %>%
+    st_txt <- magick::image_crop(x, str_c(st_h_txt, "x", st_w_txt, "+", 
+                                          st_xoff_txt, "+", st_yoff_txt)) %>%
+        magick::image_modulate(brightness = 200) %>% 
         magick::image_ocr()
     
     if(!(str_detect(st_txt, "(?i)staff") & str_detect(st_txt, "(?i)vacc"))){
         stop("Text not as expected for staff, please inspect scrape")
     }
     
-    tibble(
-        Res = magick::image_crop(x, str_c("170x80+28+", h_)) %>%
+    h_num <- round(h_ * .9)
+    
+    res_h_num <- res_h_txt - (res_h_txt / 4)
+    res_w_num <- res_w_txt
+    res_xoff_num <- (res_xoff_txt * 1/4) + res_xoff_txt
+    st_h_num <- st_h_txt - (st_h_txt / 4)
+    st_w_num <- st_w_txt 
+    st_xoff_num <- st_xoff_txt
+        
+    out <- tibble(
+        Res = magick::image_crop(x, str_c(res_h_num, "x", res_w_num, "+",
+                                          res_xoff_num, "+", h_num)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric(),
     
-        Staff = magick::image_crop(x, str_c("200x110+260+", h_)) %>%
+        Staff = magick::image_crop(x, str_c(st_h_num, "x", st_w_num, "+",
+                                          st_xoff_num, "+", h_num)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric()
     )
+    
+    if(out$Res < out$Staff){
+        stop("Vaccination numbers not as expected, please inspect")
+    }
+    
+    return(out)
+    
 }
 
 connecticut_vaccine_extract <- function(x){

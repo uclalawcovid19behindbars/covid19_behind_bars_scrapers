@@ -33,9 +33,8 @@ kansas_population_extract <- function(x){
         select(-rowname)
     
     # Check relevant column positions 
-    if (!all(c(x_[1,1] == "NAME OF FACILITY", 
-               x_[1,6] == "CURRENT", 
-               x_[3,7] == "TOT"))){
+    if (!all(c(str_detect(x_[1,1], "(?i)NAME OF FACILITY"), 
+               str_detect(x_[1,6], "(?i)CURRENT")))){
         warning("Column names not as expected. Inspect raw file.")
     }
     

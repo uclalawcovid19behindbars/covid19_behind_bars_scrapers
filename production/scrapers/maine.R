@@ -63,7 +63,7 @@ maine_extract <- function(x){
         as_tibble() %>% 
         filter(Name != "",
                Name != "All Facilities - Resident") %>%
-        mutate(Perc.Fully.Vax.Cln = as.numeric(gsub("[\\%,]", "", Perc.Fully.Vax)) / 100) %>%
+        mutate(Residents.Completed.Pct = as.numeric(gsub("[\\%,]", "", Perc.Fully.Vax)) / 100) %>%
         select(-Perc.Fully.Vax)
     
     # Tests and cases 
@@ -83,17 +83,18 @@ maine_extract <- function(x){
     
     check_names_extractable(tests_, col_name_df)
     
-    rename_extractable(tests_, col_name_df) %>%
+    out <- rename_extractable(tests_, col_name_df) %>%
         as_tibble() %>%
         {suppressWarnings(mutate_at(., vars(starts_with("Res")), as.numeric))} %>%
         filter(!(Name == "" | is.na(Residents.Tadmin))) %>%
         filter(!str_detect(Name, "(?i)total")) %>% 
         full_join(pop_df, by = "Name") %>% 
         full_join(vaccines_df, by = "Name") %>% 
-        mutate(Residents.Completed = round(Residents.Population * Perc.Fully.Vax.Cln)) %>%
-        select(-ends_with("Drop"),
-               -Perc.Fully.Vax.Cln) %>% 
+        mutate(Residents.Completed = round(Residents.Population * Residents.Completed.Pct)) %>%
+        select(-ends_with("Drop")) %>% 
         clean_scraped_df()
+    
+    return(out)
 }
 
 #' Scraper class for general maine COVID data

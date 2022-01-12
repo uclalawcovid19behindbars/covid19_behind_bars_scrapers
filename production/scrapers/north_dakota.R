@@ -1,20 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-north_dakota_check_date <- function(x, date = Sys.Date()){
-    base_html <- xml2::read_html(x)
+north_dakota_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     date_txt <- rvest::html_nodes(base_html, 
                                   xpath="/html/body/div[1]/div[5]/div/section/div[2]/article/div/div[2]/div/div[2]/div/div/div/div[1]/h3") %>%
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         str_extract("\\d{1,2}-\\d{1,2}-\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(expected_date = date)
 }
 
-north_dakota_pull <- function(x){
+north_dakota_pull <- function(url){
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
         port = 4445,
@@ -22,18 +22,21 @@ north_dakota_pull <- function(x){
     )
     
     del_ <- capture.output(remDr$open())
-    remDr$navigate(x)
+    remDr$navigate(url)
     
-    remDr$getPageSource() %>%
+    raw_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
     
+    remDr$quit()
+
+    return(raw_html)
 }
 
-north_dakota_restruct <- function(x){
-    svg_charts <- x %>%
+north_dakota_restruct <- function(scraped_html){
+    svg_charts <- scraped_html %>%
         rvest::html_nodes("svg")
     
-    table_names <- x %>%
+    table_names <- scraped_html %>%
         rvest::html_nodes(xpath="//h3[@id='']") %>%
         rvest::html_text()
 
@@ -48,12 +51,12 @@ north_dakota_restruct <- function(x){
             rvest::html_text() %>%
             str_replace_all(" ", ".") %>%
             {str_c(group_, ., sep = ".")}
-    
+
         fac <- sub_svg %>%
             rvest::html_node(".highcharts-xaxis-labels") %>%
             rvest::html_nodes("text") %>%
             rvest::html_text()
-    
+
         data_labels <- sub_svg %>%
             rvest::html_nodes(".highcharts-data-labels")
     
@@ -79,9 +82,9 @@ north_dakota_restruct <- function(x){
     out_df
 }
 
-north_dakota_extract <- function(x){
+north_dakota_extract <- function(restructured_data){
     
-    check_names(x, c(
+    check_names(restructured_data, c(
         "Name" = "Name", 
         "Residents.Positive", 
         "Residents.Recovered", 
@@ -94,24 +97,18 @@ north_dakota_extract <- function(x){
         "Residents.Total.Individuals.Tested.Twice", 
         "Staff.Total.Tests.Administered", 
         "Staff.Total.Individuals.Tested", 
-        "Staff.Total.Individuals.Tested.Twice", 
-        "Residents.Total.First.Doses", 
-        "Residents.Total.Second.Doses", 
-        "Residents.Total.Single.Doses"))
+        "Staff.Total.Individuals.Tested.Twice"))
     
-    x %>%
+    restructured_data %>%
         mutate(Residents.Confirmed = Residents.Deaths + Residents.Recovered +
                    Residents.Positive) %>%
         mutate(Staff.Confirmed = Staff.Deaths + Staff.Recovered +
-                   Staff.Positive, 
-               Residents.Initiated = Residents.Total.First.Doses + Residents.Total.Single.Doses, 
-               Residents.Completed = Residents.Total.Second.Doses + Residents.Total.Single.Doses) %>%
+                   Staff.Positive) %>%
         select(
             Name, Residents.Confirmed, Residents.Recovered, Residents.Deaths,
             Staff.Confirmed, Staff.Recovered, Staff.Deaths,
             Residents.Tadmin = Residents.Total.Tests.Administered,
             Staff.Tested = Staff.Total.Individuals.Tested, 
-            Residents.Initiated, Residents.Completed, 
             Residents.Active = Residents.Positive, 
             Staff.Active = Staff.Positive
         ) %>% 

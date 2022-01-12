@@ -15,7 +15,9 @@ UCLABB_MAIN_VARIABLES <- c(
     "Residents.Population", "Residents.Active",
     "Staff.Vadmin", "Residents.Vadmin",
     "Staff.Initiated", "Residents.Initiated",
+    "Staff.Initiated.Pct", "Residents.Initiated.Pct", 
     "Staff.Completed", "Residents.Completed", 
+    "Residents.Completed.Pct",
     "Staff.Population", "Staff.Active"
 )
 

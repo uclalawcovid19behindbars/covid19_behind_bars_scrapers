@@ -41,7 +41,7 @@ wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
 wisconsin_vaccine_pull <- function(x){
     # if this is giving you trouble, try save-as'ing it in 
     # excel with UTF-8 .csv file encoding
-    read.csv("/tmp/sel_dl/Vaccines.csv")
+    read.csv("/tmp/sel_dl/PIOC Vaccinated.csv")
 }
 
 wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
@@ -51,11 +51,14 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
     
     check_names(x_, c(
         "facility", 
-        "as_of_date_vaccine", 
-        "first_doses_moderna_or_pfizer",
-        "second_doses_moderna_or_pfizer", 
-        "johnson_johnson_doses", 
-        "total_doses"
+        "as_of_date_vaccinated_pioc", 
+        "number_partially_vaccinated",
+        "percent_partially_vaccinated", 
+        "number_fully_vaccinated", 
+        "percent_fully_vaccinated", 
+        "number_partially_or_fully_vaccinated", 
+        "percent_partially_or_fully_vaccinated", 
+        "facility_population"
     ))
     
     x_
@@ -63,13 +66,15 @@ wisconsin_vaccine_restruct <- function(x, exp_date = Sys.Date()){
 
 wisconsin_vaccine_extract <- function(x){
     x %>% 
-        rename(Name = facility) %>% 
+        select(Residents.Initiated = number_partially_or_fully_vaccinated, 
+               Residents.Completed = number_fully_vaccinated, 
+               Residents.Initiated.Pct = percent_partially_or_fully_vaccinated,
+               Residents.Completed.Pct = percent_fully_vaccinated,
+               Name = facility) %>% 
         filter(!str_detect(Name, "(?i)total")) %>% 
-        clean_scraped_df() %>% 
-        mutate(Residents.Initiated = first_doses_moderna_or_pfizer + johnson_johnson_doses, 
-               Residents.Completed = second_doses_moderna_or_pfizer + johnson_johnson_doses, 
-               Residents.Vadmin = total_doses) %>% 
-        select(Name, starts_with("Res"))
+        clean_scraped_df() %>%
+        mutate(Residents.Initiated.Pct = as.numeric(Residents.Initiated.Pct) / 100,
+               Residents.Completed.Pct = as.numeric(Residents.Completed.Pct) / 100 ) 
 }
 
 #' Scraper class for general COVID data

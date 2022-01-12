@@ -1,15 +1,15 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-ohio_check_date <- function(x, date = Sys.Date()){
-    src <-  get_src_by_attr(x, "a", attr = "href", attr_regex = "(?i)covid")
+ohio_check_date <- function(url, date = Sys.Date()){
+    src <-  get_src_by_attr(url, "a", attr = "href", attr_regex = "(?i)covid")
     img <- magick::image_read_pdf(src, pages = 1) 
     
     date_box <- magick::image_crop(img, "500x240+1000+160") %>% 
-        magick::image_ocr() 
+        magick::image_ocr()
     
     date_box %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(expected_date = date)

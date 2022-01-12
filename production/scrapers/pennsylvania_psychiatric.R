@@ -39,10 +39,12 @@ pennsylvania_psychiatric_restruct <- function(x){
 
     table1 <- table1[-c(7)] 
     table1[table1 == "Less than 5"] <- NA
+    table1[table1 == "<5"] <- NA
     
     colnames(table1) <- c(
         "Name", "Residents.Population", "Residents.Active", "Residents.Confirmed",
         "Residents.Deaths", "Staff.Population", "Staff.Confirmed")
+    
     table1[,2:7] <- sapply(table1[,2:7], as.numeric)
     
     table1

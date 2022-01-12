@@ -8,9 +8,6 @@ michigan_vaccine_date_check <- function(x, date = Sys.Date()){
         rvest::html_nodes("caption") %>% 
         rvest::html_text() %>% 
         {.[str_detect(., "(?i)correction")]} %>% 
-        stringr::str_split("(?i)through") %>% 
-        unlist() %>% 
-        {.[str_detect(., "21")]} %>% 
         lubridate::mdy() %>% 
         error_on_date(date)
 }
@@ -40,7 +37,8 @@ michigan_vaccine_extract <- function(x){
         Residents.Population = "total_population",
         Refusals.Drop = "number_refusals",
         First.Drop = "cumulative_1st_doses", 
-        Second.Drop = "cumulative_2nd_doses", 
+        Second.Drop = "cumulative_2nd_doses",
+        Booster.Drop = "additional_booster_dose",
         Single.Drop = "single_dose_series_administered", 
         Age65.Drop = "age_group_65", 
         Age50.Drop = "age_group_50_64", 

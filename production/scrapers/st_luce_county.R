@@ -4,13 +4,11 @@ source("./R/utilities.R")
 st_luce_county_check_date <- function(x, date = Sys.Date()){
     z = xml2::read_html(x)
     
-    z %>%
-        rvest::html_node(xpath = str_c(
-            "//strong[contains(text(),'Status')]/",
-            "parent::h3/following-sibling::p")) %>%
-        rvest::html_text() %>%
-        str_match("(?<=\\().+?(?=\\))") %>%
-        c() %>%
+    z %>% 
+        rvest::html_nodes("strong") %>% 
+        rvest::html_text() %>% 
+        {.[str_detect(., "\\d{1,2}/\\d{1,2}/\\d{2,4}")]} %>% 
+        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }

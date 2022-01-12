@@ -1,33 +1,51 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-nyc_jails_check_date <- function(x, date = Sys.Date()){
-    html_page <- xml2::read_html(x)
-    
-    pdf_page <- html_page %>%
-        rvest::html_nodes("a") %>%
-        .[str_squish(rvest::html_text(.)) == "CHS COVID-19 Data Snapshot"] %>%
-        rvest::html_attr("href") %>%
+nyc_jails_check_date <- function(url, date = Sys.Date()){
+    pdf_page <- nyc_jails_pull(url) %>% 
         magick::image_read_pdf(pages = 1)
     
     date_box <- magick::image_crop(pdf_page, "1550x485+0+0") %>% 
         magick::image_ocr() 
     
     date_box %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
+        str_extract("\\d{1,}/\\d{1,}/\\d{2,}") %>%
         lubridate::mdy() %>%
-        error_on_date(expected_date = date)
+        error_on_date(date)
 }
 
 
-nyc_jails_pull <- function(x){
-    html_page <- xml2::read_html(x)
+nyc_jails_pull <- function(url){
+    html_page <- xml2::read_html(url)
     
-    html_page %>%
+    pdf_address <- html_page %>%
         rvest::html_nodes("a") %>%
         .[str_squish(rvest::html_text(.)) == "CHS COVID-19 Data Snapshot"] %>%
         rvest::html_attr("href")
+       
+    tryCatch(
+        {
+            magick::image_read_pdf(pdf_address, pages = 1)
+            # if image_read_pdf is successful, return pdf_address
+            pdf_address
+        },
+        error=function(error) {
+            if(str_detect(error$message, "HTTP 404")){
+                pdf_address <- .change_address_one_day_earlier(pdf_address)
+            }
+        }
+    )
+}
+
+.change_address_one_day_earlier <- function(address){
+    new_date <- str_extract(address, "\\d{5,}") %>%
+        strtoi() %>%
+        sum(-1) %>%
+        as.character()
+    
+    address_split_on_date <- str_split(address, "\\d{5,}") %>% unlist()
+    
+    str_c(address_split_on_date[1], new_date, address_split_on_date[2])
 }
 
 nyc_jails_restruct <- function(x){

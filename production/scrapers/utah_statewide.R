@@ -1,14 +1,24 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-utah_statewide_check_date <- function(x, date = Sys.Date()){
-    z <- xml2::read_html(x)
+utah_statewide_check_date <- function(url, date = Sys.Date()){
+    base_html <- xml2::read_html(url)
     
-    z %>%
-        rvest::html_node(
-            xpath="/html/body/section/article/div[2]/div[3]/p[24]/em/span") %>%
-        rvest::html_text() %>%
-        str_remove("(?i)updated") %>%
+    p_headers <- base_html %>%
+        rvest::html_nodes("p") %>% 
+        rvest::html_text()
+    
+    ## looking for staff update date
+    ## first look for where on the page this is
+    staff_cases_idx <- p_headers %>%
+        str_which(., "(?i)total confirmed staff cases")
+    
+    ## limit dates that will come up in search results
+    p_headers[c(staff_cases_idx:length(p_headers))] %>%
+        {.[str_detect(., "(?i)updated")]} %>% 
+        first() %>% 
+        str_split("updated") %>% 
+        unlist() %>% 
         lubridate::mdy() %>%
         error_on_date(date)
 }
@@ -82,7 +92,7 @@ utah_statewide_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://corrections.utah.gov/index.php/home/alerts-2/1237-udc-coronavirus-updates",
+            url = "https://corrections.utah.gov/covid-19-updates/",
             id = "utah_statewide",
             type = "html",
             state = "UT",
