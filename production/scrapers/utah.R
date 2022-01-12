@@ -16,7 +16,7 @@ utah_check_date <- function(x, date = Sys.Date()){
 utah_pull <- function(x){
     get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)screen-shot") %>%
         .[[1]] %>%
-        str_remove("-[0-9][0-9][0-9]x[0-9][0-9][0-9]") %>%
+        str_remove("-[0-9]+x[0-9]+") %>%
         magick::image_read()
 }
 
