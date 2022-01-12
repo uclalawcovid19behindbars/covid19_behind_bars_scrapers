@@ -27,20 +27,19 @@ allegheny_county_restruct <- function(x){
         rvest::html_nodes("table") %>%
         .[c(1, 3)] %>%
         rvest::html_table()
-    
-    if(!any(str_detect(unlist(tabs[[1]][,1]), "(?i)incarcerated"))){
+
+    if(!any(str_detect(tabs[[1]][[1]], "(?i)incarc"))){
         warning("Website structure may have changed. Please check.")
     }
-    if(!any(str_detect(unlist(tabs[[2]][,1]), "(?i)employee"))){
+    if(!any(str_detect(tabs[[2]][[1]], "(?i)employee"))){
         warning("Website structure may have changed. Please check.")
     }
 
     tabs %>%
         lapply(function(y){
-            z <- y
+            z <- y[,unlist(y[2,]) != ""]
             names(z) <- clean_fac_col_txt(unname(unlist(z[2,])))
             z[3,] %>%
-                .[,2:ncol(.)] %>%
                 as_tibble()
         })
 }
@@ -57,10 +56,10 @@ allegheny_county_extract <- function(x){
     )
     
     exp_names_staff <- c(
-        Staff.Tested = "Tested",
+        #Staff.Tested = "Tested",
         Staff.Confirmed = "Positive",
-        Staff.Negative = "Negative",
-        Staff.Pending = "Pending",
+        #Staff.Negative = "Negative",
+        #Staff.Pending = "Pending",
         Staff.Recovered = "Recovered"
     )
     
