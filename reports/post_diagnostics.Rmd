@@ -11,6 +11,8 @@ output:
 library(tidyverse)
 library(kableExtra)
 library(behindbarstools)
+library(glue)
+library(googlesheets4)
 ```
 
 ---
