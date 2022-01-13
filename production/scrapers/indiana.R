@@ -16,12 +16,6 @@ indiana_date_check <- function(url, date = Sys.Date()){
 indiana_pull <- function(html){
     in_img_raw <- get_src_by_attr(html, "img", attr = "src", attr_regex = "(?i)COVID")
     
-    indiana_image <- magick::image_read(in_img_raw) %>% 
-        # magick::image_convert(type = 'Grayscale') %>%
-        magick::image_transparent(color = "white", fuzz=20) #%>%
-        # magick::image_modulate(brightness = 120) #%>%
-        # magick::image_quantize(colorspace = "gray")
-    
     indiana_image <- magick::image_read(in_img_raw) %>%
         magick::image_negate() %>% # negate
     
