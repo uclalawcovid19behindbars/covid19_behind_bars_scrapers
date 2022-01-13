@@ -13,17 +13,25 @@ indiana_date_check <- function(url, date = Sys.Date()){
         error_on_date(date)
 }
 
-indiana_pull <- function(x){
-    in_img <- get_src_by_attr(x, "img", attr = "src", attr_regex = "(?i)COVID")
+indiana_pull <- function(html){
+    in_img_raw <- get_src_by_attr(html, "img", attr = "src", attr_regex = "(?i)COVID")
     
-    magick::image_read(in_img) %>% 
-        magick::image_convert(type = 'Grayscale')
+    indiana_image <- magick::image_read(in_img_raw) %>% 
+        # magick::image_convert(type = 'Grayscale') %>%
+        magick::image_transparent(color = "white", fuzz=20) #%>%
+        # magick::image_modulate(brightness = 120) #%>%
+        # magick::image_quantize(colorspace = "gray")
+    
+    indiana_image <- magick::image_read(in_img_raw) %>%
+        magick::image_negate() %>% # negate
+    
+    return(indiana_image)
 }
 
-indiana_restruct <- function(x){
+indiana_restruct <- function(indiana_image){
 
     # Run through OCR
-    results <- ExtractTable(x)
+    results <- ExtractTable(indiana_image)
     
     # Wrangle Data
     if (length(results) == 2) {
