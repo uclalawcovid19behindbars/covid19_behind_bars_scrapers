@@ -143,7 +143,8 @@ new_total <- read_csv("../data/latest-data/latest_national_counts.csv") %>%
   rename(`New Total` = Count)
 
 joined <- full_join(old_total, new_total, by = "Measure") %>% 
-  mutate(Difference = `New Total` - `Old Total`) %>% 
+  mutate(Difference = `New Total` - `Old Total`,
+         Pct_Increase = (Difference / `Old Total` )*100) %>% 
   mutate(cumulative_flag = ifelse(str_detect(Measure, ".Active|.Initiated|.Completed"), 0, 1)) %>%
   select(-starts_with("Missing"),
          -starts_with("Reporting"))

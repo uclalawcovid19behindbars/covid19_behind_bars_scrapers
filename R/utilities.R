@@ -834,7 +834,7 @@ summarize_remote_data <- function(){
 ## code borrowed from: https://github.com/uclalawcovid19behindbars/behindbarstools/blob/master/R/plot_recent_fac_increases.R
 track_recent_covid_increases <- function(
   scrape_df, 
-  outbreaks_sheet_loc,
+  outbreaks_sheet_loc = "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM",
   metric = "Residents.Confirmed", 
   delta_days = 14, 
   num_fac = 5,
