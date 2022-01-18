@@ -11,6 +11,8 @@ output:
 library(tidyverse)
 library(kableExtra)
 library(behindbarstools)
+library(glue)
+library(googlesheets4)
 ```
 
 ---
@@ -124,11 +126,12 @@ kable(log_status %>%
 We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. This is based on totals from our scraped data in `adult_facility_covid_counts.csv`. 
 
 ``` {r check_previous, echo = F, message = F, warning = F}
-# Read old facility data 
-old_df <- stringr::str_c(
+# Read old national aggregate counts 
+old_total <- stringr::str_c(
     "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/latest_facility_counts.csv") %>% 
-    read_csv()
+    "latest-data/latest_national_counts.csv") %>% 
+  read_csv() %>%
+  rename(`Old Total` = Count)
 
 covid_suffixes <- c(
   ".Confirmed", ".Deaths", ".Tadmin", ".Active", ".Initiated", ".Completed")
@@ -136,24 +139,15 @@ covid_suffixes <- c(
 # Get totals 
 rowAny <- function(x) rowSums(x) > 0
 
-new_total <- new_df %>% 
-    filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
-    select(all_of(ends_with(covid_suffixes))) %>%  
-    summarise_all(sum_na_rm) %>% 
-    pivot_longer(cols = everything(), 
-                 names_to = "Variable", 
-                 values_to = "New Total") 
+new_total <- read_csv("../data/latest-data/latest_national_counts.csv") %>%
+  rename(`New Total` = Count)
 
-old_total <- old_df %>% 
-    select(all_of(ends_with(covid_suffixes))) %>% 
-    summarise_all(sum_na_rm) %>% 
-    pivot_longer(cols = everything(), 
-                 names_to = "Variable", 
-                 values_to = "Old Total")
-
-joined <- full_join(old_total, new_total, by = "Variable") %>% 
-    mutate(Difference = `New Total` - `Old Total`) %>% 
-    mutate(cumulative_flag = ifelse(str_detect(Variable, ".Active|.Initiated|.Completed"), 0, 1))
+joined <- full_join(old_total, new_total, by = "Measure") %>% 
+  mutate(Difference = `New Total` - `Old Total`,
+         Pct_Increase = (Difference / `Old Total` )*100) %>% 
+  mutate(cumulative_flag = ifelse(str_detect(Measure, ".Active|.Initiated|.Completed"), 0, 1)) %>%
+  select(-starts_with("Missing"),
+         -starts_with("Reporting"))
 
 # Highlight cumulative variables that decreased 
 kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %>% 
@@ -338,6 +332,89 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
     labs(tag = "") 
 ```
 
+# Recent State Increases 
+
+## Incarcerated people
+
+**Which states have seen the greatest increase in cumulative cases among incarcerated residents over the last 7 days?** 
+``` {r, echo = F, fig.width = 15, fig.height = 7, warning = F}
+state_df <- read_csv("../data/historical-data/historical_state_counts.csv") %>%
+  mutate(Name = State)
+
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+**Which states have seen the greatest increase in active cases among incarcerated residents over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          metric = "Residents.Active", 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+## Staff
+
+**Which states have seen the greatest increase in active cases among staff over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          metric = "Staff.Active", 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+**Which states have seen the greatest increase in cumulative cases among staff over the last 7 days?**
+
+``` {r, echo = F, fig.width = 15, fig.height = 7}
+behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
+                          metric = "Staff.Confirmed", 
+                          plot_days = 30, 
+                          num_fac = 5, 
+                          auto_label = TRUE) + 
+    labs(tag = "") 
+```
+
+---
+
+**Update Google Sheet with latest outbreaks**
+
+```{r, echo = F}
+## update the latest outbreaks google sheet
+outbreaks_sheet_loc <- "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM" 
+metrics <- c("Residents.Confirmed", "Residents.Active", 
+             "Residents.Deaths", "Staff.Confirmed", "Staff.Deaths")
+out <- metrics %>%
+    map(~ track_recent_covid_increases(metric = .x, 
+                                       scrape_df = scrape_df,
+                                       outbreaks_sheet_loc = outbreaks_sheet_loc))
+## create some metadata 
+all_states <- purrr::transpose(out) %>% 
+    .[["State"]] %>%
+    unlist() %>%
+    as_tibble() %>%
+    group_by(value) %>%
+    summarise(n = n()) %>%
+    arrange(-n) %>%
+    filter(n > 1) %>%
+    rename(State = value,
+           times_flagged = n)
+
+## write the metadata to google sheet
+range_write(
+    data = all_states, 
+    ss = outbreaks_sheet_loc, 
+    sheet = glue("Top states"), 
+    reformat = FALSE)
+```
 
 ---
 
