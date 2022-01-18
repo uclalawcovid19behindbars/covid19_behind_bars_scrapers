@@ -32,31 +32,32 @@ rhode_island_pdf_restruct <- function(pdf_url){
 }
 
 rhode_island_pdf_extract <- function(restruct){
-    extract <- restruct %>%
-        .[[1]] 
+    extract <- restruct[[1]]
+    
     extract[1, ] <- extract %>%
         slice(c(1, 2)) %>%
         ## combine first two rows from the table to get ok column names to check
         summarise_all(str_c, collapse=' ') %>%
         .[1, ] %>%
-        as.character() 
+        as.character() %>%
+        tolower()
     
     ## check success with: clean_fac_col_txt(unname(unlist(extract[1,])))
     ri_col_name_mat <- matrix(c(
         "", "0", "Name",
-        "Total Cases", "1", "All.Cases.Drop",
-        "Total", "2", "Residents.Confirmed",
-        "Deaths", "3", "Residents.Deaths",
-        "Recovered", "4", "Residents.Recovered",
-        "Inmates Active**", "5", "Residents.Active",
-        "Past 24 hours", "6", "Residents.DayActive.Drop",
-        "Population", "7", "Residents.Population",
-        "% Population Fully Vaccinated***", "8", "Residents.Completed.Pct",
-        "Total", "9", "Staff.Confirmed",
-        "Deaths", "10", "Staff.Deaths",
-        "Staff Recovered", "11", "Staff.Recovered",
-        "Active**", "12", "Staff.Active",
-        "Past 24 hours", "13", "Staff.DayActive.Drop"
+        "total cases", "1", "All.Cases.Drop",
+        "total", "2", "Residents.Confirmed",
+        "deaths", "3", "Residents.Deaths",
+        "recovered", "4", "Residents.Recovered",
+        "inmates active**", "5", "Residents.Active",
+        "past 24 hours", "6", "Residents.DayActive.Drop",
+        "population", "7", "Residents.Population",
+        "% population fully vaccinated***", "8", "Residents.Completed.Pct",
+        "total", "9", "Staff.Confirmed",
+        "deaths", "10", "Staff.Deaths",
+        "staff recovered", "11", "Staff.Recovered",
+        "active**", "12", "Staff.Active",
+        "past 24 hours", "13", "Staff.DayActive.Drop"
     ), ncol = 3, nrow = 14, byrow = TRUE)
     
     colnames(ri_col_name_mat) <- c("check", "raw", "clean")
