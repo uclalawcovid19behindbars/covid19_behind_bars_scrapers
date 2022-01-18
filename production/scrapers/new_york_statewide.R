@@ -25,6 +25,7 @@ new_york_statewide_restruct <- function(raw_html){
     is_confirmed <- tables[[1]] %>%
         rvest::html_nodes("h5") %>%
         rvest::html_text() %>%
+        last() %>%
         str_detect("(?i)confirmed")
     
     if(!is_confirmed){

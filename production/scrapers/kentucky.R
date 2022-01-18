@@ -31,12 +31,10 @@ kentucky_extract <- function(x){
     col_name_mat <- matrix(c(
         "Institution", "0", "Name", 
         "Total Active Staff", "1", "Staff.Active",
-        "Total Staff Cases", "2", "Staff.Confirmed",
-        "Total Staff Deaths", "3", "Staff.Deaths", 
-        "Total Active Inmates", "4", "Residents.Active",
-        "Total Inmate Cases", "5", "Residents.Confirmed",
-        "Total Inmate Deaths", "6", "Residents.Deaths"
-    ), ncol = 3, nrow = 7, byrow = TRUE)
+        "Total Staff Deaths", "2", "Staff.Deaths", 
+        "Total Active Inmates", "3", "Residents.Active",
+        "Total Inmate Deaths", "4", "Residents.Deaths"
+    ), ncol = 3, nrow = 5, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)

@@ -69,7 +69,8 @@ new_jersey_statewide_extract <- function(x){
         "Cumulative Positives Staff", 
         "Vaccine Doses Distributed Staff",
         "First Dose Staff",
-        "Second Dose Staff"
+        "Second Dose Staff",
+        "Booster Staff"
     )
     
     check_names(x, exp_names)
@@ -87,7 +88,8 @@ new_jersey_statewide_extract <- function(x){
         "Staff.Confirmed", # Collecting facility-level in main scraper 
         "Staff.Vadmin",
         "Staff.Initiated",
-        "Staff.Completed"
+        "Staff.Completed",
+        "Staff.Booster.Drop"
     )
     
     x %>% 
