@@ -28,8 +28,9 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 new_df <- read_scrape_data(all_dates = FALSE)
 
 # Get all log files from the latest run 
-latest_date <- max(new_df$Date) %>% 
-    as.character()
+# latest_date <- max(new_df$Date) %>% 
+#     as.character()
+latest_date <- "2022-01-18"
 log_status <- behindbarstools::list_remote_data("log_files") %>% 
     str_subset(pattern = latest_date) %>% 
     as_tibble_col(column_name = "log") %>% 
@@ -165,6 +166,10 @@ kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %
 This is also based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted except from Texas, Ohio, and the BOP (where we know reported counts are not cumulative). 
 
 ``` {r check_previous_facility, echo = F, message = F, warning = F}
+old_df <- stringr::str_c(
+    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "latest-data/latest_facility_counts.csv") %>% 
+    read_csv()
 old_facility <- old_df %>% 
     filter(!is.na(Facility.ID)) %>% 
     filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
@@ -337,7 +342,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 ## Incarcerated people
 
 **Which states have seen the greatest increase in cumulative cases among incarcerated residents over the last 7 days?** 
-``` {r, echo = F, fig.width = 15, fig.height = 7, warning = F}
+``` {r, echo = F, fig.width = 15, fig.height = 7}
 state_df <- read_csv("../data/historical-data/historical_state_counts.csv") %>%
   mutate(Name = State)
 
@@ -387,7 +392,8 @@ behindbarstools::plot_recent_fac_increases(scrape_df = state_df,
 
 **Update Google Sheet with latest outbreaks**
 
-```{r, echo = F}
+Visit the [facility outbreaks spreadsheet](https://docs.google.com/spreadsheets/d/1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM/edit#gid=2133176659) to view more detailed info on facility/state outbreaks within the past **two weeks**.
+```{r, echo = F, message=F, warning=F}
 ## update the latest outbreaks google sheet
 outbreaks_sheet_loc <- "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM" 
 metrics <- c("Residents.Confirmed", "Residents.Active", 
