@@ -18,104 +18,35 @@ colorado_check_date <- function(url, date = Sys.Date()){
     error_on_date(site_date, date)
 }
 
-colorado_vec_return_white <- function(vec, threshold = 200, buffer = 1){
-    start_idx <- first(which(vec < threshold))
-    sub_vec <- vec
-    sub_vec[1:start_idx] <- 0
-    
-    first(which(sub_vec >= threshold)) + buffer
-}
-
-colorado_extract_cell <- function(cell){
-    target <- drop(as.integer(cell[[1]]))
-    mid_idx <- round((dim(target)[1]+1)/2)
-    
-    new_wstart <- colorado_vec_return_white(target[mid_idx,])
-    
-    old_width <- magick::image_info(cell)$width
-    old_height <- magick::image_info(cell)$height
-    
-    cell %>%
-        magick::image_crop(
-            str_c(old_width, "x", old_height, "+", new_wstart, "+0")) %>%
-        magick::image_ocr() %>%
-        # sometimes ocr converts 4's to a's
-        str_replace_all("a", "4") %>% 
-        string_to_clean_numeric()
-}
-
-colorado_extract_col <- function(sub_col, numeric = TRUE){
-    w_ <- magick::image_info(sub_col)$width
-  
-    # Dimensions for tests, total positive, active cases 
-    if (w_ > 200){
-        idxs <- seq(0, 47*20, by = 47)
-    }
-    
-    # Dimensions for deaths (slightly shorter)
-    else {
-        idxs <- seq(0, 44*20, by = 44)
-    }
-    
-    extract_vals <- tryCatch(
-            {
-                sapply(1:length(idxs), function(idx){
-                    if (w_ > 200){
-                        if(idx == 21){
-                            crp <- "213x40+0+940"
-                        } else{
-                            crp <- str_c("213x47+0+", idxs[idx])
-                        }
-                    } 
-                    else {
-                        if(idx == 21){
-                            crp <- "113x44+0+840"
-                        } else{
-                            crp <- str_c("113x44+0+", idxs[idx])
-                        }
-                    }
-                  
-                    if(numeric){
-                        if (w_ > 200) {
-                            out <- sub_col %>%
-                                magick::image_crop(crp) %>%
-                                colorado_extract_cell()
-                          }
-              
-                        else {
-                          out <- sub_col %>%
-                              magick::image_crop(crp) %>% 
-                              magick::image_ocr() %>%
-                              # sometimes ocr converts 4's to a's
-                              str_replace_all("a", "4") %>% 
-                              string_to_clean_numeric()
-                        }
-                    }
-                    else{
-                        out <- sub_col %>%
-                            magick::image_crop(crp) %>%
-                            magick::image_ocr() %>%
-                            str_replace_all("\n", " ") %>%
-                            str_squish()
-                    }
-                    out
-                })
-            },
-            error=function(cond) {
-                warning("Column failed to extract returning NA")
-                rep(NA, length(idxs))
-            })
-
-    return(extract_vals)
-}
 
 colorado_pull <- function(url){
-    out_file <- "/tmp/sel_dl/Story 1.pdf"
-
-    if(file.exists(out_file)){
-        file.remove(out_file)
+  
+    # these are the names of the csv tabs we want dowloaded
+    download_labs <- c(
+        "COVIDCNTSDEATHRFAC", "COVIDCNTSACTVFAC", "COVIDCNTSTESTRFAC",
+        "COVIDCNTSTOTPOSFAC", "COVIDINMVAC", "COVIDCNTSDEATHRFAC (2)"
+    )
+    
+    # go back and check to see if old files exist and delete them if tehy do
+    for(dls in download_labs){
+        out_file <- stringr::str_c("/tmp/sel_dl/", dls, ".csv")
+        if(file.exists(out_file)){
+            file.remove(out_file)
+        }
     }
     
+    # need this string to tell selenium we just want to download the csv
+    csv_no_display_str <- str_c(
+      "application/csv,application/excel,application/vnd.ms-excel,",
+      "application/vnd.msexcel,text/anytext,text/comma-separated-values,",
+      "text/csv,text/plain,text/x-csv,application/x-csv,",
+      "text/x-comma-separated-values,text/tab-separated-values,",
+      "data:text/csv,application/xml,text/plain,text/xml,image/jpeg,",
+      "application/octet-stream,data:text/csv"
+    )
+    
+    # set up the ff profile to tell selenium just to download csvs and not 
+    # bring up a prompt or display them
     fprof <- RSelenium::makeFirefoxProfile(list(
         browser.startup.homepage = "about:blank",
         startup.homepage_override_url = "about:blank",
@@ -126,11 +57,11 @@ colorado_pull <- function(url){
         browser.download.manager.showWhenStarting = FALSE,
         browser.download.manager.focusWhenStarting = FALSE,
         browser.download.manager.closeWhenDone = TRUE,
-        browser.helperApps.neverAsk.saveToDisk = 
-            "application/pdf, application/octet-stream",
+        browser.helperApps.neverAsk.saveToDisk = csv_no_display_str,
+        browser.helperApps.neverAsk.openFile = csv_no_display_str,
         pdfjs.disabled = TRUE,
         plugin.scan.plid.all = FALSE,
-        plugin.scan.Acrobat = 99L))
+        plugin.scan.Acrobat = "99.0"))
     
     remDr <- RSelenium::remoteDriver(
         remoteServerAddr = "localhost",
@@ -142,109 +73,62 @@ colorado_pull <- function(url){
     # Suppress terminal output
     capture.output(remDr$open())
     remDr$navigate(url)
+    Sys.sleep(2)
     
-    # If driver can't find elements we care about within 10 seconds, error out
-    remDr$setImplicitWaitTimeout(milliseconds = 10000)
-    
-    tableau_url <- remDr$findElement("css", "iframe")$getElementAttribute('src')[[1]]
+    tableau_url <- remDr$findElement(
+      "xpath", "//iframe")$getElementAttribute('src')[[1]]
     remDr$navigate(tableau_url)
+    Sys.sleep(2)
+    
+    # we want to loop through the dialogue options and get all the csvs
+    # downloaded
+    for(dls in download_labs){
+        remDr$findElement(
+            "css", "[id='download-ToolbarButton']")$clickElement()
+        Sys.sleep(2)
+        remDr$findElement(
+            "css", "[data-tb-test-id='DownloadCrosstab-Button']")$clickElement()
+        Sys.sleep(2)
+        remDr$findElement(
+          using = 'xpath',
+          stringr::str_c("//div[@title='", dls, "']"))$clickElement()
+        Sys.sleep(2)
+        remDr$findElement(
+          using = 'xpath',
+          "//label[@data-tb-test-id='crosstab-options-dialog-radio-csv-Label']"
+          )$clickElement()
+        Sys.sleep(2)
+        remDr$findElement(
+            using = 'xpath', "//button[contains(text(),'Download')]"
+            )$clickElement()
+        Sys.sleep(4)
+    }
 
-    remDr$findElement(
-        "css", "[id='download-ToolbarButton']")$clickElement()
-    remDr$findElement(
-        "css", "[data-tb-test-id='DownloadPdf-Button']")$clickElement()
-    remDr$findElement(
-        using = 'xpath', ("//button[contains(text(),'Download')]"))$clickElement()
-
-    # Take some time to allow file to download
-    Sys.sleep(6)
+    # Tquit our current selenium instance
     remDr$quit()
     
-    if(!file.exists(out_file)){
-        stop("CO unable to download pdf")
-    }
+    # lets aggregate the files into one readable file,
+    # its annoying because they are actually tsvs with weird encodings but 
+    # we can get around the weirdness by setting the encoding to UTF-16LE
+    fac_df <- bind_rows(lapply(
+      download_labs[str_detect(download_labs, "FAC")], function(dls){
+      read_tsv(
+        stringr::str_c("/tmp/sel_dl/", dls, ".csv"),
+        skip = 1, locale = locale(encoding="UTF-16LE"), col_names = FALSE)
+    })) %>%
+      bind_rows(
+          read_tsv(
+            stringr::str_c("/tmp/sel_dl/COVIDINMVAC.csv"),
+            skip = 2, locale = locale(encoding="UTF-16LE"), col_names = F) %>%
+            mutate(X1 = "STATEWIDE", X2 = "Vaccinated")) %>%
+      pivot_wider(names_from = X2, values_from = X3) %>%
+      rename(Name = "X1")
     
-    return(out_file)
+    return(fac_df)
 }
 
-colorado_restruct <- function(scraped_pdf){
-    z <-  magick::image_read_pdf(scraped_pdf, pages = 1)
-    
-    # TESTS, TOTAL POSITIVE, ACTIVE CASES  
-    sub_col_list <- list(
-        z %>%
-            magick::image_crop("213x987+387+1100") %>%
-            magick::image_convert(type = 'Bilevel'),
-        z %>%
-            magick::image_crop("213x987+823+1100") %>%
-            magick::image_convert(type = 'Bilevel'),
-        z %>%
-            magick::image_crop("213x987+1264+1100") %>%
-            magick::image_convert(type = 'Bilevel')
-    )
-    
-    col_vals <- sapply(sub_col_list, function(sc){
-        colorado_extract_col(sc)
-    })
-    
-    colnames(col_vals) <- clean_fac_col_txt(c(
-        z %>%
-            magick::image_crop("423x50+177+484") %>%
-            magick::image_ocr(),
-        z %>%
-            magick::image_crop("423x50+616+484") %>%
-            magick::image_ocr(),
-        z %>%
-            magick::image_crop("423x50+1055+484") %>%
-            magick::image_ocr()
-    ))
-    
-    # DEATHS 
-    # (handle separately bc split into two columns)
-    death_sub_col_list <- list(
-        z %>%
-            magick::image_crop("83x887+1695+1160") %>%
-            magick::image_convert(type = 'Bilevel'),  
-        z %>%
-            magick::image_crop("83x887+1800+1160") %>%
-            magick::image_convert(type = 'Bilevel')  
-    )
-    
-    death_col_vals <- sapply(death_sub_col_list, function(sc){
-        colorado_extract_col(sc)
-    })
-    
-    colnames(death_col_vals) <- clean_fac_col_txt(c(
-        z %>%
-            magick::image_crop("110x70+1690+1090") %>%
-            magick::image_ocr(),
-        z %>%
-            magick::image_crop("110x70+1795+1090") %>%
-            magick::image_ocr()
-    ))
-    
-    vacc_check <- magick::image_crop(z, "400x50+1940+1585") %>%
-        magick::image_ocr() %>%
-        str_detect("(?i)inmate vaccination")
-    
-    if(!vacc_check){
-        warning("Vaccination data not as expected, please inspect")
-    }
-    
-    vac_num <- magick::image_crop(z, "156x50+2075+1790") %>%
-        magick::image_ocr() %>%
-        string_to_clean_numeric()
-    
-    fac_col <- z %>%
-        magick::image_crop("213x987+177+1100") %>%
-        magick::image_convert(type = 'Bilevel')
-
-    fac_names <- colorado_extract_col(fac_col, FALSE)
-  
-    cbind(col_vals, death_col_vals) %>%
-        as_tibble() %>%
-        mutate(Name =fac_names) %>%
-        bind_rows(tibble(Name = "STATEWIDE", Residents.Initiated = vac_num))
+colorado_restruct <- function(scraped_csv){
+    scraped_csv
 }
 
 colorado_extract <- function(restructured_data){
@@ -252,13 +136,13 @@ colorado_extract <- function(restructured_data){
     df_ <- restructured_data
     
     exp_names <- c(
-        Residents.Tadmin = "TESTS",
-        Residents.Confirmed = "TOTAL POSITIVE",
-        Residents.Active = "ACTIVE CASES",
-        Deaths.Due.Drop = "Deaths due to COVID",
-        Deaths.Among.Drop = "Deaths Among Cases", 
         Name = "Name",
-        Residents.Initiated = "Residents.Initiated"
+        Deaths.Due.Drop = "Deaths",
+        Residents.Active = "Active",
+        Residents.Tadmin = "Tested",
+        Residents.Confirmed = "Positive",
+        Deaths.Among.Drop = "Deaths Among", 
+        Residents.Initiated = "Vaccinated"
     )
     
     check_names(df_, exp_names)
@@ -278,13 +162,9 @@ colorado_extract <- function(restructured_data){
 #' @description Colorado data is pulled from a tableau app which is known
 #' to be temperamental. Sometimes code will need to be run several times in
 #' order to work as the page has variable load times and selenium can not
-#' tell when the DOM is ready. Data is downloaded through selenium in a pdf form
-#' from which OCR is run. Colorado staff numbers in the early stages puzzling
-#' but pretty clear now that positive means the total, while active is the
-#' active total, so you can take the positive active to get recoveries. 
-#' It is less clear what is happening in the early days, where recoveries are 
-#' dropping, but mathematically this makes the most sense since otherwise the
-#' cumulative staff positives would be highest in early May.
+#' tell when the DOM is ready. Data is downloaded through selenium into multiple
+#' tsvs which are then collated into a single data object which is saved as a
+#' csv.
 #' \describe{
 #'   \item{Facility_Name}{The facility name.}
 #'   \item{Tests}{Total tests administered.}
@@ -303,7 +183,7 @@ colorado_scraper <- R6Class(
             log,
             url = "https://cdoc.colorado.gov/resources/covid-19-faq-and-updates",
             id = "colorado",
-            type = "pdf",
+            type = "csv",
             state = "CO",
             jurisdiction = "state",
             check_date = colorado_check_date,
@@ -323,7 +203,7 @@ colorado_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    colorado <- colorado_scraper$new(log=TRUE)
+    colorado <- colorado_scraper$new(log=F)
     colorado$run_check_date()
     colorado$raw_data
     colorado$pull_raw()
