@@ -21,7 +21,7 @@ parser$add_argument(
 args <- parser$parse_args()
 
 # initiate all scrapers in the production folders
-sapply(list.files("production/scrapers", full.names = TRUE, pattern = ".R"), source)
+sapply(list.files("production/scrapers/selenium", full.names = TRUE, pattern = ".R"), source)
 
 # grab only the scrapers and put their names in a vector
 scraper_name_vec <- get_scraper_vec()
