@@ -326,7 +326,7 @@ info_scraper <- function(scraper){
 
 get_scraper_vec <- function(){
     # initiate all scrapers in the production folders
-    sc_vec <- list.files("production/scrapers", full.names = FALSE, pattern = ".R") %>%
+    sc_vec <- list.files("production/scrapers/selenium", full.names = FALSE, pattern = ".R") %>%
         str_replace(".R", "_scraper")
 
     names(sc_vec) <- str_remove(sc_vec, "_scraper")
