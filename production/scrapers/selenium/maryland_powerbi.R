@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 maryland_powerbi_pull <- function(x){
     src_url <- str_c(
@@ -8,30 +9,9 @@ maryland_powerbi_pull <- function(x){
         "YTMwMDZkIiwidCI6IjYwYWZlOWUyLTQ5Y2QtNDliMS04ODUx",
         "LTY0ZGYwMjc2YTJlOCJ9&pageName=ReportSection")
     
-    fprof <- RSelenium::makeFirefoxProfile(list(
-        browser.startup.homepage = "about:blank",
-        startup.homepage_override_url = "about:blank",
-        startup.homepage_welcome_url = "about:blank",
-        startup.homepage_welcome_url.additional = "about:blank",
-        browser.download.dir = "/home/seluser/Downloads",
-        browser.download.folderList = 2L,
-        browser.download.manager.showWhenStarting = FALSE,
-        browser.download.manager.focusWhenStarting = FALSE,
-        browser.download.manager.closeWhenDone = TRUE,
-        browser.helperApps.neverAsk.saveToDisk = 
-            "application/pdf, application/octet-stream",
-        pdfjs.disabled = TRUE,
-        plugin.scan.plid.all = FALSE,
-        plugin.scan.Acrobat = 99L))
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox",
-        extraCapabilities=fprof
-    )
-    
-    del_ <- capture.output(remDr$open())
     remDr$navigate(src_url)
     Sys.sleep(6)
     

@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 north_dakota_check_date <- function(url, date = Sys.Date()){
     base_html <- xml2::read_html(url)
@@ -15,13 +16,9 @@ north_dakota_check_date <- function(url, date = Sys.Date()){
 }
 
 north_dakota_pull <- function(url){
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(url)
     
     raw_html <- remDr$getPageSource() %>%

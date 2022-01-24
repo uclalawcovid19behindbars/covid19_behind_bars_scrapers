@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 california_check_date <- function(x, date = Sys.Date()){
     # scrape from the power bi iframe directly
@@ -9,13 +10,9 @@ california_check_date <- function(x, date = Sys.Date()){
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
             "pageName=ReportSection90204f76f18a02b19c96")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     
-    del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     
     Sys.sleep(10)
@@ -42,13 +39,8 @@ california_pull <- function(x, wait = 20){
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&",
             "pageName=ReportSection90204f76f18a02b19c96")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
-    del_ <- capture.output(remDr$open())
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)

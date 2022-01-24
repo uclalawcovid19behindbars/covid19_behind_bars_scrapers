@@ -1,14 +1,11 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 maryland_vaccine_pull <- function(url){
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    del_ <- capture.output(remDr$open())
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     
     remDr$navigate(url)
     # If driver can't find elements we care about within 10 seconds, error out

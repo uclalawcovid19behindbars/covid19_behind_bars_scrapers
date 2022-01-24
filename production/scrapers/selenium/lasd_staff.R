@@ -1,18 +1,15 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 lasd_staff_date_check <- function(x, date = Sys.Date()){
     lasd_html <- xml2::read_html(x)
     
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     
-    del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
     Sys.sleep(6)
     

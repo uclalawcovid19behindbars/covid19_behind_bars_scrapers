@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 nevada_clean_fac_text <- function(x){
     str_remove(x, "(?i)NDOC -") %>%
@@ -7,13 +8,9 @@ nevada_clean_fac_text <- function(x){
 }
 
 nevada_check_date <- function(url, date = Sys.Date()){
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(url)
     # If driver can't find elements we care about within 10 seconds, error out
     remDr$setImplicitWaitTimeout(milliseconds = 10000)
@@ -34,13 +31,9 @@ nevada_pull <- function(x){
         "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
         "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(10)
     

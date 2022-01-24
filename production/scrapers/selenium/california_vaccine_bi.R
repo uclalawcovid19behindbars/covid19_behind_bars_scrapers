@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 california_vaccine_bi_pull <- function(x, wait = 20){
     # scrape from the power bi iframe directly
@@ -9,17 +10,14 @@ california_vaccine_bi_pull <- function(x, wait = 20){
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&", 
             "pageName=ReportSection1d82f52cafdcc3e76847")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
+    
     
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_california_vaccine")
     dir.create(sub_dir, showWarnings = FALSE)
     html_list <- list()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)
