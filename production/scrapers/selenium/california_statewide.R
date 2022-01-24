@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 california_statewide_check_date <- function(x, date = Sys.Date()){
     # scrape from the power bi iframe directly
@@ -10,13 +11,9 @@ california_statewide_check_date <- function(x, date = Sys.Date()){
             "pageName=ReportSectionc5f6f269bd82e37ccad7"
         )
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     
-    del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     
     Sys.sleep(15)
@@ -46,13 +43,9 @@ california_statewide_pull <- function(x, wait = 25){
             "pageName=ReportSectionc5f6f269bd82e37ccad7"
         )
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
+    remDr$open(silent = TRUE)
     
-    del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     
     Sys.sleep(wait)
