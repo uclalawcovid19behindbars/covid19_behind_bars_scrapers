@@ -75,6 +75,10 @@ california_statewide_restruct <- function(x){
     tadmin_num <- as.numeric(
         str_c(unlist(str_extract_all(tadmin_txt, "[0-9]+")), collapse = ""))
     
+    if(is.na(tadmin_num)){
+        warning("State-wide # of tests extracted is NA - please inspect")
+    }
+    
     tibble(Residents.Tadmin = tadmin_num, 
            Name = "State-Wide")
 }

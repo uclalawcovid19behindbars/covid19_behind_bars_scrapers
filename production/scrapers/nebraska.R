@@ -51,7 +51,8 @@ nebraska_extract <- function(x){
             Residents.Recovered = "Total Recovered Cases",
             Residents.Deaths = "Total Deaths") %>%
         as_tibble() %>%
-        bind_rows(x$active)
+        bind_rows(x$active) %>%
+        filter(Name != "")
 }
 
 #' Scraper class for general nebraska COVID data

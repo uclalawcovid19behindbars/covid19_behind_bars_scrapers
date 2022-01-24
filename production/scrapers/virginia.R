@@ -30,14 +30,8 @@ virginia_restruct <- function(x){
                     xpath = str_c(
                         "//span[contains(text(), 'inmate vaccinations')]/",
                         "following-sibling::span")) %>%
-                rvest::html_text(),
-        
-            Staff.Initiated = x %>%
-                rvest::html_nodes(
-                    xpath = str_c(
-                        "//span[contains(text(), 'staff vaccinations')]/",
-                        "following-sibling::span")) %>%
-                rvest::html_text()))
+                rvest::html_text()
+            ))
 }
 
 virginia_extract <- function(x){

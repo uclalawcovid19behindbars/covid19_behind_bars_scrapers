@@ -13,13 +13,13 @@ maryland_vaccine_pull <- function(url){
     remDr$navigate(url)
     # If driver can't find elements we care about within 10 seconds, error out
     remDr$setImplicitWaitTimeout(milliseconds = 10000)
-    # Check for table with desired Ids
-    remDr$findElement(using = 'xpath',
-                      ("//*[contains(text(),'Staff Vaccinations')]"))
-    remDr$findElement(using = 'xpath',
-                      ("//*[contains(text(),'Inmate Vaccinations')]"))
-    remDr$findElement(using = 'xpath',
-                      ("//*[contains(text(),'Facility (Administered)')]"))
+    # # Check for table with desired Ids
+    # remDr$findElement(using = 'xpath',
+    #                   ("//*[contains(text(),'Staff Vaccinations')]"))
+    # remDr$findElement(using = 'xpath',
+    #                   ("//*[contains(text(),'Inmate Vaccinations')]"))
+    # remDr$findElement(using = 'xpath',
+    #                   ("//*[contains(text(),'Facility (Administered)')]"))
 
     base_html <- remDr$getPageSource()[[1]]
     
@@ -63,10 +63,20 @@ get_maryland_facility_vaccine_table <- function(raw_html){
 }
 
 get_maryland_vaccine_table <- function(raw_html, str){
+    xpath_test = "//*[@id='pvExplorationHost']/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[10]/transform/div/div[3]/div/div"
+    
     table <- raw_html %>% 
+        rvest::html_nodes("h3") %>%
+        rvest::html_text()
+        # rvest::html_node(xpath = stringr::str_c(
+        #     "//*[contains(@title,", str, ")]/parent::*")
+        # ) %>% 
+        # rvest::html_node(xpath = stringr::str_c(
+        #     "//*[contains(@title,", str, ")]")
+        # ) %>%
         rvest::html_node(xpath = stringr::str_c(
-            "//*[contains(@title,", str, ")]/parent::*")
-        ) %>% 
+            "//*[contains(@title,", str, ")]")
+        ) %>%
         rvest::html_node(".tableEx") %>%
         rvest::html_node(".innerContainer")
     

@@ -10,45 +10,22 @@ louisiana_youth_restruct <- function(x){
         rvest::html_nodes('.wp-block-table') %>%
         .[[1]] %>%
         rvest::html_table() 
-    
-    staff <- x %>%
-        rvest::html_nodes('.wp-block-table') %>% 
-        .[[3]] %>%     
-        rvest::html_table()
-    
-    out <- bind_rows(youth, staff)
-    return(out)
+    return(youth)
 }
 
 louisiana_youth_extract <- function(x){
     la <- x %>%
-        janitor::row_to_names(row_number = 1) 
+        janitor::row_to_names(row_number = 1) %>%
+        select(-3)
     
-    la_staff_row_start <- which(la$`# of Youth Positive` == "# of Employees Positive")
-    
-    ## separate and merge dfs by name due to different facility name order
-    la_staff <- la %>%
-        slice(la_staff_row_start:n()) %>%
-        janitor::row_to_names(row_number = 1) 
-    
-    la_youth <- la %>%
-        slice(1:(la_staff_row_start - 1)) 
-    
-    youth_merged <- full_join(la_youth, la_staff, by = c("Secure Care Facility"))
-    
-    check_names(youth_merged, 
+    check_names(la, 
                 c("Secure Care Facility", 
-                  "# of Youth Positive", 
-                  "# of Youth Recovered",
-                  "# of Employees Positive", 
-                  "# of Employees Recovered"))
+                  "# of Youth Positive"))
     
-    la_cln <- youth_merged %>%
+    la_cln <- la %>%
         select(Name = `Secure Care Facility`, 
-               Residents.Confirmed = `# of Youth Positive`,
-               Residents.Recovered = `# of Youth Recovered`,
-               Staff.Confirmed = `# of Employees Positive`,
-               Staff.Recovered = `# of Employees Recovered`) %>%
+               Residents.Confirmed = `# of Youth Positive`
+               ) %>%
         mutate(Name = str_c(toupper(Name), " YOUTH"))
     
     out <- la_cln %>%

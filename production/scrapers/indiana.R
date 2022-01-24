@@ -68,8 +68,8 @@ indiana_extract <- function(x){
         "Offender Recovered", "9", "Residents.Recovered",
         "Offender Presumed Death", "10", "Drop.Res.Deaths.Presumed",
         "Offender Confirmed Death", "11", "Drop.Res.Deaths.Confirmed"
-        ), ncol = 3, nrow = 12, byrow = TRUE)
-    
+         ), ncol = 3, nrow = 12, byrow = TRUE)
+
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
     
