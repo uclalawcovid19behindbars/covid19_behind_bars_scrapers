@@ -6,12 +6,7 @@ lasd_staff_date_check <- function(x, date = Sys.Date()){
     
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
     Sys.sleep(6)
@@ -32,12 +27,7 @@ lasd_staff_pull <- function(x, wait = 10){
     
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
     Sys.sleep(wait)

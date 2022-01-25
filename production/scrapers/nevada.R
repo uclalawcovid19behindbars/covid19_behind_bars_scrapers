@@ -7,11 +7,7 @@ nevada_clean_fac_text <- function(x){
 }
 
 nevada_check_date <- function(url, date = Sys.Date()){
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- initiate_remote_driver()
     
     del_ <- capture.output(remDr$open())
     remDr$navigate(url)
@@ -34,12 +30,7 @@ nevada_pull <- function(x){
         "eyJrIjoiNDMwMDI0YmQtNmUyYS00ZmFjLWI0MGItZDM0OTY1Y2Y0YzNhIiwidCI6Im",
         "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
     Sys.sleep(10)

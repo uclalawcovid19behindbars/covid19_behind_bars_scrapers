@@ -10,12 +10,7 @@ california_statewide_check_date <- function(x, date = Sys.Date()){
             "pageName=ReportSectionc5f6f269bd82e37ccad7"
         )
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     
@@ -46,12 +41,7 @@ california_statewide_pull <- function(x, wait = 25){
             "pageName=ReportSectionc5f6f269bd82e37ccad7"
         )
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     

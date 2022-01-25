@@ -17,12 +17,7 @@ oregon_check_date <- function(url, date = Sys.Date()){
 }
 
 oregon_pull <- function(url){
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(url)
 

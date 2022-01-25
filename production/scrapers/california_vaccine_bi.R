@@ -9,12 +9,7 @@ california_vaccine_bi_pull <- function(x, wait = 20){
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&", 
             "pageName=ReportSection1d82f52cafdcc3e76847")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_california_vaccine")
     dir.create(sub_dir, showWarnings = FALSE)
     html_list <- list()

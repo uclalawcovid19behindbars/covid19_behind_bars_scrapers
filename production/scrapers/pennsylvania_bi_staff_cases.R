@@ -5,12 +5,7 @@ pennsylvania_bi_staff_cases_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     staff_cases_page <- str_c(url,"&pageName=ReportSectiond9eef38c45a60b9e059a")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(staff_cases_page)
     

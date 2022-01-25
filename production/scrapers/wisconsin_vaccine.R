@@ -11,12 +11,7 @@ wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
             "display_spinner=no&%3Adisplay_overlay=yes&%3A",
             "display_count=yes&%3Alanguage=en&%3AloadOrderID=0")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_src)
     Sys.sleep(6)

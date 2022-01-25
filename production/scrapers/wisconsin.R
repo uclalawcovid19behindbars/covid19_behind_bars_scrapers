@@ -11,12 +11,7 @@ wisconsin_check_date <- function(x, date = Sys.Date()){
             "&%3Adisplay_overlay=yes&%3Adisplay_count=yes&%3Alanguage=en",
             "&%3AloadOrderID=0")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_src)
     Sys.sleep(6)
@@ -42,29 +37,7 @@ wisconsin_pull <- function(x){
            "display_static_image=no&%3Adisplay_spinner=no",
            "&%3Adisplay_overlay=yes&%3Adisplay_count=yes&%3Alanguage=en",
            "&%3AloadOrderID=0")
-   fprof <- RSelenium::makeFirefoxProfile(list(
-       browser.startup.homepage = "about:blank",
-       startup.homepage_override_url = "about:blank",
-       startup.homepage_welcome_url = "about:blank",
-       startup.homepage_welcome_url.additional = "about:blank",
-       browser.download.dir = "/home/seluser/Downloads",
-       browser.download.folderList = 2L,
-       browser.download.manager.showWhenStarting = FALSE,
-       browser.download.manager.focusWhenStarting = FALSE,
-       browser.download.manager.closeWhenDone = TRUE,
-       browser.helperApps.neverAsk.saveToDisk = 
-           "application/pdf, application/octet-stream",
-       pdfjs.disabled = TRUE,
-       plugin.scan.plid.all = FALSE,
-       plugin.scan.Acrobat = 99L))
-   
-   remDr <- RSelenium::remoteDriver(
-       remoteServerAddr = "localhost",
-       port = 4445,
-       browserName = "firefox",
-       extraCapabilities=fprof
-   )
-   
+   remDr <- initiate_remote_driver()
    del_ <- capture.output(remDr$open())
    remDr$navigate(app_src)
    Sys.sleep(6)

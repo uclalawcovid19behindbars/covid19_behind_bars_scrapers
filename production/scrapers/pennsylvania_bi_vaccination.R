@@ -9,12 +9,7 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
             "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9",
             "&pageName=ReportSection7b14ce996120a5295481")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(y)
     

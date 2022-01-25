@@ -5,12 +5,7 @@ pennsylvania_bi_population_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     population_page <- str_c(url, "&pageName=ReportSection")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(population_page)
     
