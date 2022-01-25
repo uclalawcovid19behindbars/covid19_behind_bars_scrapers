@@ -20,6 +20,7 @@ You can find each of our scrapers in the folder `production/scrapers`. More deta
 
 - Docker (for selenium web scraping) installed and running
 - A direct installation of the r package `tabulizer` and its dependencies. To install, run `remotes::install_github(c("ropensci/tabulizerjars", "ropensci/tabulizer"))`
+- A direct installation of `pandoc` on your machine. To install, run `brew install pandoc`
 - API keys for the services we utilize, Extractable (`EXTRACTABLE_API_KEY`) and PERMACC (`PERMACC_API_KEY`)
 - SSH key for UCLA server if you will be adding scraped data to the server. The following configuration should be added to your local `.ssh/config`:
 ```
