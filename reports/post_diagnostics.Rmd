@@ -29,9 +29,8 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 new_df <- read_scrape_data(all_dates = FALSE)
 
 # Get all log files from the latest run 
-# latest_date <- max(new_df$Date) %>% 
-#     as.character()
-latest_date <- "2022-01-18"
+latest_date <- max(new_df$Date) %>%
+    as.character()
 log_status <- behindbarstools::list_remote_data("log_files") %>% 
     str_subset(pattern = latest_date) %>% 
     as_tibble_col(column_name = "log") %>% 
