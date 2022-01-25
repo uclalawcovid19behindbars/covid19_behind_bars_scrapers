@@ -21,12 +21,12 @@ oregon_pull <- function(url){
     remDr <- create_selenium_driver()
 
     remDr$open(silent = TRUE)
+    
     remDr$navigate(url)
-
     raw_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
-    
-    remDr$quit()
+
+    remDr$close()
     
     return(raw_html)
 }

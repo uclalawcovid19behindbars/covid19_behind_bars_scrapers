@@ -29,13 +29,9 @@ lasd_staff_pull <- function(x, wait = 10){
     
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(wait)
     

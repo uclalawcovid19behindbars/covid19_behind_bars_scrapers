@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 wisconsin_deaths_check_date <- function(x, date = Sys.Date()){
     app_src <- "https://public.tableau.com/views/WIDOCCOVID19/" %>%
@@ -11,13 +12,9 @@ wisconsin_deaths_check_date <- function(x, date = Sys.Date()){
             "display_spinner=no&%3Adisplay_overlay=yes&%3A",
             "display_count=yes&%3Alanguage=en&%3AloadOrderID=0")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(app_src)
     Sys.sleep(6)
     

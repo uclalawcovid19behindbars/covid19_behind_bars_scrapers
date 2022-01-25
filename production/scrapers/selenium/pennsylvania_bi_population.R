@@ -1,24 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 pennsylvania_bi_population_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     population_page <- str_c(url, "&pageName=ReportSection")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(population_page)
     
     Sys.sleep(wait)
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
 
-    remDr$quit()
+    remDr$close()
     
     is_population <- raw_html %>%
         rvest::html_nodes(xpath="//h3[@class='preTextWithEllipsis']") %>%

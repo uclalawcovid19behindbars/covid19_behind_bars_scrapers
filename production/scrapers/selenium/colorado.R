@@ -71,7 +71,7 @@ colorado_pull <- function(url){
     }
 
     # quit our current selenium instance
-    remDr$quit()
+    remDr$close()
     
     # lets aggregate the files into one readable file,
     # its annoying because they are actually tsvs with weird encodings but 

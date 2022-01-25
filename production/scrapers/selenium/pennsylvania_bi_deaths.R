@@ -1,17 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 pennsylvania_bi_deaths_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     deaths_page <- str_c(url,"&pageName=ReportSectionc6adf1f0d7011b2ed62c")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(deaths_page)
     
     Sys.sleep(wait)

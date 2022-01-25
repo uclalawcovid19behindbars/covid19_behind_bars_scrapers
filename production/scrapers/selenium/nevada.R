@@ -20,7 +20,7 @@ nevada_check_date <- function(url, date = Sys.Date()){
         {.[str_detect(., "20")]} %>% # look for year 20xx
         lubridate::mdy()
 
-    remDr$quit()
+    remDr$close()
     
     error_on_date(site_date, date)
 }

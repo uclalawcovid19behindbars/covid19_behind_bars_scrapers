@@ -1,24 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 pennsylvania_bi_testing_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     testing_page <- str_c(url,"&pageName=ReportSection2804d81ebd8989abad15")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost", 
-        port = 4445,
-        browserName = "firefox"
-    )
+    remDr <- create_selenium_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(testing_page)
     
     Sys.sleep(wait)
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     is_covid_testing <- raw_html %>%
         rvest::html_nodes("h3.preTextWithEllipsis") %>%
