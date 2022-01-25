@@ -43,17 +43,23 @@ nevada_pull <- function(x){
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
     Sys.sleep(10)
-    # open up the facility dropdown
+    # open up the facility drop down menu
     remDr$findElement(
         "xpath", 
         str_c(
             "//div[@aria-label='Facility Type Final']"))$clickElement()
     Sys.sleep(10)
-    # find the div that has the select all option and unmark it
-    remDr$findElement(
-        "xpath", 
-        str_c("//span[@title='Select all']/parent::div"))$clickElement()
-    Sys.sleep(10)
+    # find the div that has the select all option and see if it is marked
+    select_all_ss <- "//span[@title='Select all']/parent::div"
+    select_all_node <- remDr$findElement("xpath", select_all_ss)
+
+    # if it is marked then we need to unmark it so we can only select
+    # correctional facilities
+    if(unlist(select_all_node$getElementAttribute("aria-checked")) == "true"){
+        select_all_node$clickElement()
+        Sys.sleep(10)
+    }
+
     # find the correctional facilities tab and mark it
     remDr$findElement(
         "xpath", 
@@ -71,14 +77,25 @@ nevada_pull <- function(x){
         str_c(
             "//div[@aria-label='Facility Name']"))$clickElement()
     Sys.sleep(10)
-
+    
+    # same thing here if select all is selected we need to unmark it
+    fac_select_all_node <- remDr$findElement("xpath", select_all_ss)
+    
+    if(unlist(
+        fac_select_all_node$getElementAttribute("aria-checked")) == "true"){
+        fac_select_all_node$clickElement()
+        Sys.sleep(10)
+    }
+    
+    # get a static version of the page
     nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    
+    # get all the box options in this current drop down menu
     box_options <- nv_page %>%
         rvest::html_nodes(".slicerItemContainer") %>%
         rvest::html_text()
     
+    # find the ones that are valid prison options
     valid_prison_options <- box_options %>%
         str_replace_all("[^a-zA-Z0-9 -]", "") %>%
         str_remove_all("-") %>%
@@ -86,14 +103,6 @@ nevada_pull <- function(x){
         {grepl("^[[:upper:]]+$", .)} %>%
         which()
     
-    # TODO: Need to find a way of this is selected or not given that
-    # isElementSelected() is not retuening expected results
-    
-    # deselect_index <- max(which(box_options == "Select all"))
-    # 
-    # remDr$findElements(
-    #     "css", ".glyphicon.checkbox")[[deselect_index]]$clickElement()
-    # Sys.sleep(3)
 
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
     dir.create(sub_dir, showWarnings = FALSE)
