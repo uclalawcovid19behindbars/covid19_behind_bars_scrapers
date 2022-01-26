@@ -19,11 +19,15 @@ minnesota_pull <- function(x, wait = 20){
     app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    dremDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(wait)
     
-    xml2::read_html(remDr$getPageSource()[[1]])
+    html_out <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    remDr$quit()
+    
+    html_out
 }
 
 minnesota_restruct <- function(x){

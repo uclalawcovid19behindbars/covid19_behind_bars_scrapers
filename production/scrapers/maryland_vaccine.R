@@ -8,15 +8,6 @@ maryland_vaccine_pull <- function(url){
     remDr$open(silent = TRUE)
     
     remDr$navigate(url)
-    # If driver can't find elements we care about within 10 seconds, error out
-    # remDr$setImplicitWaitTimeout(milliseconds = 10000)
-    # # Check for table with desired Ids
-    # remDr$findElement(using = 'xpath',
-    #                   ("//*[contains(text(),'Staff Vaccinations')]"))
-    # remDr$findElement(using = 'xpath',
-    #                   ("//*[contains(text(),'Inmate Vaccinations')]"))
-    # remDr$findElement(using = 'xpath',
-    #                   ("//*[contains(text(),'Facility (Administered)')]"))
 
     base_html <- remDr$getPageSource()[[1]]
 

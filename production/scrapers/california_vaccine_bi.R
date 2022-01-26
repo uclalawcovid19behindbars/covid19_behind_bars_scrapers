@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 california_vaccine_bi_pull <- function(x, wait = 20){
     # scrape from the power bi iframe directly
@@ -14,7 +15,7 @@ california_vaccine_bi_pull <- function(x, wait = 20){
     dir.create(sub_dir, showWarnings = FALSE)
     html_list <- list()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)
@@ -65,6 +66,8 @@ california_vaccine_bi_pull <- function(x, wait = 20){
     tf <- tempfile(fileext = ".html")
     
     htmltools::save_html(x, file = tf)
+    
+    remDr$quit()
     
     xml2::read_html(tf)
 }
