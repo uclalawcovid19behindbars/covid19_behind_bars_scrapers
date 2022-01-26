@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 california_statewide_check_date <- function(x, date = Sys.Date()){
     # scrape from the power bi iframe directly
@@ -11,12 +12,14 @@ california_statewide_check_date <- function(x, date = Sys.Date()){
         )
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(15)
     
     base_page <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    remDr$quit()
     
     site_date <- base_page %>%
         rvest::html_nodes("title") %>%
@@ -42,12 +45,14 @@ california_statewide_pull <- function(x, wait = 25){
         )
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)
     
     remDr$screenshot(file = tf)
+    
+    remDr$quit()
     
     magick::image_read(tf)
 }

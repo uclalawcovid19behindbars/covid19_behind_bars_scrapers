@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 maryland_powerbi_pull <- function(x){
     src_url <- str_c(
@@ -9,11 +10,13 @@ maryland_powerbi_pull <- function(x){
         "LTY0ZGYwMjc2YTJlOCJ9&pageName=ReportSection")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(src_url)
     Sys.sleep(6)
     
     base_html <- remDr$getPageSource()
+    
+    remDr$quit()
     
     xml2::read_html(base_html[[1]])
 }

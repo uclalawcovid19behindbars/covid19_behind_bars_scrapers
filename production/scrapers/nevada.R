@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 nevada_clean_fac_text <- function(x){
     str_remove(x, "(?i)NDOC -") %>%
@@ -9,10 +10,8 @@ nevada_clean_fac_text <- function(x){
 nevada_check_date <- function(url, date = Sys.Date()){
     remDr <- initiate_remote_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(url)
-    # If driver can't find elements we care about within 10 seconds, error out
-    remDr$setImplicitWaitTimeout(milliseconds = 10000)
     
     site_date <- remDr$findElement(using = "css", "transform")$getElementText() %>% 
         unlist() %>%
@@ -31,7 +30,7 @@ nevada_pull <- function(x){
         "U0YTM0MGU2LWI4OWUtNGU2OC04ZWFhLTE1NDRkMjcwMzk4MCJ9")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(10)
     
@@ -174,6 +173,8 @@ nevada_pull <- function(x){
     tf <- tempfile(fileext = ".html")
     
     htmltools::save_html(x, file = tf)
+    
+    remDr$quit()
     
     xml2::read_html(tf)
 }

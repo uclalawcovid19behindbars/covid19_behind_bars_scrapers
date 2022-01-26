@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 california_check_date <- function(x, date = Sys.Date()){
     # scrape from the power bi iframe directly
@@ -11,7 +12,7 @@ california_check_date <- function(x, date = Sys.Date()){
     
     remDr <- initiate_remote_driver()
     
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(10)
@@ -27,6 +28,8 @@ california_check_date <- function(x, date = Sys.Date()){
         lubridate::floor_date(unit="day") %>%
         as.Date()
     
+    remDr$quit()
+    
     error_on_date(site_date, date)
 }
 
@@ -39,12 +42,16 @@ california_pull <- function(x, wait = 20){
             "pageName=ReportSection90204f76f18a02b19c96")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)
     
-    xml2::read_html(remDr$getPageSource()[[1]])
+    out_html <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    remDr$quit()
+    
+    out_html
 }
 
 california_restruct <- function(x, date = Sys.Date()){

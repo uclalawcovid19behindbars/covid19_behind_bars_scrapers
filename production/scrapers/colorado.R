@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 colorado_check_date <- function(url, date = Sys.Date()){
     base_page <- xml2::read_html(url)
@@ -38,7 +39,7 @@ colorado_pull <- function(url){
     remDr <- initiate_remote_driver()
     
     # Suppress terminal output
-    capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(url)
     Sys.sleep(2)
     

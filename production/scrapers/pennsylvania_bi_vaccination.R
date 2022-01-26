@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
     # scrape from the power bi iframe directly
@@ -10,7 +11,7 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
             "&pageName=ReportSection7b14ce996120a5295481")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)
@@ -113,6 +114,8 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
     tf <- tempfile(fileext = ".html")
     
     htmltools::save_html(x, file = tf)
+    
+    remDr$quit()
     
     xml2::read_html(tf)
 }

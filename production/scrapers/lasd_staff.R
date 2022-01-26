@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 lasd_staff_date_check <- function(x, date = Sys.Date()){
     lasd_html <- xml2::read_html(x)
@@ -7,12 +8,14 @@ lasd_staff_date_check <- function(x, date = Sys.Date()){
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(6)
     
     x <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
+    
+    remDr$quit()
     
     rvest::html_nodes(x, ".visualContainer") %>% 
         rvest::html_text() %>% 
@@ -28,12 +31,16 @@ lasd_staff_pull <- function(x, wait = 10){
     app_source <- get_src_by_attr(x, "iframe", attr="src", attr_regex = "app")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(wait)
     
-    remDr$getPageSource() %>%
+    out_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
+    
+    remDr$quit()
+    
+    out_html
 }
 
 lasd_staff_restruct <- function(x){

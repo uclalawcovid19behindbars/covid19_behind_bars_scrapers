@@ -1,12 +1,13 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 pennsylvania_bi_population_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
     population_page <- str_c(url, "&pageName=ReportSection")
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(population_page)
     
     Sys.sleep(wait)

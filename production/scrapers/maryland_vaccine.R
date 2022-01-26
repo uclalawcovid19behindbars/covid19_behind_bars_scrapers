@@ -1,10 +1,11 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 maryland_vaccine_pull <- function(url){
     
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     
     remDr$navigate(url)
     # If driver can't find elements we care about within 10 seconds, error out
@@ -18,11 +19,12 @@ maryland_vaccine_pull <- function(url){
     #                   ("//*[contains(text(),'Facility (Administered)')]"))
 
     base_html <- remDr$getPageSource()[[1]]
+
+    out_html <- xml2::read_html(base_html)
     
     remDr$quit()
-
-    xml2::read_html(base_html)
-
+    
+    out_html
 }
 
 get_maryland_facility_vaccine_table <- function(raw_html){

@@ -18,12 +18,7 @@ minnesota_pull <- function(x, wait = 20){
     
     app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
+    remDr <- initiate_remote_driver()
     del_ <- capture.output(remDr$open())
     remDr$navigate(app_source)
     Sys.sleep(wait)

@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 oregon_check_date <- function(url, date = Sys.Date()){
     base_html <- xml2::read_html(url)
@@ -18,7 +19,7 @@ oregon_check_date <- function(url, date = Sys.Date()){
 
 oregon_pull <- function(url){
     remDr <- initiate_remote_driver()
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(url)
 
     raw_html <- remDr$getPageSource() %>%
