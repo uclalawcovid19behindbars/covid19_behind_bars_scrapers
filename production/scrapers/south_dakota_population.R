@@ -18,7 +18,7 @@ south_dakota_population_pull <- function(x){
           html_nodes('a') %>%
           html_attr('href') %>%
           as.data.frame() %>%
-          plyr::rename(c('.' = 'links')) %>%
+          rename(c('links' = '.')) %>%
           subset(str_detect(links, 'documents/AdultPopulation'))
     
     file.link <- str_c('https://doc.sd.gov', unique(x$links))
