@@ -13,8 +13,18 @@ south_dakota_population_check_date <- function(x, date = Sys.Date()){
 }
 
 south_dakota_population_pull <- function(x){
-    get_src_by_attr(x, "a", attr = "href", 
-                    attr_regex = "(?i)documents/AdultPopulation.*.pdf")
+    x <- 'https://doc.sd.gov/about/stats/adult/' %>%
+          read_html() %>%
+          html_nodes('a') %>%
+          html_attr('href') %>%
+          as.data.frame() %>%
+          rename(c('links' = '.')) %>%
+          subset(str_detect(links, 'documents/AdultPopulation'))
+    
+    file.link <- str_c('https://doc.sd.gov', unique(x$links))
+    
+    file.link
+
 }
 
 south_dakota_population_restruct <- function(x){
@@ -31,8 +41,9 @@ south_dakota_population_extract <- function(x){
         "State Females", "2", "State.Females.Drop", 
         "State Total", "3", "Residents.Population", 
         "Federal Males", "4", "Fedearl.Males.Drop", 
-        "Federal Females", "5", "Federal.Females.Drop" 
-    ), ncol = 3, nrow = 6, byrow = TRUE)
+        "Federal Females", "5", "Federal.Females.Drop",
+        "Total Inmates", "6", "Total.Inmates.Drop"
+    ), ncol = 3, nrow = 7, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
@@ -40,7 +51,7 @@ south_dakota_population_extract <- function(x){
     check_names_extractable(x[[1]], col_name_df)
     
     rename_extractable(x[[1]], col_name_df) %>% 
-        select(!ends_with(".Drop")) %>% 
+        select(-contains('Drop')) %>%
         filter(!str_detect(Name, "Population")) %>% 
         clean_scraped_df() %>% 
         filter(!is.na(Name)) %>% 
