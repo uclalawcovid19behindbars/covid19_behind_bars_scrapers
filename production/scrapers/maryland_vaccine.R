@@ -1,32 +1,21 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 maryland_vaccine_pull <- function(url){
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    del_ <- capture.output(remDr$open())
+    remDr <- initiate_remote_driver()
+    remDr$open(silent = TRUE)
     
     remDr$navigate(url)
-    # If driver can't find elements we care about within 10 seconds, error out
-    remDr$setImplicitWaitTimeout(milliseconds = 10000)
-    # # Check for table with desired Ids
-    # remDr$findElement(using = 'xpath',
-    #                   ("//*[contains(text(),'Staff Vaccinations')]"))
-    # remDr$findElement(using = 'xpath',
-    #                   ("//*[contains(text(),'Inmate Vaccinations')]"))
-    # remDr$findElement(using = 'xpath',
-    #                   ("//*[contains(text(),'Facility (Administered)')]"))
 
     base_html <- remDr$getPageSource()[[1]]
+
+    out_html <- xml2::read_html(base_html)
     
     remDr$quit()
-
-    xml2::read_html(base_html)
-
+    
+    out_html
 }
 
 get_maryland_facility_vaccine_table <- function(raw_html){

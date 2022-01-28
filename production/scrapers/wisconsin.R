@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 wisconsin_check_date <- function(x, date = Sys.Date()){
     app_src <- "https://public.tableau.com/views/WIDOCCOVID19/COVID-19Table?" %>%
@@ -11,19 +12,16 @@ wisconsin_check_date <- function(x, date = Sys.Date()){
             "&%3Adisplay_overlay=yes&%3Adisplay_count=yes&%3Alanguage=en",
             "&%3AloadOrderID=0")
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
-    del_ <- capture.output(remDr$open())
+    remDr <- initiate_remote_driver()
+    remDr$open(silent = TRUE)
     remDr$navigate(app_src)
     Sys.sleep(6)
     
     base_html <- remDr$getPageSource()
     
     base_page <- xml2::read_html(base_html[[1]])
+    
+    remDr$quit()
     
     base_page %>%
         rvest::html_node(xpath ="//span[contains(text(),'Updated')]") %>%
@@ -42,30 +40,8 @@ wisconsin_pull <- function(x){
            "display_static_image=no&%3Adisplay_spinner=no",
            "&%3Adisplay_overlay=yes&%3Adisplay_count=yes&%3Alanguage=en",
            "&%3AloadOrderID=0")
-   fprof <- RSelenium::makeFirefoxProfile(list(
-       browser.startup.homepage = "about:blank",
-       startup.homepage_override_url = "about:blank",
-       startup.homepage_welcome_url = "about:blank",
-       startup.homepage_welcome_url.additional = "about:blank",
-       browser.download.dir = "/home/seluser/Downloads",
-       browser.download.folderList = 2L,
-       browser.download.manager.showWhenStarting = FALSE,
-       browser.download.manager.focusWhenStarting = FALSE,
-       browser.download.manager.closeWhenDone = TRUE,
-       browser.helperApps.neverAsk.saveToDisk = 
-           "application/pdf, application/octet-stream",
-       pdfjs.disabled = TRUE,
-       plugin.scan.plid.all = FALSE,
-       plugin.scan.Acrobat = 99L))
-   
-   remDr <- RSelenium::remoteDriver(
-       remoteServerAddr = "localhost",
-       port = 4445,
-       browserName = "firefox",
-       extraCapabilities=fprof
-   )
-   
-   del_ <- capture.output(remDr$open())
+   remDr <- initiate_remote_driver()
+   remDr$open(silent = TRUE)
    remDr$navigate(app_src)
    Sys.sleep(6)
    
@@ -88,6 +64,8 @@ wisconsin_pull <- function(x){
    if(!file.exists(out_file)){
        stop("WI unable to download image")
    }
+   
+   remDr$quit()
    
    return(out_file)
    

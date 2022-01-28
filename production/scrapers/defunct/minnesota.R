@@ -18,17 +18,16 @@ minnesota_pull <- function(x, wait = 20){
     
     app_source <- "https://app.smartsheet.com/b/publish?EQBCT=4fffc0afb455414da7680411f796b64c"
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
-    del_ <- capture.output(remDr$open())
+    remDr <- initiate_remote_driver()
+    dremDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(wait)
     
-    xml2::read_html(remDr$getPageSource()[[1]])
+    html_out <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    remDr$quit()
+    
+    html_out
 }
 
 minnesota_restruct <- function(x){

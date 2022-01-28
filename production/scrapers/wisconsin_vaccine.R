@@ -1,5 +1,6 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
     app_src <- "https://public.tableau.com/views/WIDOCCOVID19/" %>%
@@ -10,21 +11,18 @@ wisconsin_vaccine_check_date <- function(x, date = Sys.Date()){
             "animate_transition=yes&%3Adisplay_static_image=no&%3A",
             "display_spinner=no&%3Adisplay_overlay=yes&%3A",
             "display_count=yes&%3Alanguage=en&%3AloadOrderID=0")
-    
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox"
-    )
-    
-    del_ <- capture.output(remDr$open())
+
+    remDr <- initiate_remote_driver()
+    remDr$open(silent = TRUE)
     remDr$navigate(app_src)
     Sys.sleep(6)
-    
+
     base_html <- remDr$getPageSource()
-    
+
     base_page <- xml2::read_html(base_html[[1]])
     
+    remDr$quit()
+
     base_page %>%
         rvest::html_node(xpath ="//span[contains(text(),'Updated')]") %>%
         rvest::html_text() %>%

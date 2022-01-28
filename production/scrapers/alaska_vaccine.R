@@ -1,31 +1,11 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
+source("./R/selenium_driver.R")
 
 alaska_vaccine_check_date <- function(x, date = Sys.Date()){
-    fprof <- RSelenium::makeFirefoxProfile(list(
-        browser.startup.homepage = "about:blank",
-        startup.homepage_override_url = "about:blank",
-        startup.homepage_welcome_url = "about:blank",
-        startup.homepage_welcome_url.additional = "about:blank",
-        browser.download.dir = "/home/seluser/Downloads",
-        browser.download.folderList = 2L,
-        browser.download.manager.showWhenStarting = FALSE,
-        browser.download.manager.focusWhenStarting = FALSE,
-        browser.download.manager.closeWhenDone = TRUE,
-        browser.helperApps.neverAsk.saveToDisk = 
-            "application/pdf, application/octet-stream",
-        pdfjs.disabled = TRUE,
-        plugin.scan.plid.all = FALSE,
-        plugin.scan.Acrobat = 99L))
+    remDr <- initiate_remote_driver()
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox",
-        extraCapabilities=fprof
-    )
-    
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(x)
     Sys.sleep(6)
     
@@ -41,38 +21,21 @@ alaska_vaccine_check_date <- function(x, date = Sys.Date()){
         str_remove("(?i)as of ") %>%
         lubridate::mdy()
     
+    remDr$quit()
+    
     error_on_date(date, site_date)
 }
 
 alaska_vaccine_pull <- function(x){
-    fprof <- RSelenium::makeFirefoxProfile(list(
-        browser.startup.homepage = "about:blank",
-        startup.homepage_override_url = "about:blank",
-        startup.homepage_welcome_url = "about:blank",
-        startup.homepage_welcome_url.additional = "about:blank",
-        browser.download.dir = "/home/seluser/Downloads",
-        browser.download.folderList = 2L,
-        browser.download.manager.showWhenStarting = FALSE,
-        browser.download.manager.focusWhenStarting = FALSE,
-        browser.download.manager.closeWhenDone = TRUE,
-        browser.helperApps.neverAsk.saveToDisk = 
-            "application/pdf, application/octet-stream",
-        pdfjs.disabled = TRUE,
-        plugin.scan.plid.all = FALSE,
-        plugin.scan.Acrobat = 99L))
+    remDr <- initiate_remote_driver()
     
-    remDr <- RSelenium::remoteDriver(
-        remoteServerAddr = "localhost",
-        port = 4445,
-        browserName = "firefox",
-        extraCapabilities=fprof
-    )
-    
-    del_ <- capture.output(remDr$open())
+    remDr$open(silent = TRUE)
     remDr$navigate(x)
     Sys.sleep(6)
     
     base_html <- remDr$getPageSource()
+    
+    remDr$quit()
     
     xml2::read_html(base_html[[1]])
 }
