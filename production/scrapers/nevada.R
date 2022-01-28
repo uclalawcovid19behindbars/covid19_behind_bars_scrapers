@@ -33,32 +33,59 @@ nevada_pull <- function(x){
     remDr$open(silent = TRUE)
     remDr$navigate(app_source)
     Sys.sleep(10)
-    
+    # open up the facility drop down menu
     remDr$findElement(
         "xpath", 
         str_c(
-            "//div[@aria-label='Facility Type Slicer Drop down box to ",
-            "select one or more facility types.']"))$clickElement()
+            "//div[@aria-label='Facility Type Final']"))$clickElement()
     Sys.sleep(10)
-    remDr$findElement(
-        "xpath", 
-        str_c("/html/body/div[6]/div[1]/div/div[2]/div/div[1]/div/div/div[5]/div/div",
-              ""))$clickElement()
-    Sys.sleep(10)
-    remDr$findElement(
-        "xpath", 
-        str_c(
-            "//div[@aria-label='Facility Name Slicer Drop down box to ",
-            "select one or more facilities.']"))$clickElement()
-    Sys.sleep(10)
+    # find the div that has the select all option and see if it is marked
+    select_all_ss <- "//span[@title='Select all']/parent::div"
+    select_all_node <- remDr$findElement("xpath", select_all_ss)
 
+    # if it is marked then we need to unmark it so we can only select
+    # correctional facilities
+    if(unlist(select_all_node$getElementAttribute("aria-checked")) == "true"){
+        select_all_node$clickElement()
+        Sys.sleep(10)
+    }
+
+    # find the correctional facilities tab and mark it
+    remDr$findElement(
+        "xpath", 
+        str_c("//span[@title='Correctional']/parent::div"))$clickElement()
+    Sys.sleep(10)
+    # close the dropdown for facility types
+    remDr$findElement(
+        "xpath", 
+        str_c(
+            "//div[@aria-label='Facility Type Final']"))$clickElement()
+    Sys.sleep(10)
+    # open the dropdown for specific facilities
+    remDr$findElement(
+        "xpath", 
+        str_c(
+            "//div[@aria-label='Facility Name']"))$clickElement()
+    Sys.sleep(10)
+    
+    # same thing here if select all is selected we need to unmark it
+    fac_select_all_node <- remDr$findElement("xpath", select_all_ss)
+    
+    if(unlist(
+        fac_select_all_node$getElementAttribute("aria-checked")) == "true"){
+        fac_select_all_node$clickElement()
+        Sys.sleep(10)
+    }
+    
+    # get a static version of the page
     nv_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    
+    # get all the box options in this current drop down menu
     box_options <- nv_page %>%
         rvest::html_nodes(".slicerItemContainer") %>%
         rvest::html_text()
     
+    # find the ones that are valid prison options
     valid_prison_options <- box_options %>%
         str_replace_all("[^a-zA-Z0-9 -]", "") %>%
         str_remove_all("-") %>%
@@ -66,14 +93,6 @@ nevada_pull <- function(x){
         {grepl("^[[:upper:]]+$", .)} %>%
         which()
     
-    # TODO: Need to find a way of this is selected or not given that
-    # isElementSelected() is not retuening expected results
-    
-    # deselect_index <- max(which(box_options == "Select all"))
-    # 
-    # remDr$findElements(
-    #     "css", ".glyphicon.checkbox")[[deselect_index]]$clickElement()
-    # Sys.sleep(3)
 
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
     dir.create(sub_dir, showWarnings = FALSE)
@@ -88,17 +107,27 @@ nevada_pull <- function(x){
         for(j in valid_prison_options){
             fac_name <- nevada_clean_fac_text(box_options[j])
             if(!(fac_name %in% names(html_list))){
-                src_str <- str_c(
-                    "/html/body/div[5]/div[1]/div/div[2]/div/div[1]/div/div/div[",
-                    j, "]/div")
+                # find the box option that matches the current facility
+                box_option_j <- box_options[which(str_detect(box_options, fac_name))]
                 
+                # make sure it only matches one argumnet
+                if(length(box_option_j) != 1){
+                    stop("Webpage not as expected please inspect names of facilities")
+                }
+                
+                # find the corresponding selector
+                src_str <- str_c(
+                    "//span[@title='", box_option_j, "']/parent::div")
                 elCB <- remDr$findElement("xpath", src_str)
                 
+                # check that it is actually displayed and not just phantom displayed
                 if(elCB$isElementDisplayed()[[1]]){
                     
+                    # click the box
                     elCB$clickElement()
                     Sys.sleep(7)
                     
+                    # save the webpage
                     html_list[[fac_name]] <- xml2::read_html(
                         remDr$getPageSource()[[1]])
                 }
@@ -151,7 +180,8 @@ nevada_pull <- function(x){
         iters <- iters + 1
     }
     
-    # Not gonna work need to find a permanent location
+    # lets post process all teh individuals pages and stich them 
+    # together into a single web page
     fns <- str_c(sub_dir, "/", names(html_list), ".html")
     
     Map(xml2::write_html, html_list, fns)
