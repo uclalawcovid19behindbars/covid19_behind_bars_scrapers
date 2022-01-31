@@ -22,7 +22,7 @@ michigan_pull <- function(x){
     img1 <- mi_html %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>% 
-        .[8] %>%    #https://miro.medium.com/max/2000/1*xp1iT7e3pZUuuIJw17-0dg.png
+        .[6] %>%    #https://miro.medium.com/max/552/1*4rpmfHDDxmPh23deQ_OGwQ.png 276w, https://miro.medium.com/max/1104/1*4rpmfHDDxmPh23deQ_OGwQ.png 552w, https://miro.medium.com/max/1280/1*4rpmfHDDxmPh23deQ_OGwQ.png 640w, https://miro.medium.com/max/1400/1*4rpmfHDDxmPh23deQ_OGwQ.png 700w
         magick::image_read()
     
     img1

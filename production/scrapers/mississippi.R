@@ -16,7 +16,7 @@ mississippi_date_check <- function(url, date = Sys.Date()){
         str_split("Last Update: ") %>%
         unlist() %>%
         .[2] %>% 
-        str_remove("\n")
+        str_remove("\n") 
         
     date_string %>%
         lubridate::mdy_h() %>% 

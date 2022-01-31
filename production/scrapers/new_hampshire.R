@@ -9,7 +9,7 @@ new_hampshire_vaccine_check_date <- function(x, date = Sys.Date()){
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)22")]} %>%
         str_split(., "(?i)table data updated |\\*") %>%
         unlist() %>%
         .[2] %>%

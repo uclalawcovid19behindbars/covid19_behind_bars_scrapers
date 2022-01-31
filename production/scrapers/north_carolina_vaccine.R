@@ -8,7 +8,7 @@ north_carolina_vaccine_check_date <- function(x, date = Sys.Date()){
         rvest::html_text()
     
     date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
+        {.[str_detect(., "(?i)22")]} %>%
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>%
         lubridate::mdy() %>%
         error_on_date(expected_date = date)

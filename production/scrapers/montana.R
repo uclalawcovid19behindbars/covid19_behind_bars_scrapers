@@ -5,12 +5,12 @@ montana_check_date <- function(url, date = Sys.Date()){
     base_html <- xml2::read_html(url)
     date_check_txt <- rvest::html_nodes(base_html, css = 'em') %>%
         rvest::html_text() %>% 
-        str_split("on") %>%
+        str_split("of") %>%
         unlist() %>%
         .[2] %>%
         str_replace("Sept", "Sep")
            
-    date_check_txt <- gsub("[[:punct:]]", "", date_check_txt)
+    date_check_txt <- str_c(gsub("[[:punct:]]", "", date_check_txt), " 2022")
 
     date_check <- lubridate::mdy(date_check_txt) %>%
         error_on_date(expected_date = date)

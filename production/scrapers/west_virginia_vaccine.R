@@ -7,7 +7,7 @@ west_virginia_vaccine_check_date <- function(x, date = Sys.Date()){
     
     z %>%
         rvest::html_node(xpath =
-            "//span[contains(text(),'or week ending')]") %>%
+                             "//span[contains(text(),'or week ending')]") %>%
         rvest::html_text() %>%
         str_split("ending") %>%
         unlist() %>%
@@ -39,7 +39,7 @@ west_virginia_vaccine_restruct <- function(x){
     
     names(df_)[1] <- "Name"
     names(df_) <- paste(names(df_), df_[1, ], sep = "_")
-
+    
     check_names(df_, c("name", "county", "pop", "moderna","johnson"), 
                 detect = TRUE)
     
@@ -49,7 +49,7 @@ west_virginia_vaccine_restruct <- function(x){
         "Drop.Population",
         "Moderna.Initiated", 
         "Johnson"
-        )
+    )
     
     df_[-1,]
 }
@@ -84,7 +84,7 @@ west_virginia_vaccine_extract <- function(x){
             "Expected 4 staff rows, got ", nrow(res_df), 
             ". Check raw file for rows that should/shouldn't be dropped."))
     }
-
+    
     bind_rows(res_df, staff_df) %>% 
         select(Name, starts_with(c("Residents.", "Staff.")))
 }
@@ -146,4 +146,3 @@ if(sys.nframe() == 0){
     west_virginia_vaccine$validate_extract()
     west_virginia_vaccine$save_extract()
 }
-

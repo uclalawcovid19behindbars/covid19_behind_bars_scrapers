@@ -22,7 +22,7 @@ west_virginia_pull <- function(x){
     tsv_src <- get_src_by_attr(
         x, "a", attr = "href", attr_regex = "txt$") %>%
         {.[!str_detect(., "vaccine")]}
-    
+
     dev_null <- suppressWarnings(out <- read_tsv(
         tsv_src, skip = 1, col_types = cols()))
     
@@ -144,7 +144,7 @@ west_virginia_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://dhhr.wv.gov/COVID-19/Pages/Correctional-Facilities.aspx",
+            url = "https://dhhr.wv.gov/COVID-19/Pages/Case-Reports-2022.aspx",
             id = "west_virginia",
             type = "csv",
             state = "WV",

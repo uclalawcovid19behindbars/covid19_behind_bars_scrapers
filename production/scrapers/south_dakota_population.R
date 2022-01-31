@@ -4,6 +4,7 @@ source("./R/utilities.R")
 south_dakota_population_check_date <- function(x, date = Sys.Date()){
     get_src_by_attr(x, "a", attr = "href", 
                     attr_regex = "(?i)documents/AdultPopulation.*.pdf") %>%
+        .[1] %>%
         magick::image_read_pdf() %>% 
         magick::image_crop("800x200+50+100") %>% 
         magick::image_ocr() %>% 
@@ -14,12 +15,12 @@ south_dakota_population_check_date <- function(x, date = Sys.Date()){
 
 south_dakota_population_pull <- function(x){
     x <- 'https://doc.sd.gov/about/stats/adult/' %>%
-          read_html() %>%
-          html_nodes('a') %>%
-          html_attr('href') %>%
-          as.data.frame() %>%
-          rename(c('links' = '.')) %>%
-          subset(str_detect(links, 'documents/AdultPopulation'))
+        xml2::read_html() %>%
+        rvest::html_nodes('a') %>%
+        rvest::html_attr('href') %>%
+        as.data.frame() %>%
+        rename(c('links' = '.')) %>%
+        subset(str_detect(links, 'documents/AdultPopulation'))
     
     file.link <- str_c('https://doc.sd.gov', unique(x$links))
     

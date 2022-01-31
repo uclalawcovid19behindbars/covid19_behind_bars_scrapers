@@ -23,7 +23,7 @@ michigan_staff_pull <- function(x){
         rvest::html_attr("src") %>%
         .[7] %>%      #src="https://miro.medium.com/max/1210/1*rmlt07ZUHyPh0MkrayUqoA.png"
         magick::image_read()
-    
+
     img2
 }
 
@@ -43,12 +43,14 @@ michigan_staff_extract <- function(x){
     
     check_names_extractable(x[[1]], col_name_df)
     
-    rename_extractable(x[[1]], col_name_df) %>%
+    extract_out <- rename_extractable(x[[1]], col_name_df) %>%
         as_tibble() %>%
         filter(Name != "Location" & !grepl(Name, pattern = "Tota")) %>%
         clean_scraped_df() %>%
         mutate(Staff.Deaths = ifelse(is.na(Staff.Deaths), 0, Staff.Deaths),
                Name = str_remove(Name, "^Location ")) 
+    
+    return(extract_out)
 }
 
 #' Scraper class for general Michigan staff COVID data

@@ -46,18 +46,17 @@ ohio_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Institution", "0", "Name",
-        "# of Staff who have Reported Positive Tests", "1", "Staff.Confirmed",
-        "# of Staff Currently Positive", "2", "Staff.Active",
-        "# of COVID- 19 Related Staff Deaths", "3", "Staff.Deaths",
-        "# of Staff who have Recovered", "4", "Staff.Recovered",
-        "Housing Type (cell, open bay, combo)", "5", "Housing.Type",
+        # "# of Staff who have Reported Positive Tests", "1", "Staff.Confirmed",
+        "# of Staff Currently Positive", "1", "Staff.Active",
+        "# of COVID- 19 Related Staff Deaths", "2", "Staff.Deaths",
+        # "# of Staff who have Recovered", "4", "Staff.Recovered",
+        "Housing Type (cell, open bay, combo)", "3", "Housing.Type",
         #"# of Inmates in Quarantine", "6", "Residents.Quarantine",
-        "# of Inmates in Isolation", "6", "Residents.Isolation",
-        "# of inmates currently Positive for COVID-19", "7", "Residents.Active",
-        "# of Confirmed COVID-19 Related Inmate Deaths", "8", "Residents.Confirmed.Deaths",
-        "# of Inmates who have Pending Results",  "9", "Residents.Pending",
-        "# of current Inmates who have Recovered", "10", "Residents.Recovered"
-    ), ncol = 3, nrow = 11, byrow = TRUE)
+        "# of Inmates in Isolation", "4", "Residents.Isolation",
+        "# of inmates currently Positive for COVID-19", "5", "Residents.Active",
+        "# of Confirmed COVID-19 Related Inmate Deaths", "6", "Residents.Confirmed.Deaths",
+        "# of Inmates who have Pending Results",  "7", "Residents.Pending"
+    ), ncol = 3, nrow = 8, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")
     col_name_df <- as_tibble(col_name_mat)
@@ -70,8 +69,7 @@ ohio_extract <- function(x){
             filter(Name != "Institution" & Name != "Totals") %>%
             filter(!str_detect(Name, "(?i)total"))})) %>%
         clean_scraped_df() %>% 
-        mutate(Residents.Deaths = Residents.Confirmed.Deaths , 
-               Residents.Confirmed = Residents.Active + Residents.Confirmed.Deaths + Residents.Recovered) %>% 
+        mutate(Residents.Deaths = Residents.Confirmed.Deaths ) %>% 
         select(
             -Residents.Pending, -Residents.Isolation,
             -Residents.Confirmed.Deaths)
