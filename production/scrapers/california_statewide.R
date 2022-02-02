@@ -10,7 +10,6 @@ california_statewide_check_date <- function(x, date = Sys.Date()){
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&", 
             "pageName=ReportSectionc5f6f269bd82e37ccad7"
         )
-    
     remDr <- initiate_remote_driver()
     remDr$open(silent = TRUE)
     remDr$navigate(y)
@@ -43,7 +42,7 @@ california_statewide_pull <- function(x, wait = 25){
             "6IjA2NjI0NzdkLWZhMGMtNDU1Ni1hOGY1LWMzYmM2MmFhMGQ5YyJ9&", 
             "pageName=ReportSectionc5f6f269bd82e37ccad7"
         )
-    
+
     remDr <- initiate_remote_driver()
     remDr$open(silent = TRUE)
     remDr$navigate(y)
@@ -59,7 +58,7 @@ california_statewide_pull <- function(x, wait = 25){
 
 california_statewide_restruct <- function(x){
     tadmin_txt <- x %>%
-        magick::image_crop("360x110+380+100") %>%
+        magick::image_crop("400x120+400+140") %>%
         magick::image_ocr() %>%
         clean_fac_col_txt()
     
@@ -72,6 +71,10 @@ california_statewide_restruct <- function(x){
     
     if(is.na(tadmin_num)){
         warning("State-wide # of tests extracted is NA - please inspect")
+    }
+    
+    if(!(tadmin_num > 2000000)){
+      warning("State-wide # of tests extracted is less than 2 million - please inspect")
     }
     
     tibble(Residents.Tadmin = tadmin_num, 
