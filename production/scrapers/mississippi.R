@@ -19,7 +19,7 @@ mississippi_date_check <- function(url, date = Sys.Date()){
         str_remove("\n") 
         
     date_string %>%
-        lubridate::mdy_h() %>% 
+        lubridate::mdy_hm() %>% 
         lubridate::floor_date(unit = "days") %>%
         lubridate::as_date() %>%
         error_on_date(date)
