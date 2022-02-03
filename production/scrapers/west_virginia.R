@@ -1,46 +1,43 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-west_virginia_check_date <- function(x, date = Sys.Date()){
+west_virginia_check_date <- function(url, date = Sys.Date()){
     
-    z <- xml2::read_html(x)
+    tsv_src <- get_src_by_attr(url, "a", attr = "href", 
+                               attr_regex = "COVID19_DCR") %>% 
+        first()
     
-    z %>%
-        rvest::html_node(xpath ="//font[contains(text(),'as of')]") %>%
-        rvest::html_text() %>%
-        str_split(",") %>%
-        unlist() %>%
-        last() %>%
-        str_split(";") %>%
-        unlist() %>%
-        first() %>%
-        lubridate::mdy() %>%
+    tsv_src %>% 
+        str_split("DCR_") %>% # get the part of the url with the date
+        .[[1]] %>% 
+        .[2] %>%
+        lubridate::ymd() %>% 
         error_on_date(date)
 }
 
-west_virginia_pull <- function(x){
-    tsv_src <- get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "txt$") %>%
-        {.[!str_detect(., "vaccine")]}
+west_virginia_pull <- function(url){
+    tsv_src <- get_src_by_attr(url, "a", attr = "href", 
+                               attr_regex = "COVID19_DCR") %>% 
+        first()
 
-    dev_null <- suppressWarnings(out <- read_tsv(
+    dev_null <- suppressWarnings(pull_data <- read_tsv(
         tsv_src, skip = 1, col_types = cols()))
     
-    out
+    return(pull_data)
 }
 
-west_virginia_restruct <- function(x){
-    df_ <- x
+west_virginia_restruct <- function(pull_data){
+    restruct_data <- pull_data
     
-    replace_col <- unname(unlist(df_[1,]))
+    replace_col <- unname(unlist(restruct_data[1,]))
     rcol_idx <- which(!is.na(replace_col))
     
-    names(df_)[rcol_idx] <- replace_col[rcol_idx]
+    names(restruct_data)[rcol_idx] <- replace_col[rcol_idx]
     
-    df_
+    return(restruct_data)
 }
 
-west_virginia_extract <- function(x){
+west_virginia_extract <- function(restruct_data){
     exp_cols <- c(
         Name = "Regional jails", 
         Drop.County = "County", 
@@ -58,10 +55,10 @@ west_virginia_extract <- function(x){
         Residents.Quarantine = "Quarantine"
     )
     
-    check_names(x, exp_cols)
-    names(x) <- names(exp_cols)
+    check_names(restruct_data, exp_cols)
+    names(restruct_data) <- names(exp_cols)
     
-    fac_df <- x %>%
+    fac_df <- restruct_data %>%
         filter(
             !is.na(Residents.Population) & 
                 !str_detect(Residents.Population, "(?i)total") &
@@ -74,7 +71,7 @@ west_virginia_extract <- function(x){
         select(-starts_with("Drop"))
     
     # get deaths
-    resident_deaths <- x %>%
+    resident_deaths <- restruct_data %>%
         filter(
             str_starts(Name, "(?i)inmate deaths") | 
                 str_starts(Name, "(?i)confirmed inmate deaths")) %>%
@@ -92,11 +89,11 @@ west_virginia_extract <- function(x){
         sum()
     
     # see which row starts employee data
-    emp_idx <- first(which(str_detect(x$Name, "(?i)employee")))
-    staff_df <- x[emp_idx:nrow(x),] 
+    emp_idx <- first(which(str_detect(restruct_data$Name, "(?i)employee")))
+    staff_df <- restruct_data[emp_idx:nrow(restruct_data),] 
     names(staff_df) <- str_replace(names(staff_df), "Residents", "Staff")
     
-    staff_df %>% 
+    extract_data <- staff_df %>% 
         select(-starts_with("Drop"), -Staff.Population, Staff.Active) %>%
         filter(!is.na(Staff.Confirmed)) %>% 
         filter(!str_detect(Staff.Confirmed, "(?i)cumulative")) %>% 
@@ -109,6 +106,8 @@ west_virginia_extract <- function(x){
         bind_rows(tibble(Name = "State-Wide", Residents.Deaths = resident_deaths)) %>%
         select(-ends_with(".Drop")) %>%
         clean_scraped_df() 
+    
+    return(extract_data)
 }
 
 #' Scraper class for general West Virginia COVID data
