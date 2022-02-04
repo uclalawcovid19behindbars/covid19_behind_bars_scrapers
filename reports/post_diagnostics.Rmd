@@ -400,7 +400,8 @@ metrics <- c("Residents.Confirmed", "Residents.Active",
              "Residents.Deaths", "Staff.Confirmed", "Staff.Deaths")
 out <- metrics %>%
     map(~ track_recent_covid_increases(metric = .x, 
-                                       scrape_df = scrape_df))
+                                       scrape_df = scrape_df,
+                                       delta_days = 7))
 ## create some metadata 
 all_states <- purrr::transpose(out) %>% 
     .[["State"]] %>%
