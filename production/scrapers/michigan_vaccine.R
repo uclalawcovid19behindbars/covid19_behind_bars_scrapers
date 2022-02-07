@@ -51,7 +51,10 @@ michigan_vaccine_extract <- function(x){
     names(df_) <- names(exp_names)
     
     df_ %>% 
-        mutate(Name = clean_fac_col_txt(Name, to_upper = T)) %>% 
+        mutate(Name = clean_fac_col_txt(Name, to_upper = T),
+               Single.Drop = as.numeric(Single.Drop),
+               First.Drop = as.numeric(First.Drop),
+               Second.Drop = as.numeric(Second.Drop)) %>% 
         mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>%
         mutate(Residents.Initiated = First.Drop + Single.Drop, 
                Residents.Completed = Second.Drop + Single.Drop, 

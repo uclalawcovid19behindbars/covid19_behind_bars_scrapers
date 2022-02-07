@@ -19,13 +19,15 @@ michigan_date_check <- function(x, date = Sys.Date()){
 michigan_pull <- function(x){
     mi_html <- xml2::read_html(x)
     
-    img1 <- mi_html %>%
+    imgs <- mi_html %>%
         rvest::html_nodes("img") %>%
-        rvest::html_attr("src") %>% 
-        .[6] %>%    #https://miro.medium.com/max/552/1*4rpmfHDDxmPh23deQ_OGwQ.png 276w, https://miro.medium.com/max/1104/1*4rpmfHDDxmPh23deQ_OGwQ.png 552w, https://miro.medium.com/max/1280/1*4rpmfHDDxmPh23deQ_OGwQ.png 640w, https://miro.medium.com/max/1400/1*4rpmfHDDxmPh23deQ_OGwQ.png 700w
+        rvest::html_attr("src") 
+    Sys.sleep(10)
+    pulled_img <- imgs %>%
+        .[12] %>%    #https://miro.medium.com/max/552/1*4rpmfHDDxmPh23deQ_OGwQ.png 276w, https://miro.medium.com/max/1104/1*4rpmfHDDxmPh23deQ_OGwQ.png 552w, https://miro.medium.com/max/1280/1*4rpmfHDDxmPh23deQ_OGwQ.png 640w, https://miro.medium.com/max/1400/1*4rpmfHDDxmPh23deQ_OGwQ.png 700w
         magick::image_read()
     
-    img1
+    pulled_img
 }
 
 michigan_restruct <- function(x){

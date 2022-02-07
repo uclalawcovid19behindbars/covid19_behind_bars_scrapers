@@ -1,7 +1,18 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-west_virginia_vaccine_check_date <- function(x, date = Sys.Date()){
+west_virginia_vaccine_check_date <- function(url, date = Sys.Date()){
+    
+    tsv_src <- get_src_by_attr(url, "a", attr = "href", 
+                               attr_regex = "(?)vaccination") %>% 
+        first()
+    
+    tsv_src %>% 
+        str_split("DCR_") %>% # get the part of the url with the date
+        .[[1]] %>% 
+        .[2] %>%
+        lubridate::ymd() %>% 
+        error_on_date(date)
     
     z <- xml2::read_html(x)
     
@@ -111,7 +122,7 @@ west_virginia_vaccine_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://dhhr.wv.gov/COVID-19/Pages/Correctional-Facilities.aspx",
+            url = "https://dhhr.wv.gov/COVID-19/Pages/Vaccination-Reports-2022.aspx",
             id = "west_virginia_vaccine",
             type = "csv",
             state = "WV",

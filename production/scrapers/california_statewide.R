@@ -62,7 +62,7 @@ california_statewide_restruct <- function(x){
         magick::image_ocr() %>%
         clean_fac_col_txt()
     
-    if(!str_detect(tadmin_txt, "(?i)tests performed")){
+    if(!str_detect(tadmin_txt, "(?i)ests performed")){
         warning("Field does mot match expected text")
     }
     

@@ -17,7 +17,7 @@ west_virginia_check_date <- function(url, date = Sys.Date()){
 
 west_virginia_pull <- function(url){
     tsv_src <- get_src_by_attr(url, "a", attr = "href", 
-                               attr_regex = "COVID19_DCR") %>% 
+                               attr_regex = "COVID19_DCR.*tsv") %>% 
         first()
 
     dev_null <- suppressWarnings(pull_data <- read_tsv(
