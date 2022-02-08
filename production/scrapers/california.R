@@ -28,7 +28,7 @@ california_check_date <- function(x, date = Sys.Date()){
         lubridate::floor_date(unit="day") %>%
         as.Date()
     
-    remDr$quit()
+    remDr$close()
     
     error_on_date(site_date, date)
 }
@@ -49,7 +49,7 @@ california_pull <- function(x, wait = 20){
     
     out_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     out_html
 }

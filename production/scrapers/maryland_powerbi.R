@@ -16,7 +16,7 @@ maryland_powerbi_pull <- function(x){
     
     base_html <- remDr$getPageSource()
     
-    remDr$quit()
+    remDr$close()
     
     xml2::read_html(base_html[[1]])
 }

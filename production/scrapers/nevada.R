@@ -18,7 +18,7 @@ nevada_check_date <- function(url, date = Sys.Date()){
         {.[str_detect(., "20")]} %>% # look for year 20xx
         lubridate::mdy()
 
-    remDr$quit()
+    remDr$close()
     
     error_on_date(site_date, date)
 }
@@ -204,7 +204,7 @@ nevada_pull <- function(x){
     
     htmltools::save_html(x, file = tf)
     
-    remDr$quit()
+    remDr$close()
     
     xml2::read_html(tf)
 }

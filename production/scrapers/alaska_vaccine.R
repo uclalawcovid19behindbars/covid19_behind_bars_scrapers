@@ -21,7 +21,7 @@ alaska_vaccine_check_date <- function(x, date = Sys.Date()){
         str_remove("(?i)as of ") %>%
         lubridate::mdy()
     
-    remDr$quit()
+    remDr$close()
     
     error_on_date(date, site_date)
 }
@@ -35,7 +35,7 @@ alaska_vaccine_pull <- function(x){
     
     base_html <- remDr$getPageSource()
     
-    remDr$quit()
+    remDr$close()
     
     xml2::read_html(base_html[[1]])
 }

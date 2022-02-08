@@ -14,7 +14,7 @@ pennsylvania_bi_testing_pull <- function(url, wait = 7){
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     is_covid_testing <- raw_html %>%
         rvest::html_nodes("h3.preTextWithEllipsis") %>%

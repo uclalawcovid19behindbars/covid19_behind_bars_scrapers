@@ -115,7 +115,7 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
     
     htmltools::save_html(x, file = tf)
     
-    remDr$quit()
+    remDr$close()
     
     xml2::read_html(tf)
 }
