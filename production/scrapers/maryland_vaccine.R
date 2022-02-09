@@ -13,7 +13,7 @@ maryland_vaccine_pull <- function(url){
 
     out_html <- xml2::read_html(base_html)
     
-    remDr$quit()
+    remDr$close()
     
     out_html
 }

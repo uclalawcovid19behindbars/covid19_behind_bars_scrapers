@@ -15,7 +15,7 @@ lasd_staff_date_check <- function(x, date = Sys.Date()){
     x <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
     
-    remDr$quit()
+    remDr$close()
     
     rvest::html_nodes(x, ".visualContainer") %>% 
         rvest::html_text() %>% 
@@ -38,7 +38,7 @@ lasd_staff_pull <- function(x, wait = 10){
     out_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
     
-    remDr$quit()
+    remDr$close()
     
     out_html
 }

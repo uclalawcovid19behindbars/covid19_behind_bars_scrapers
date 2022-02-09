@@ -25,7 +25,7 @@ minnesota_pull <- function(x, wait = 20){
     
     html_out <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     html_out
 }

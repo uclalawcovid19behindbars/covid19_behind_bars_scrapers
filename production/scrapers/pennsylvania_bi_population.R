@@ -14,7 +14,7 @@ pennsylvania_bi_population_pull <- function(url, wait = 7){
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
 
-    remDr$quit()
+    remDr$close()
     
     is_population <- raw_html %>%
         rvest::html_nodes(xpath="//h3[@class='preTextWithEllipsis']") %>%

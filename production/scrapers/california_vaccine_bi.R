@@ -67,7 +67,7 @@ california_vaccine_bi_pull <- function(x, wait = 20){
     
     htmltools::save_html(x, file = tf)
     
-    remDr$quit()
+    remDr$close()
     
     xml2::read_html(tf)
 }

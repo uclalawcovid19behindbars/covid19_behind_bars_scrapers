@@ -18,7 +18,7 @@ california_statewide_check_date <- function(x, date = Sys.Date()){
     
     base_page <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     site_date <- base_page %>%
         rvest::html_nodes("title") %>%
@@ -51,7 +51,7 @@ california_statewide_pull <- function(x, wait = 25){
     
     remDr$screenshot(file = tf)
     
-    remDr$quit()
+    remDr$close()
     
     magick::image_read(tf)
 }

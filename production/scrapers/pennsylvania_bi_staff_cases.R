@@ -14,7 +14,7 @@ pennsylvania_bi_staff_cases_pull <- function(url, wait = 7){
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     is_covid_cases <- raw_html %>%
         rvest::html_node("h3.preTextWithEllipsis") %>%

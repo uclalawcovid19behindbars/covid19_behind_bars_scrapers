@@ -21,7 +21,7 @@ wisconsin_check_date <- function(x, date = Sys.Date()){
     
     base_page <- xml2::read_html(base_html[[1]])
     
-    remDr$quit()
+    remDr$close()
     
     base_page %>%
         rvest::html_node(xpath ="//span[contains(text(),'Updated')]") %>%
@@ -65,7 +65,7 @@ wisconsin_pull <- function(x){
        stop("WI unable to download image")
    }
    
-   remDr$quit()
+   remDr$close()
    
    return(out_file)
    

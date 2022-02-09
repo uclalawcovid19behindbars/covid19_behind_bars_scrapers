@@ -25,7 +25,7 @@ oregon_pull <- function(url){
     raw_html <- remDr$getPageSource() %>%
         {xml2::read_html(.[[1]])}
     
-    remDr$quit()
+    remDr$close()
     
     return(raw_html)
 }
