@@ -913,3 +913,31 @@ track_recent_covid_increases <- function(
   }
   return(out)
 } 
+
+update_fac_outbreaks_sheet <- function() {
+  scrape_df <- behindbarstools::read_scrape_data(all_dates = TRUE)
+  outbreaks_sheet_loc = "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM"
+  metrics <- c("Residents.Confirmed", "Residents.Active", 
+               "Residents.Deaths", "Staff.Confirmed", "Staff.Deaths")
+  out <- metrics %>%
+    map(~ track_recent_covid_increases(metric = .x, 
+                                       scrape_df = scrape_df))
+  ## create some metadata 
+  all_states <- purrr::transpose(out) %>% 
+    .[["State"]] %>%
+    unlist() %>%
+    as_tibble() %>%
+    group_by(value) %>%
+    summarise(n = n()) %>%
+    arrange(-n) %>%
+    filter(n > 1) %>%
+    rename(State = value,
+           times_flagged = n)
+  
+  ## write the metadata to google sheet
+  range_write(
+    data = all_states, 
+    ss = outbreaks_sheet_loc, 
+    sheet = glue("Top states"), 
+    reformat = FALSE)
+}

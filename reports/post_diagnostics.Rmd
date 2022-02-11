@@ -12,7 +12,6 @@ library(tidyverse)
 library(kableExtra)
 library(behindbarstools)
 library(glue)
-library(googlesheets4)
 gs4_auth("ucla.law.covid.staff@gmail.com")
 ```
 
@@ -386,39 +385,6 @@ behindbarstools::plot_recent_fac_increases(scrape_df = state_df,
                           num_fac = 5, 
                           auto_label = TRUE) + 
     labs(tag = "") 
-```
-
----
-
-**Update Google Sheet with latest outbreaks**
-
-Visit the [facility outbreaks spreadsheet](https://docs.google.com/spreadsheets/d/1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM/edit#gid=2133176659) to view more detailed info on facility/state outbreaks within the past **two weeks**.
-```{r, echo = F, message=F, warning=F}
-## update the latest outbreaks google sheet
-outbreaks_sheet_loc = "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM"
-metrics <- c("Residents.Confirmed", "Residents.Active", 
-             "Residents.Deaths", "Staff.Confirmed", "Staff.Deaths")
-out <- metrics %>%
-    map(~ track_recent_covid_increases(metric = .x, 
-                                       scrape_df = scrape_df))
-## create some metadata 
-all_states <- purrr::transpose(out) %>% 
-    .[["State"]] %>%
-    unlist() %>%
-    as_tibble() %>%
-    group_by(value) %>%
-    summarise(n = n()) %>%
-    arrange(-n) %>%
-    filter(n > 1) %>%
-    rename(State = value,
-           times_flagged = n)
-
-## write the metadata to google sheet
-range_write(
-    data = all_states, 
-    ss = outbreaks_sheet_loc, 
-    sheet = glue("Top states"), 
-    reformat = FALSE)
 ```
 
 ---
