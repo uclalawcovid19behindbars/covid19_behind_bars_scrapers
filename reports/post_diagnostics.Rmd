@@ -16,6 +16,51 @@ library(googlesheets4)
 gs4_auth("ucla.law.covid.staff@gmail.com", scopes = "https://www.googleapis.com/auth/drive")
 ```
 
+``` {r echo = F, warning = F, message = F}
+# Read latest facility data 
+new_df <- read_scrape_data(all_dates = FALSE)
+
+# Get all log files from the latest run 
+log_files <- behindbarstools::list_remote_data("log_files")
+
+# Pull last update information
+last_df <- pull_last_update()
+
+# Read old and new national aggregate counts for comparison
+old_total <- stringr::str_c(
+    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "latest-data/latest_national_counts.csv") %>% 
+  read_csv() %>%
+  rename(`Old Total` = Count)
+
+new_total <- read_csv("../data/latest-data/latest_national_counts.csv") %>%
+  rename(`New Total` = Count)
+
+# Read old facility counts for comparison to new_df (from read_scrape_data)
+old_df <- stringr::str_c(
+    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "latest-data/latest_facility_counts.csv") %>% 
+    read_csv()
+
+# Read old and new state aggregate counts for comparison
+new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
+
+old_state_df <- stringr::str_c(
+    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "latest-data/latest_state_counts.csv") %>% 
+    read_csv()
+
+# Read in CPP data
+cpp_df <- behindbarstools::read_cpp_data()
+
+# Read in historical state counts to plot highest increases in cumulative and active cases among staff and residents in last week
+state_df <- read_csv("../data/historical-data/historical_state_counts.csv") %>%
+  mutate(Name = State)
+
+# Read in facility data for all dates to plot highest increases in cumulative and active cases among staff and residents in last week
+scrape_df <- behindbarstools::read_scrape_data(all_dates = TRUE)
+```
+
 ---
 
 # Unsucessful Scrapers 
@@ -25,12 +70,6 @@ gs4_auth("ucla.law.covid.staff@gmail.com", scopes = "https://www.googleapis.com/
 The table below summarizes the scrapers that yielded errors and warnings. Highlighted rows yielded errors, meaning no data was extracted.
 
 ``` {r echo = F, warning = F}
-# Read latest facility data 
-new_df <- read_scrape_data(all_dates = FALSE)
-
-# Get all log files from the latest run 
-log_files <- behindbarstools::list_remote_data("log_files")
-
 latest_date <- unique(stringr::str_extract(log_files, "\\d+-\\d+-\\d+")) %>%
     as.Date() %>%
     max()
@@ -60,6 +99,7 @@ kable(log_status %>%
     column_spec(1, border_right = "1px solid #d2d2d2") %>% 
     row_spec(which(log_status$status == "ERROR"), background = "#ffa07a") %>% 
     scroll_box(height = "300px")
+
 ```
 
 ---
@@ -69,7 +109,6 @@ kable(log_status %>%
 **How many days has it been since we saw data updates from each scraped dashboard?** 
 
 ```{r update-frequency, echo = F, message = F, warning = F, fig.height = 10, fig.width = 15}
-last_df <- pull_last_update()
 last_df %>%
     filter(!is.na(days_late)) %>%
     # only get these kind of scrapers
@@ -131,21 +170,11 @@ kable(log_status %>%
 We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. This is based on totals from our scraped data in `adult_facility_covid_counts.csv`. 
 
 ``` {r check_previous, echo = F, message = F, warning = F}
-# Read old national aggregate counts 
-old_total <- stringr::str_c(
-    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/latest_national_counts.csv") %>% 
-  read_csv() %>%
-  rename(`Old Total` = Count)
-
 covid_suffixes <- c(
   ".Confirmed", ".Deaths", ".Tadmin", ".Active", ".Initiated", ".Completed")
 
 # Get totals 
 rowAny <- function(x) rowSums(x) > 0
-
-new_total <- read_csv("../data/latest-data/latest_national_counts.csv") %>%
-  rename(`New Total` = Count)
 
 joined <- full_join(old_total, new_total, by = "Measure") %>% 
   mutate(Difference = `New Total` - `Old Total`,
@@ -170,10 +199,6 @@ kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %
 This is also based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted except from Texas, Ohio, and the BOP (where we know reported counts are not cumulative). 
 
 ``` {r check_previous_facility, echo = F, message = F, warning = F}
-old_df <- stringr::str_c(
-    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/latest_facility_counts.csv") %>% 
-    read_csv()
 old_facility <- old_df %>% 
     filter(!is.na(Facility.ID)) %>% 
     filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
@@ -216,14 +241,6 @@ kable(joined_facility, format.args = list(big.mark = ",")) %>%
 This compares to the state-aggregated totals in `state_aggregate_counts.csv` which excludes county jails and treats federal and immigration facilities as separate rows. 
 
 ```{r check_previous_state, echo = F, message = F, warning = F}
-# Read latest statewide data 
-new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
-
-# Read old data 
-old_state_df <- stringr::str_c(
-    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/latest_state_counts.csv") %>% 
-    read_csv()
 
 measure_decline_df <- full_join(
     new_state_df %>%   
@@ -250,7 +267,6 @@ kable(measure_decline_df, format.args = list(big.mark = ",")) %>%
 
 # Comparison to CPP 
 ``` {r, echo = F}
-cpp_df <- behindbarstools::read_cpp_data()
 
 new_state_df %>% 
     left_join(cpp_df %>% 
@@ -297,8 +313,6 @@ new_state_df %>%
 
 **Which facilities have seen the greatest increase in cumulative cases among incarcerated residents over the last 7 days?** 
 ``` {r, echo = F, fig.width = 15, fig.height = 7, warning = F}
-scrape_df <- behindbarstools::read_scrape_data(all_dates = TRUE)
-
 behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df, 
                           plot_days = 30, 
                           num_fac = 5, 
@@ -347,9 +361,6 @@ behindbarstools::plot_recent_fac_increases(scrape_df = scrape_df,
 
 **Which states have seen the greatest increase in cumulative cases among incarcerated residents over the last 7 days?** 
 ``` {r, echo = F, fig.width = 15, fig.height = 7}
-state_df <- read_csv("../data/historical-data/historical_state_counts.csv") %>%
-  mutate(Name = State)
-
 behindbarstools::plot_recent_fac_increases(scrape_df = state_df, 
                           plot_days = 30, 
                           num_fac = 5, 
@@ -396,7 +407,7 @@ behindbarstools::plot_recent_fac_increases(scrape_df = state_df,
 
 **Update Google Sheet with latest outbreaks**
 
-Visit the [facility outbreaks spreadsheet](https://docs.google.com/spreadsheets/d/1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM/edit#gid=2133176659) to view more detailed info on facility/state outbreaks within the past **two weeks**.
+Visit the [facility outbreaks spreadsheet](https://docs.google.com/spreadsheets/d/1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM/edit#gid=2133176659) to view more detailed info on facility/state outbreaks within the past **one week**.
 ```{r, echo = F, message=F, warning=F}
 ## update the latest outbreaks google sheet
 outbreaks_sheet_loc = "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM"
