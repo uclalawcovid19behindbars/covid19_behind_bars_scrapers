@@ -51,7 +51,7 @@ nyc_jails_pull <- function(url){
 nyc_jails_restruct <- function(x){
     txt_ext <- x %>%
         magick::image_read_pdf(pages = 1) %>%
-        magick::image_crop("2550x685+0+365") %>%
+        magick::image_crop("3864x685+0+665") %>%
         magick::image_ocr()
     
     line_results <- txt_ext %>%
@@ -80,7 +80,6 @@ nyc_jails_restruct <- function(x){
 }
 
 nyc_jails_extract <- function(x){
-    
     count_df <- x %>%
         #remove rate rows
         filter(!str_detect(text, "(?i)rate"))
