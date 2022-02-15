@@ -7,7 +7,7 @@ suppressPackageStartupMessages(library(tryCatchLog))
 suppressPackageStartupMessages(library(futile.logger))
 # need to explicitly authenticate for this rsession
 suppressPackageStartupMessages(library(googlesheets4))
-gs4_auth("ucla.law.covid.staff@gmail.com")
+gs4_auth("ucla.law.covid.staff@gmail.com", scopes = "https://www.googleapis.com/auth/drive")
 options(tryCatchLog.include.full.call.stack = FALSE)
 source("R/utilities.R")
 # need to explicitly authenticate for this rsession

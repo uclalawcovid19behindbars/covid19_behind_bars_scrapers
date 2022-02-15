@@ -13,7 +13,7 @@ library(kableExtra)
 library(behindbarstools)
 library(glue)
 library(googlesheets4)
-gs4_auth("ucla.law.covid.staff@gmail.com")
+gs4_auth("ucla.law.covid.staff@gmail.com", scopes = "https://www.googleapis.com/auth/drive")
 ```
 
 ---
