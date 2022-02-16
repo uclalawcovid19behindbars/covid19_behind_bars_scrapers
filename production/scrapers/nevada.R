@@ -217,7 +217,7 @@ nevada_restruct <- function(x){
         str_replace("\\./", "./results/raw_files/")
     
     out.data <- bind_rows(lapply(sub_files, function(hl){
-
+    
         op_page <- xml2::read_html(hl)
         
         facility <- hl %>%
@@ -301,7 +301,7 @@ nevada_restruct <- function(x){
         
         residents.confirmed.total <- sum(residents.confirmed.value, residents.probable.value, residents.imported.value)
         staff.confirmed.total <- sum(staff.confirmed.value, staff.probable.value)
-
+    
         tibble(
             Name = facility,
             Residents.Confirmed = residents.confirmed.total,
