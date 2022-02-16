@@ -834,9 +834,9 @@ summarize_remote_data <- function(){
 ## code borrowed from: https://github.com/uclalawcovid19behindbars/behindbarstools/blob/master/R/plot_recent_fac_increases.R
 track_recent_covid_increases <- function(
   scrape_df, 
-  outbreaks_sheet_loc = "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM",
+  outbreaks_sheet_loc,
   metric = "Residents.Confirmed", 
-  delta_days = 14, 
+  delta_days, 
   num_fac = 5,
   overwrite_data = TRUE) {
   ## define inputs for data filtering
@@ -913,3 +913,35 @@ track_recent_covid_increases <- function(
   }
   return(out)
 } 
+
+update_fac_outbreaks_sheet <- function(
+  outbreaks_sheet_loc,
+  delta_days
+  ) {
+  scrape_df <- behindbarstools::read_scrape_data(all_dates = TRUE)
+  metrics <- c("Residents.Confirmed", "Residents.Active", 
+               "Residents.Deaths", "Staff.Confirmed", "Staff.Deaths")
+  out <- metrics %>%
+    map(~ track_recent_covid_increases(metric = .x, 
+                                       scrape_df = scrape_df,
+                                       outbreaks_sheet_loc = outbreaks_sheet_loc,
+                                       delta_days = delta_days))
+  ## create some metadata 
+  all_states <- purrr::transpose(out) %>% 
+    .[["State"]] %>%
+    unlist() %>%
+    as_tibble() %>%
+    group_by(value) %>%
+    summarise(n = n()) %>%
+    arrange(-n) %>%
+    filter(n > 1) %>%
+    rename(State = value,
+           times_flagged = n)
+  
+  ## write the metadata to google sheet
+  range_write(
+    data = all_states, 
+    ss = outbreaks_sheet_loc, 
+    sheet = glue("Top states"), 
+    reformat = FALSE)
+}
