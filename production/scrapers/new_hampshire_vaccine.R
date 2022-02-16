@@ -3,16 +3,17 @@ source("./R/utilities.R")
 
 new_hampshire_vaccine_check_date <- function(x, date = Sys.Date()){
     base_html <- xml2::read_html(x)
-    date_txt <- rvest::html_nodes(base_html, xpath="//*[@id=\"block-state-of-nh-core-content\"]/article/div/div[1]/div/div/div/div/div[3]/div/div/section[3]/p[1]/strong") %>%
-        rvest::html_text()
     
-    date_txt %>%
-        {.[str_detect(., "(?i)21")]} %>%
-        str_split(., "(?i)table data as of ") %>%
-        unlist() %>%
-        .[2] %>%
+    vaccine_section <- rvest::html_node(
+        base_html,
+        xpath = "//caption[contains(text(), 'Resident COVID-19 Vaccine Information')]/parent::table/parent::section")
+
+    date_txt <- rvest::html_nodes(vaccine_section, "strong") %>%
+        rvest::html_text() %>%
+        {.[str_detect(., "(?i)table data as of")]} %>%
         lubridate::mdy() %>%
-        error_on_date(expected_date = date)
+
+    return(error_on_date(expected_date = date, date_txt))
 }
 
 new_hampshire_vaccine_pull <- function(x){

@@ -7,11 +7,10 @@ alabama_check_date <- function(x, date = Sys.Date()){
         rvest::html_text()
     
     site_date <- headers %>%
-        {.[str_detect(., "(?i)updated")]} %>%
-        str_split("\\(Updated ") %>%
+        {.[str_detect(., "(?i)20")]} %>% # look for year 20xx
+        str_split("\\(Update ") %>%
         unlist() %>%
         .[2] %>%
-        str_remove("\\)") %>%
         lubridate::mdy() 
     
     error_on_date(date, site_date)
