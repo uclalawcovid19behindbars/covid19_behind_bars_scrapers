@@ -45,7 +45,7 @@ nyc_jails_pull <- function(url){
         as.character()
     
     address_split_on_date <- str_split(address, "\\d{5,}") %>% unlist()
-    
+
     str_c(address_split_on_date[1], new_date, address_split_on_date[2])
 }
 

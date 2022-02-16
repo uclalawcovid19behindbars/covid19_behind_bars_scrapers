@@ -225,7 +225,7 @@ nevada_restruct <- function(x){
             unlist() %>%
             last() %>%
             str_remove("\\.html")
-        element.front <- '/html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p['
+        element.front <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p['
         element.end.value1 <- ']/span[1]'
         element.end.title.val <- ']/span[2]'
         element.end.title1 <- ']/span[4]'
@@ -234,12 +234,12 @@ nevada_restruct <- function(x){
         ## pres /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[4]/span[2]
         ## ires /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[7]/span[4]
         ## pstaff /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[5]/span[1]
-        
-        
+
         ## Pull Values and Titles
         residents.confirmed.value <- op_page %>%
             rvest::html_nodes(xpath = str_c(element.front, 2, element.end.value1)) %>%
             rvest::html_text() %>%
+            str_replace_all(., ',', '') %>%
             as.numeric()
         residents.confirmed.title <- op_page %>%
             rvest::html_nodes(xpath = str_c(element.front, 2, element.end.title.val)) %>%
