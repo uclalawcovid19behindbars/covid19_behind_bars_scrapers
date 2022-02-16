@@ -17,7 +17,7 @@ nevada_check_date <- function(url, date = Sys.Date()){
         unlist() %>%
         {.[str_detect(., "20")]} %>% # look for year 20xx
         lubridate::mdy()
-    
+
     remDr$close()
     
     error_on_date(site_date, date)
@@ -42,14 +42,14 @@ nevada_pull <- function(x){
     # find the div that has the select all option and see if it is marked
     select_all_ss <- "//span[@title='Select all']/parent::div"
     select_all_node <- remDr$findElement("xpath", select_all_ss)
-    
+
     # if it is marked then we need to unmark it so we can only select
     # correctional facilities
     if(unlist(select_all_node$getElementAttribute("aria-checked")) == "true"){
         select_all_node$clickElement()
         Sys.sleep(10)
     }
-    
+
     # find the correctional facilities tab and mark it
     remDr$findElement(
         "xpath", 
@@ -93,7 +93,7 @@ nevada_pull <- function(x){
         {grepl("^[[:upper:]]+$", .)} %>%
         which()
     
-    
+
     sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_nevada")
     dir.create(sub_dir, showWarnings = FALSE)
     
@@ -217,7 +217,7 @@ nevada_restruct <- function(x){
         str_replace("\\./", "./results/raw_files/")
     
     out.data <- bind_rows(lapply(sub_files, function(hl){
-        
+
         op_page <- xml2::read_html(hl)
         
         facility <- hl %>%
@@ -234,10 +234,7 @@ nevada_restruct <- function(x){
         ## pres /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[4]/span[2]
         ## ires /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[7]/span[4]
         ## pstaff /html/body/div[1]/root/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[5]/span[1]
-        
-        # /html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[1]/span[1]
-        # /html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[9]/transform/div/div[3]/div/visual-modern/div/div/div/p[2]/span[2]
-        
+
         ## Pull Values and Titles
         residents.confirmed.value <- op_page %>%
             rvest::html_nodes(xpath = str_c(element.front, 2, element.end.value1)) %>%
@@ -389,4 +386,3 @@ if(sys.nframe() == 0){
     nevada$validate_extract()
     nevada$save_extract()
 }
-
