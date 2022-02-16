@@ -840,10 +840,24 @@ track_recent_covid_increases <- function(
   num_fac = 5,
   overwrite_data = TRUE) {
   ## define inputs for data filtering
-  date <- Sys.Date()
-  state_df <- read_csv("https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv")
   latest_scrape_date <-  max(scrape_df$Date)
   delta_start_date <- latest_scrape_date - lubridate::days(delta_days)
+  lookaround_delta_start_date <- c(delta_start_date, 
+                                   (delta_start_date + lubridate::days(1)),
+                                    (delta_start_date - lubridate::days(1)))
+  ## get state-wide data 
+  latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) %>%
+    filter(!is.na(Val)) %>%
+    select(State, Measure, Val) %>%
+    pivot_wider(names_from = "Measure", values_from = "Val") %>%
+    arrange(State) %>%
+    select(State, ends_with(c(".Confirmed", ".Deaths", ".Active"))) %>%
+    mutate(Date = latest_scrape_date)
+  historical_state <- read_csv("https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv") %>%
+    filter(Date %in% lookaround_delta_start_date) %>%
+    select(State, ends_with(c(".Confirmed", ".Deaths", ".Active")), Date)
+  state_df <- bind_rows(latest_state, historical_state) %>%
+    arrange(State, Date)
   
   fac_data <- scrape_df %>%
     filter(!(stringr::str_detect(Name, "(?i)state") & stringr::str_detect(Name, "(?i)wide"))) %>%
@@ -874,7 +888,6 @@ track_recent_covid_increases <- function(
     mutate(Name = str_to_title(Name))
   # ## do the same for state
   state_data <- state_df %>%
-    filter(Date >= delta_start_date) %>%
     group_by(State) %>%
     mutate(start_val = first(!!sym(metric)),
            last_val = last(!!sym(metric)),
