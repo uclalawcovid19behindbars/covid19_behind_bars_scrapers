@@ -18,8 +18,6 @@ update_fac_outbreaks_sheet(
     delta_days = 7
     )
 
-
-
 # Sync diagnotics files
 sync_diagnostic_files()
 
