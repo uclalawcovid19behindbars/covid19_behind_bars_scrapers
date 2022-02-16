@@ -24,7 +24,7 @@ michigan_pull <- function(x){
         rvest::html_attr("src") 
     Sys.sleep(10)
     pulled_img <- imgs %>%
-        .[12] %>%    #https://miro.medium.com/max/552/1*4rpmfHDDxmPh23deQ_OGwQ.png 276w, https://miro.medium.com/max/1104/1*4rpmfHDDxmPh23deQ_OGwQ.png 552w, https://miro.medium.com/max/1280/1*4rpmfHDDxmPh23deQ_OGwQ.png 640w, https://miro.medium.com/max/1400/1*4rpmfHDDxmPh23deQ_OGwQ.png 700w
+        .[6] %>%    #https://miro.medium.com/max/552/1*4rpmfHDDxmPh23deQ_OGwQ.png 276w, https://miro.medium.com/max/1104/1*4rpmfHDDxmPh23deQ_OGwQ.png 552w, https://miro.medium.com/max/1280/1*4rpmfHDDxmPh23deQ_OGwQ.png 640w, https://miro.medium.com/max/1400/1*4rpmfHDDxmPh23deQ_OGwQ.png 700w
         magick::image_read()
     
     pulled_img

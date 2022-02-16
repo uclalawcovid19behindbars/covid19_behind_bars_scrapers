@@ -12,7 +12,8 @@ library(tidyverse)
 library(kableExtra)
 library(behindbarstools)
 library(glue)
-gs4_auth("ucla.law.covid.staff@gmail.com")
+library(googlesheets4)
+gs4_auth("ucla.law.covid.staff@gmail.com", scopes = "https://www.googleapis.com/auth/drive")
 ```
 
 ---
@@ -28,10 +29,14 @@ The table below summarizes the scrapers that yielded errors and warnings. Highli
 new_df <- read_scrape_data(all_dates = FALSE)
 
 # Get all log files from the latest run 
-latest_date <- max(new_df$Date) %>%
-    as.character()
-log_status <- behindbarstools::list_remote_data("log_files") %>% 
-    str_subset(pattern = latest_date) %>% 
+log_files <- behindbarstools::list_remote_data("log_files")
+
+latest_date <- unique(stringr::str_extract(log_files, "\\d+-\\d+-\\d+")) %>%
+    as.Date() %>%
+    max()
+
+log_status <- log_files %>%
+    str_subset(pattern = as.character(latest_date)) %>%
     as_tibble_col(column_name = "log") %>% 
     mutate(scraper = str_extract(log, "(?<=log_files/).*"))%>% 
     mutate(error = map(log, 
@@ -45,7 +50,7 @@ log_status <- behindbarstools::list_remote_data("log_files") %>%
              str_detect(., "(?i)Date is more than 30 different from expected")) %>%
              unlist()
              ) %>%
-  select(-error)
+    select(-error)
 
 # Highlight scrapers with errors   
 kable(log_status %>% 
