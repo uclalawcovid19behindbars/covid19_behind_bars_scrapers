@@ -13,7 +13,12 @@ summarize_remote_data()
 generate_diagnostics()
 
 # Update facility outbreaks sheet
-update_fac_outbreaks_sheet()
+update_fac_outbreaks_sheet(
+    outbreaks_sheet_loc = "1I7oubSBZT1GnDL30f4jHzIQwQGso5RulrrBUgxFfRAM",
+    delta_days = 7
+    )
+
+
 
 # Sync diagnotics files
 sync_diagnostic_files()
