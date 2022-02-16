@@ -5,13 +5,14 @@ nyc_jails_check_date <- function(url, date = Sys.Date()){
     pdf_page <- nyc_jails_pull(url) %>% 
         magick::image_read_pdf(pages = 1)
     
-    date_box <- magick::image_crop(pdf_page, "1550x485+0+0") %>% 
+    date_box <- magick::image_crop(pdf_page, "1550x200+200+200") %>%
         magick::image_ocr() 
     
-    date_box %>%
+    site_date <- date_box %>%
         str_extract("\\d{1,}/\\d{1,}/\\d{2,}") %>%
-        lubridate::mdy() %>%
-        error_on_date(date)
+        lubridate::mdy()
+
+    return(error_on_date(site_date, date))
 }
 
 
@@ -48,10 +49,10 @@ nyc_jails_pull <- function(url){
     str_c(address_split_on_date[1], new_date, address_split_on_date[2])
 }
 
-nyc_jails_restruct <- function(x){
-    txt_ext <- x %>%
+nyc_jails_restruct <- function(pdf_address){
+    txt_ext <- pdf_address %>%
         magick::image_read_pdf(pages = 1) %>%
-        magick::image_crop("3864x685+0+665") %>%
+        magick::image_crop("3864x685+0+465") %>%
         magick::image_ocr()
     
     line_results <- txt_ext %>%
