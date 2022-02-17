@@ -38,47 +38,27 @@ new_hampshire_vaccine_restruct <- function(x){
 }
 
 new_hampshire_vaccine_extract <- function(x){
-    
-    if(ncol(x) != 7){
+    if(ncol(x) != 5){
         stop("html is not as expected please inspect")
     }
     
-    long_df <- x[,1:3] %>%
-        bind_rows(rename(x[,4:7], X1 = X4, X2 = X5, X3 = X6)) %>%
-        as_tibble()
-    
-    if(!any(str_detect(long_df$X1, "(?i)phase"))){
+    if(!any(str_detect(x$X3, "(?i)1 Dose"))){
         stop("html is not as expected please inspect")
     }
     
-    if(!any(str_detect(long_df$X2, "(?i)1st Dose"))){
+    if(!any(str_detect(x$X4, "(?i)Up to Date"))){
         stop("html is not as expected please inspect")
     }
     
-    if(!any(str_detect(long_df$X3, "(?i)2nd Dose"))){
-        stop("html is not as expected please inspect")
-    }
-    
-    if(!any(str_detect(long_df$X7, "(?i)1 Dose"))){
-        stop("html is not as expected please inspect")
-    }
-    
-    long_df %>%
+    x %>%
+        select(X1, X2, X3, X4) %>%
         rename(Name = X1, 
-               First.Dose = X2, 
-               Second.Dose = X3, 
-               One.Dose = X7) %>% 
-        mutate(across(ends_with("Dose"), ~ na_if(., "n/a"))) %>% 
+               Residents.Population = X2,
+               Residents.Initiated = X3, 
+               Residents.Completed = X4) %>% 
         filter(!str_detect(Name, "(?i)total")) %>%
-        filter(!str_detect(Name, "(?i)phase")) %>% 
-        clean_scraped_df() %>%
-        group_by(Name) %>%
-        summarize_all(sum_na_rm) %>%
-        mutate(Residents.Vadmin = First.Dose + Second.Dose + One.Dose, 
-               Residents.Initiated = First.Dose + One.Dose, 
-               Residents.Completed = Second.Dose + One.Dose) %>% 
-        filter(!Name == "") %>% 
-        select(-ends_with("Dose"))
+        filter(!Name == "Facility") %>% 
+        clean_scraped_df() 
 }
 
 #' Scraper class for general New Hampshire COVID data
