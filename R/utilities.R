@@ -842,9 +842,7 @@ track_recent_covid_increases <- function(
   ## define inputs for data filtering
   latest_scrape_date <-  max(scrape_df$Date)
   delta_start_date <- latest_scrape_date - lubridate::days(delta_days)
-  lookaround_delta_start_date <- c(delta_start_date, 
-                                   (delta_start_date + lubridate::days(1)),
-                                    (delta_start_date - lubridate::days(1)))
+
   ## get state-wide data 
   latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) %>%
     filter(!is.na(Val)) %>%
@@ -853,7 +851,12 @@ track_recent_covid_increases <- function(
     arrange(State) %>%
     select(State, ends_with(c(".Confirmed", ".Deaths", ".Active"))) %>%
     mutate(Date = latest_scrape_date)
-  historical_state <- read_csv("https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv") %>%
+  historical_state <- read_csv("https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv") 
+  n_days_closest_deltastart <- as.integer(min(abs(delta_start_date - historical_state$Date)))
+  lookaround_delta_start_date <- c(delta_start_date, 
+                                   (delta_start_date + lubridate::days(n_days_closest_deltastart)),
+                                   (delta_start_date - lubridate::days(n_days_closest_deltastart)))
+  historical_state <- historical_state %>%
     filter(Date %in% lookaround_delta_start_date) %>%
     select(State, ends_with(c(".Confirmed", ".Deaths", ".Active")), Date)
   state_df <- bind_rows(latest_state, historical_state) %>%
