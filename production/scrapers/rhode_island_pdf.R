@@ -20,9 +20,9 @@ rhode_island_pdf_pull <- function(url){
     url_front <- 'https://doc.ri.gov'
     # Pull pdf link
     pdf_url <- url %>%
-        read_html() %>%
-        html_nodes('a') %>%
-        html_attr('href') %>%
+        rvest::read_html() %>%
+        rvest::html_nodes('a') %>%
+        rvest::html_attr('href') %>%
         as.data.frame() %>%
         rename(c('links' = .)) %>%
         subset(str_detect(links,'media')) %>%
