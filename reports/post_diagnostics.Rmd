@@ -285,27 +285,6 @@ new_state_df %>%
 
 ---
 
-# Comparison to AP/TMP
-
-**How does our aggregated data compare to data from AP and the Marshall Project?** 
-
-AP and the Marshall Project report [data on COVID in prisons at the state-level](https://www.themarshallproject.org/2020/05/01/a-state-by-state-look-at-coronavirus-in-prisons) each week. Because of differences in our methodology (e.g. data sources, update frequency, etc.), we do NOT expect our statewide totals to perfectly align with data from AP/TMP. The table below includes states where our totals differ by more than 20% OR where TMP is reporting values higher than we are. 
-
-``` {r, echo = F}
-new_state_df %>% 
-    filter(!is.na(UCLA) & !is.na(MP)) %>% 
-    filter(str_detect(Measure, "Confirmed|Deaths")) %>% 
-    mutate(diff = abs((UCLA - MP) / MP)) %>% 
-    filter(diff != 0) %>% 
-    arrange(desc(diff)) %>% 
-    select(State, Measure, UCLA, MP) %>% 
-    kable(format.args = list(big.mark = ",")) %>% 
-    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    scroll_box(height = "300px")
-```
-
----
-
 # Recent Facility Increases 
 
 ## Cumulative Cases 
