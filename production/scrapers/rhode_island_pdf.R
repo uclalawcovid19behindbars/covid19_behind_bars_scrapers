@@ -16,9 +16,25 @@ rhode_island_pdf_check_date <- function(url, date = Sys.Date()){
 }
 
 rhode_island_pdf_pull <- function(url){
-    pdf_url <- get_src_by_attr(url, "a", attr = "href", 
-                              attr_regex = "ridoc-covid-data")  %>% 
-        first()
+    # Create url front section
+    url_front <- 'https://doc.ri.gov'
+    # Pull pdf link
+    pdf_url <- url %>%
+        rvest::read_html() %>%
+        rvest::html_nodes('a') %>%
+        rvest::html_attr('href') %>%
+        as.data.frame() %>%
+        rename(c('links' = .)) %>%
+        subset(str_detect(links,'media')) %>%
+        mutate(order = str_replace_all(links, '.*media', ''), # Pull order of links from number embedded in download urls
+               order = str_replace_all(order, 'download.*', ''),
+               order = str_replace_all(order, '\\/', ''),
+               order = as.numeric(order)) %>%
+        arrange(desc(order)) %>%
+        first() %>% # Pull highest number / most recent download link
+        .[1, 'links'] %>%
+        str_c(url_front, .)
+    
     return(pdf_url)
 }
 
