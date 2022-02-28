@@ -171,7 +171,7 @@ colorado_scraper <- R6Class(
 )
 
 if(sys.nframe() == 0){
-    colorado <- colorado_scraper$new(log=F)
+    colorado <- colorado_scraper$new(log=T)
     colorado$run_check_date()
     colorado$raw_data
     colorado$pull_raw()

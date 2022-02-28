@@ -4,8 +4,8 @@ source("./R/utilities.R")
 nyc_jails_check_date <- function(url, date = Sys.Date()){
     pdf_page <- nyc_jails_pull(url) %>% 
         magick::image_read_pdf(pages = 1)
-    
-    date_box <- magick::image_crop(pdf_page, "1550x200+200+200") %>%
+
+    date_box <- magick::image_crop(pdf_page, "1550x400+200+200") %>%
         magick::image_ocr() 
     
     site_date <- date_box %>%

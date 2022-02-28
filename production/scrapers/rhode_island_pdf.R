@@ -2,23 +2,27 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 rhode_island_pdf_check_date <- function(url, date = Sys.Date()){
-    pdf_url <- get_src_by_attr(url, "a", attr = "href", 
-                               attr_regex = "ridoc-covid-data") %>% 
-        first()
+    base_html <- rvest::read_html(url)
     
-    pdf_url %>% 
-        str_split("ridoc-covid-data-") %>% # get the part of the url with the date
-        .[[1]] %>% 
-        .[2] %>%
-        lubridate::mdy() %>% 
-        error_on_date(date)
+    pdf_date <- rvest::html_node(base_html, 
+                                 xpath = "//span[contains(text(), 'RIDOC COVID Data')]") %>%
+        rvest::html_text() %>% 
+        lubridate::mdy()
     
+    return(error_on_date(pdf_date, date))
 }
 
 rhode_island_pdf_pull <- function(url){
-    pdf_url <- get_src_by_attr(url, "a", attr = "href", 
-                              attr_regex = "ridoc-covid-data")  %>% 
-        first()
+    base_html <- rvest::read_html(url)
+    
+    pdf_relative_address <- rvest::html_node(base_html, 
+                                xpath = "//span[contains(text(), 'RIDOC COVID Data')]") %>%
+        rvest::html_node(xpath = "parent::div/parent::a") %>% 
+        rvest::html_attr("href") %>% 
+        substring(2) # Take off leading '/'
+    
+    pdf_url <- str_c("http://www.doc.ri.gov/", pdf_relative_address)
+    
     return(pdf_url)
 }
 
@@ -50,14 +54,14 @@ rhode_island_pdf_extract <- function(restruct){
         "deaths", "3", "Residents.Deaths",
         "recovered", "4", "Residents.Recovered",
         "inmates active**", "5", "Residents.Active",
-        "past 24 hours", "6", "Residents.DayActive.Drop",
+        "past 48 hours", "6", "Residents.DayActive.Drop",
         "population", "7", "Residents.Population",
         "% population fully vaccinated***", "8", "Residents.Completed.Pct",
         "total", "9", "Staff.Confirmed",
         "deaths", "10", "Staff.Deaths",
         "staff recovered", "11", "Staff.Recovered",
         "active**", "12", "Staff.Active",
-        "past 24 hours", "13", "Staff.DayActive.Drop"
+        "past 48 hours", "13", "Staff.DayActive.Drop"
     ), ncol = 3, nrow = 14, byrow = TRUE)
     
     colnames(ri_col_name_mat) <- c("check", "raw", "clean")

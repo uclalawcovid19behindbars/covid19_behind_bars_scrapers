@@ -1,31 +1,29 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-south_dakota_population_check_date <- function(x, date = Sys.Date()){
-    get_src_by_attr(x, "a", attr = "href", 
-                    attr_regex = "(?i)documents/AdultPopulation.*.pdf") %>%
-        .[1] %>%
-        magick::image_read_pdf() %>% 
+south_dakota_population_check_date <- function(url, date = Sys.Date()){
+    population_file <- south_dakota_population_pull(url)
+    
+    file_date <- magick::image_read_pdf(population_file) %>% 
         magick::image_crop("800x200+50+100") %>% 
         magick::image_ocr() %>% 
-        lubridate::mdy() %>%
-        first() %>% 
-        error_on_date(date)
+        lubridate::mdy()
+    
+    return(error_on_date(file_date, date))
 }
 
-south_dakota_population_pull <- function(x){
-    x <- 'https://doc.sd.gov/about/stats/adult/' %>%
-        xml2::read_html() %>%
+south_dakota_population_pull <- function(url){
+    
+    population_link <- xml2::read_html(url) %>%
         rvest::html_nodes('a') %>%
         rvest::html_attr('href') %>%
-        as.data.frame() %>%
-        rename(c('links' = '.')) %>%
-        subset(str_detect(links, 'documents/AdultPopulation'))
+        {.[str_detect(., "(?i)documents/AdultPopulation")]} %>%
+        # This will begin to warn/log if there's more than 1 2022 pop link
+        {.[str_detect(., "(?i)2022")]} 
     
-    file.link <- str_c('https://doc.sd.gov', unique(x$links))
+    file.link <- str_c('https://doc.sd.gov', population_link)
     
-    file.link
-
+    return(file.link)
 }
 
 south_dakota_population_restruct <- function(x){
