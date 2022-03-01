@@ -16,37 +16,27 @@ michigan_date_check <- function(x, date = Sys.Date()){
         error_on_date(date)
 }
 
-michigan_pull <- function(x){
-    mi_html <- xml2::read_html(x)
+michigan_pull <- function(url){
+    mi_html <- xml2::read_html(url)
     
-    imgs <- mi_html %>%
-        rvest::html_nodes("img") %>%
-        rvest::html_attr("src") 
-    Sys.sleep(10)
-    pulled_img <- imgs %>%
-        .[6] %>%    #https://miro.medium.com/max/552/1*4rpmfHDDxmPh23deQ_OGwQ.png 276w, https://miro.medium.com/max/1104/1*4rpmfHDDxmPh23deQ_OGwQ.png 552w, https://miro.medium.com/max/1280/1*4rpmfHDDxmPh23deQ_OGwQ.png 640w, https://miro.medium.com/max/1400/1*4rpmfHDDxmPh23deQ_OGwQ.png 700w
+    data_div <- rvest::html_node(
+        mi_html,
+        xpath = "//h1[contains(text(), 'Total Confirmed Prisoner')]/parent::div")
+
+    resident_image <- rvest::html_nodes(data_div, "img") %>%
+        .[2] %>%
+        rvest::html_attr("src") %>%
         magick::image_read()
     
-    pulled_img
+    return(resident_image)
 }
 
 michigan_restruct <- function(x){
     out_list <- ExtractTable(x)
 
-    # out_list_names <- x %>%
-    #     magick::image_convert(type = "Bilevel") %>%
-    #     # this is finicky and needs to be changed
-    #     # crop out the top row with the column names
-    #     magick::image_crop("1500x80+0+0") %>%
-    #     ExtractTable()
-
-    # names(out_list[[1]]) <- unname(unlist(out_list_names))
-    ## laziest fix if the image crop fails one day
-    ## only do this if you look at the image and it checks out
     names(out_list[[1]]) <- c("Location", "Prisoners Tested", "Total Prisoners Confirmed",
                               "Prisoners Negative", "Active Positive Cases", "Prisoner Deaths")
-
-    out_list
+    return(out_list)
 }
 
 michigan_extract <- function(x){
