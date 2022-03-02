@@ -26,16 +26,6 @@ log_files <- behindbarstools::list_remote_data("log_files")
 # Pull last update information
 last_df <- pull_last_update()
 
-# Read old and new national aggregate counts for comparison
-old_total <- stringr::str_c(
-    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
-    "latest-data/latest_national_counts.csv") %>% 
-  read_csv() %>%
-  rename(`Old Total` = Count)
-
-new_total <- read_csv("../data/latest-data/latest_national_counts.csv") %>%
-  rename(`New Total` = Count)
-
 # Read old facility counts for comparison to new_df (from read_scrape_data)
 old_df <- stringr::str_c(
     "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
@@ -166,38 +156,21 @@ kable(log_status %>%
 
 **How do the cumulative totals compare to the previous scraped data?** 
 
-We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape. This is based on totals from our scraped data in `adult_facility_covid_counts.csv`. 
+We expect all cumulative variables to increase with each subsequent scraper run. Rows highlighted below indicate that the aggregated total for a given variable fell in the latest scrape.
 
-``` {r check_previous, echo = F, message = F, warning = F}
-covid_suffixes <- c(
-  ".Confirmed", ".Deaths", ".Tadmin", ".Active", ".Initiated", ".Completed")
-
-# Get totals 
-rowAny <- function(x) rowSums(x) > 0
-
-joined <- full_join(old_total, new_total, by = "Measure") %>% 
-  mutate(Difference = `New Total` - `Old Total`,
-         Pct_Increase = (Difference / `Old Total` )*100) %>% 
-  mutate(cumulative_flag = ifelse(str_detect(Measure, ".Active|.Initiated|.Completed"), 0, 1)) %>%
-  select(-starts_with("Missing"),
-         -starts_with("Reporting"))
-
-# Highlight cumulative variables that decreased 
-kable(joined %>% select(-cumulative_flag), format.args = list(big.mark = ",")) %>% 
-    kable_styling(bootstrap_options = c("condensed", "striped")) %>% 
-    column_spec(1, border_right = "1px solid #d2d2d2") %>% 
-    row_spec(which(joined$Difference < 0 & joined$cumulative_flag == 1), 
-             background = "#ffa07a") %>% 
-    scroll_box(height = "300px")
-```
 
 ## By Facility
 
 **Which facilities have metrics that are declining that shouldn't be?**
 
-This is also based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted except from Texas, Ohio, and the BOP (where we know reported counts are not cumulative). 
+This is based on totals from our scraped data in `adult_facility_covid_counts.csv` and includes facilities across all jurisdictions. Declining cumulative cases and deaths for incarcerated people are highlighted except from Texas, Ohio, and the BOP (where we know reported counts are not cumulative). 
 
 ``` {r check_previous_facility, echo = F, message = F, warning = F}
+covid_suffixes <- c(
+    ".Confirmed", ".Deaths", ".Tadmin", ".Active", ".Initiated", ".Completed")
+
+rowAny <- function(x) rowSums(x) > 0
+
 old_facility <- old_df %>% 
     filter(!is.na(Facility.ID)) %>% 
     filter(rowAny(across(ends_with(covid_suffixes), ~ !is.na(.x)))) %>%
