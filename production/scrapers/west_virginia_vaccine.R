@@ -31,9 +31,15 @@ west_virginia_vaccine_check_date <- function(url, date = Sys.Date()){
 }
 
 west_virginia_vaccine_pull <- function(x){
-    tsv_src <- get_src_by_attr(
-        x, "a", attr = "href", attr_regex = "txt$") %>%
-        {.[str_detect(., "vaccine")]}
+  
+  tsv_src <- x %>%
+    rvest::read_html() %>%
+    rvest::html_nodes('a') %>%
+    rvest::html_attr('href') %>%
+    as.data.frame() %>%
+    rename(c('links' = '.')) %>%
+    subset(str_detect(links, 'txt')) %>%
+    str_replace(' ', '%20')
     
     dev_null <- suppressWarnings(out <- read_tsv(
         tsv_src[1], skip = 1, col_types = cols()))
@@ -51,13 +57,14 @@ west_virginia_vaccine_restruct <- function(x){
     names(df_)[1] <- "Name"
     names(df_) <- paste(names(df_), df_[1, ], sep = "_")
     
-    check_names(df_, c("name", "county", "pop", "moderna","johnson"), 
+    check_names(df_, c("name", "county", "pop", 'total', "moderna","johnson"), 
                 detect = TRUE)
     
     names(df_) <- c(
         "Name", 
         "Drop.County", 
         "Drop.Population",
+        'Residents.Initiated',
         "Moderna.Initiated", 
         "Johnson"
     )
@@ -72,19 +79,19 @@ west_virginia_vaccine_extract <- function(x){
     res_df <- x[1:(emp_idx-1),] %>%
         select(!starts_with("Drop")) %>%
         clean_scraped_df() %>% 
-        mutate(Residents.Initiated = vector_sum_na_rm(Moderna.Initiated, Johnson)) %>% 
-        filter(!across(c(Moderna.Initiated, Johnson), ~ is.na(.x))) %>% 
-        filter(!str_detect(Name, "(?i)total")) 
+        filter(!if_all(c(Residents.Initiated, Moderna.Initiated, Johnson), ~ is.na(.x))) %>% 
+        filter(!str_detect(Name, "(?i)total")) %>%
+        mutate(Residents.Initiated = ifelse(is.na(Residents.Initiated), Moderna.Initiated + Johnson, Residents.Initiated))
     
     staff_df <- x[emp_idx:nrow(x),] %>%
         filter(!str_detect(Drop.County, "(?i)total")) %>%
         mutate(Name = stringr::str_c(Drop.County, " staff total")) %>% 
         rename(Staff.Population = Drop.Population) %>% 
+        rename(Staff.Completed = Residents.Initiated) %>%
         select(!starts_with("Drop")) %>%
         filter(!str_detect(Staff.Population, "(?i)staffing")) %>% 
-        clean_scraped_df() %>% 
-        mutate(Staff.Initiated = vector_sum_na_rm(Moderna.Initiated, Johnson)) 
-    
+        clean_scraped_df()
+
     if(nrow(res_df) != 34){
         warning(stringr::str_c(
             "Expected 34 resident rows, got ", nrow(res_df), 
