@@ -930,6 +930,29 @@ track_recent_covid_increases <- function(
   return(out)
 } 
 
+calc_national_agg_diff <- function(delta_days) {
+  ## using local data here because this function now happens after write_latest_data gets called
+  ## means that someone MUST have up-to-date local data if running this without having run the scrapers
+  historical_ntl_agg <- read_csv("./data/historical-data/historical_national_counts.csv")
+  latest_scrape_date <-  max(historical_ntl_agg$Date)
+  delta_start_date <- latest_scrape_date - lubridate::days(delta_days)
+  n_days_closest_deltastart <- as.integer(min(abs(delta_start_date - historical_ntl_agg$Date)))
+  lookaround_delta_start_date <- c((delta_start_date + lubridate::days(n_days_closest_deltastart)),
+                                   (delta_start_date - lubridate::days(n_days_closest_deltastart)))
+  
+  ntl_comparison <- historical_ntl_agg %>% 
+    filter(Date == latest_scrape_date |
+             Date %in% lookaround_delta_start_date) %>%
+    arrange(Date) %>%
+    select(Date, Measure, Count) %>%
+    pivot_wider(names_from = Date, values_from = Count, names_glue = "Count_{Date}") %>%
+    mutate(Difference = .[[3]] - .[[2]],
+           Pct_Increase = (Difference / .[[2]] )*100) %>% 
+    select(-starts_with("Missing"),
+           -starts_with("Reporting"))
+  return(ntl_comparison)
+}
+
 update_fac_outbreaks_sheet <- function(
   outbreaks_sheet_loc,
   delta_days
@@ -958,6 +981,16 @@ update_fac_outbreaks_sheet <- function(
   range_write(
     data = all_states, 
     ss = outbreaks_sheet_loc, 
-    sheet = glue("Top states"), 
+    sheet = "Top states", 
+    reformat = FALSE)
+  
+  ## run function that calculates diff between latest ntl aggregate and one that was delta_days ago
+  ntl_comparison <- calc_national_agg_diff(delta_days = delta_days)
+  
+  ## write the ntl agg comparison to google sheet
+  range_write(
+    data = ntl_comparison, 
+    ss = outbreaks_sheet_loc, 
+    sheet = "National aggregates", 
     reformat = FALSE)
 }
