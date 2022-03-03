@@ -155,16 +155,17 @@ lasd_restruct <- function(x){
     else if (h_ <= 1520){
         out <- tibble(
             Residents.Confirmed = lasd_crop(x, "570x30+580+400", "(?i)total pos"),
-            Residents.Recovered = lasd_crop(x, "570x30+590+660", "(?i)recover"),
-            Residents.Deaths = lasd_crop(x, "570x30+590+734", "(?i)deaths"),
+            Residents.Recovered = lasd_crop(x, "570x30+590+660", "(?i)recover"), 
+            Residents.Deaths = lasd_crop(x, "570x30+590+734", "(?i)deaths"), 
             Residents.Quarantine = lasd_crop(x, "570x30+590+1075", "(?i)total"),
             drop.neg.asymp = lasd_crop(x, "570x26+590+565", "(?i)negative"),
             drop.neg.symp = lasd_crop(x, "570x26+0+570", "(?i)negative"),
-            drop.pos.asymp = lasd_crop(x, "562x26+590+516", "(?i)current"),
-            drop.pos.symp = lasd_crop(x, "562x26+0+509", "(?i)current"),
-            drop.test.asymp = lasd_crop(x, "562x26+590+590", "(?i)total"),
+            drop.pos.asymp = lasd_crop(x, "562x26+590+516", "(?i)current"), 
+            drop.pos.symp = lasd_crop(x, "562x26+0+509", "(?i)current"), 
+            drop.test.asymp = lasd_crop(x, "562x26+590+590", "(?i)total"), # was broken 3/3 because of double line issue -- fixed manually
             drop.test.symp = lasd_crop(x, "562x26+00+590", "(?i)total"),
-            Residents.Population = lasd_crop(x, "562x26+00+216", "(?i)jail pop"))
+            Residents.Population = lasd_crop(x, "562x26+00+216", "(?i)jail pop") 
+            )
     }
     
     else if (h_ <= 1560){
@@ -237,8 +238,8 @@ lasd_extract <- function(x){
         select(-starts_with("drop")) %>%
         mutate(Name = "LA Jail")
     
-    if(out_df$Residents.Deaths != 17){
-        warning("You sure LA shouldnt be 17?")
+    if(out_df$Residents.Deaths != 18){
+        warning("You sure LA shouldnt be 18?")
     }
     
     out_df

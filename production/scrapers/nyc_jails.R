@@ -52,7 +52,7 @@ nyc_jails_pull <- function(url){
 nyc_jails_restruct <- function(pdf_address){
     txt_ext <- pdf_address %>%
         magick::image_read_pdf(pages = 1) %>%
-        magick::image_crop("3864x685+0+465") %>%
+        magick::image_crop("3864x785+0+465") %>%
         magick::image_ocr()
     
     line_results <- txt_ext %>%

@@ -11,7 +11,7 @@ kansas_vaccine_date_check <- function(x, date = Sys.Date()){
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
         lubridate::mdy() %>%
         # Pull most recent date if staff and residents differ 
-        max() %>% 
+        max(na.rm = TRUE) %>% 
         error_on_date(date)
 }
 

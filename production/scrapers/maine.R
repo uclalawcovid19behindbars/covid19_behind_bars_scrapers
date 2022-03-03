@@ -71,7 +71,7 @@ maine_extract <- function(x){
     
     col_name_mat <- matrix(c(
         "Adult Facilities - Resident", "0", "Name",
-        "Cases*", "1", "Residents.Confirmed_since22.Drop"
+        "Testing*", "1", "Residents.Confirmed_since22.Drop"
     ), ncol = 3, nrow = 2, byrow = TRUE)
     
     colnames(col_name_mat) <- c("check", "raw", "clean")

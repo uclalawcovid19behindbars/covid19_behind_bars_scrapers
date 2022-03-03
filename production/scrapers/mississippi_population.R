@@ -16,7 +16,7 @@ mississippi_pop_pull <- function(x, date = Sys.Date()){
     
     # Get url for latest pdf 
     tbl <- tibble(link = link_, url = url_) %>% 
-        filter(stringr::str_detect(url_, "DailyInmatePopulation")) %>% 
+        filter(stringr::str_detect(url_, "Daily Inmate Population")) %>% 
         mutate(Date = lubridate::my(link, quiet = T))
     
     # Construct url

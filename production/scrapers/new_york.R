@@ -4,9 +4,16 @@ source("./R/utilities.R")
 new_york_check_date <- function(url, date = Sys.Date()){
     pdf <- get_src_by_attr(url, "a", attr = "href", attr_regex = "(?i)facility-")
     
-    pdf %>% 
-        magick::image_read_pdf(pages = 1) %>% 
-        magick::image_crop("1500x300+200") %>% 
+    pdf_read <- pdf %>% 
+        magick::image_read_pdf(pages = 1) 
+    
+    w_ <- magick::image_info(pdf_read)$width
+    h_ <- magick::image_info(pdf_read)$height
+    
+    date_crop <- pdf_read %>%
+        magick::image_crop("1500x400+600+50")
+    
+    date_crop %>%
         magick::image_ocr() %>% 
         str_split(., "(?i)as of | at") %>%
         unlist() %>%

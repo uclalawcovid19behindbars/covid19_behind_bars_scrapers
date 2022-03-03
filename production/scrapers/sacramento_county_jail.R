@@ -10,7 +10,6 @@ sacramento_county_jail_check_date <- function(x, date = Sys.Date()){
         pull(Date) %>%
         max(na.rm = TRUE) %>%
         error_on_date(date)
-        
 }
 
 sacramento_county_jail_pull <- function(x){

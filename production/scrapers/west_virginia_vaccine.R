@@ -2,31 +2,20 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 west_virginia_vaccine_check_date <- function(url, date = Sys.Date()){
-    
-    tsv_src <- get_src_by_attr(url, "a", attr = "href", 
-                               attr_regex = "(?)vaccination") %>% 
-        first()
+  tsv_src <- x %>%
+    rvest::read_html() %>%
+    rvest::html_nodes('a') %>%
+    rvest::html_attr('href') %>%
+    as.data.frame() %>%
+    rename(c('links' = '.')) %>%
+    subset(str_detect(links, 'txt')) %>%
+    str_replace(' ', '%20')
     
     tsv_src %>% 
         str_split("DCR_") %>% # get the part of the url with the date
         .[[1]] %>% 
         .[2] %>%
         lubridate::ymd() %>% 
-        error_on_date(date)
-    
-    z <- xml2::read_html(x)
-    
-    z %>%
-        rvest::html_node(xpath =
-                             "//span[contains(text(),'or week ending')]") %>%
-        rvest::html_text() %>%
-        str_split("ending") %>%
-        unlist() %>%
-        last() %>%
-        str_split(";") %>%
-        unlist() %>%
-        first() %>%
-        lubridate::mdy() %>%
         error_on_date(date)
 }
 
