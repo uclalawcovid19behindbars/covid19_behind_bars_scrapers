@@ -12,7 +12,7 @@ summarize_remote_data()
 # Generate and sync diagnostics
 generate_diagnostics()
 
-# Sync diagnotics files
+# Sync diagnostics files
 sync_diagnostic_files()
 
 # Write latest csv 
