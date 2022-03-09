@@ -56,17 +56,16 @@ michigan_staff_extract <- function(restructured_data){
 }
 
 michigan_staff_check_extracted_data <- function(extract_data){
-    if (str_detect(extract_data$Name, "\\d|ocation")) {
+    if (nrow(extract_data %>% 
+             filter(str_detect(Name, "\\d|ocation"))) > 0) {
         warning("Examine Name column for mis-extracted data;
-                numbers or text 'location' found where not expected")
-    }
-    
-    if (str_detect(extract_data$Staff.Confirmed, "[:alpha:]")) {
+            numbers or text 'location' found where not expected")
+    } else if (nrow(extract_data %>% 
+            filter(str_detect(Staff.Confirmed, "[:alpha:]"))) > 0) {
         warning("Examine Staff.Confirmed column for mis-extracted data;
                 alpha characters found where we expect only numerics")
-    }
-    
-    if (str_detect(extract_data$Staff.Deaths, "[:alpha:]")) {
+    } else if (nrow(extract_data %>% 
+            filter(str_detect(Staff.Deaths, "[:alpha:]"))) > 0) {
         warning("Examine Staff.Confirmed column for mis-extracted data;
                 alpha characters found where we expect only numerics")
     }
