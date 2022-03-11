@@ -16,41 +16,59 @@ michigan_staff_date_check <- function(x, date = Sys.Date()){
         error_on_date(date)
 }
 
-michigan_staff_pull <- function(x){
-    mi_html <- xml2::read_html(x)
-    img2 <- mi_html %>%
-        rvest::html_nodes("img") %>%
+michigan_staff_pull <- function(url){
+    mi_html <- xml2::read_html(url)
+
+    data_div <- rvest::html_node(
+        mi_html,
+        xpath = "//h1[contains(text(), 'Total Confirmed Prisoner')]/parent::div")
+
+    staff_image <- rvest::html_nodes(data_div, "img") %>%
+        .[3] %>%
         rvest::html_attr("src") %>%
-        .[7] %>%      #src="https://miro.medium.com/max/1210/1*rmlt07ZUHyPh0MkrayUqoA.png"
-        magick::image_read()
+        magick::image_read() %>%
+        magick::image_crop("0x0+0+40")
 
-    img2
+    return(staff_image)
 }
 
-michigan_staff_restruct <- function(x){
-    ExtractTable(x)
+michigan_staff_restruct <- function(staff_image){
+    table_body <- magick::image_crop(staff_image, "0x0+0+30")
+    
+    staff_data <- ExtractTable(table_body)
+    
+    names(staff_data[[1]]) <- c("Name", "Staff.Confirmed", "Staff.Deaths")
+
+    return(staff_data)
 }
 
-michigan_staff_extract <- function(x){
-    col_name_mat <- matrix(c(
-        "Location", "0", "Name",
-        "Staff confirmed", "1", "Staff.Confirmed",
-        "Staff deaths", "2" , "Staff.Deaths"
-    ), ncol = 3, nrow = 3, byrow = TRUE)
-    
-    colnames(col_name_mat) <- c("check", "raw", "clean")
-    col_name_df <- as_tibble(col_name_mat)
-    
-    check_names_extractable(x[[1]], col_name_df)
-    
-    extract_out <- rename_extractable(x[[1]], col_name_df) %>%
+michigan_staff_extract <- function(restructured_data){
+    extract_data <- restructured_data[[1]] %>%
         as_tibble() %>%
-        filter(Name != "Location" & !grepl(Name, pattern = "Tota")) %>%
+        filter(!grepl(Name, pattern = "Tota")) %>%
         clean_scraped_df() %>%
         mutate(Staff.Deaths = ifelse(is.na(Staff.Deaths), 0, Staff.Deaths),
-               Name = str_remove(Name, "^Location ")) 
-    
-    return(extract_out)
+               Name = str_remove(Name, "^Location "))
+
+    michigan_staff_check_extracted_data(extract_data)
+
+    return(extract_data)
+}
+
+michigan_staff_check_extracted_data <- function(extract_data){
+    if (nrow(extract_data %>% 
+             filter(str_detect(Name, "\\d|ocation"))) > 0) {
+        warning("Examine Name column for mis-extracted data;
+            numbers or text 'location' found where not expected")
+    } else if (nrow(extract_data %>% 
+            filter(str_detect(Staff.Confirmed, "[:alpha:]"))) > 0) {
+        warning("Examine Staff.Confirmed column for mis-extracted data;
+                alpha characters found where we expect only numerics")
+    } else if (nrow(extract_data %>% 
+            filter(str_detect(Staff.Deaths, "[:alpha:]"))) > 0) {
+        warning("Examine Staff.Confirmed column for mis-extracted data;
+                alpha characters found where we expect only numerics")
+    }
 }
 
 #' Scraper class for general Michigan staff COVID data
