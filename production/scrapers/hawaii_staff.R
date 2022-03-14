@@ -8,7 +8,7 @@ hawaii_staff_date_check <- function(x, date = Sys.Date()){
         magick::image_read() 
     
     img %>% 
-        magick::image_crop("200x95") %>%
+        magick::image_crop("220x120") %>%
         magick::image_ocr() %>% 
         str_split("\n") %>% 
         unlist() %>%
