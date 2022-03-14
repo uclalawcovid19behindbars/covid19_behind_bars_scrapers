@@ -4,11 +4,8 @@ source("./R/utilities.R")
 south_dakota_check_date <- function(url, date = Sys.Date()){
     get_src_by_attr(url, "a", attr = "href", attr_regex = "(?i)case") %>%
         magick::image_read_pdf() %>%
-        magick::image_crop("800x50+2700+320") %>%
+        magick::image_crop("1300X500+2000+0") %>%
         magick::image_ocr() %>%
-        str_split(" ") %>%
-        unlist() %>%
-        first() %>%
         lubridate::mdy() %>%
         error_on_date(date)
 }
