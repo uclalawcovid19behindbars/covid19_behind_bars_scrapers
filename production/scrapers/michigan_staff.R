@@ -27,7 +27,7 @@ michigan_staff_pull <- function(url){
         .[3] %>%
         rvest::html_attr("src") %>%
         magick::image_read() %>%
-        magick::image_crop("0x0+0+40")
+        magick::image_crop("0x0+0+90")
 
     return(staff_image)
 }
