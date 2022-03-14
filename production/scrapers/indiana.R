@@ -51,6 +51,7 @@ indiana_restruct <- function(indiana_image){
     } else {
         d <- results[[1]]
     }
+    d <- d %>% discard(~all(is.na(.) | . ==""))
     return(d)
 }
 
@@ -65,9 +66,9 @@ indiana_extract <- function(x){
         "Offender Test", "6", "Residents.Tadmin",
         "Offender Current Positive", "7", "Residents.Active",
         "Offender Total Positive", "8", "Residents.Confirmed",
-        "Offender Recovered", "9", "Residents.Recovered",
-        "Offender Presumed Death", "10", "Drop.Res.Deaths.Presumed",
-        "Offender Confirmed Death", "11", "Drop.Res.Deaths.Confirmed"
+        "Offender Recovered", "12", "Residents.Recovered",
+        "Offender Presumed Death", "13", "Drop.Res.Deaths.Presumed",
+        "Offender Confirmed Death", "14", "Drop.Res.Deaths.Confirmed"
          ), ncol = 3, nrow = 12, byrow = TRUE)
 
     colnames(col_name_mat) <- c("check", "raw", "clean")
