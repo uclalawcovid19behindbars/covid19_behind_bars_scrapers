@@ -67,10 +67,7 @@ new_jersey_statewide_extract <- function(x){
         "Deaths Residents", 
         "Tests Staff", 
         "Cumulative Positives Staff", 
-        "Vaccine Doses Distributed Staff",
-        "First Dose Staff",
-        "Second Dose Staff",
-        "Booster Staff"
+        "Vax Rate Staff"
     )
     
     check_names(x, exp_names)
@@ -86,16 +83,14 @@ new_jersey_statewide_extract <- function(x){
         "Residents.Deaths", 
         "Staff.Tadmin.Drop", # We don't collect Staff.Tadmin 
         "Staff.Confirmed", # Collecting facility-level in main scraper 
-        "Staff.Vadmin",
-        "Staff.Initiated",
-        "Staff.Completed",
-        "Staff.Booster.Drop"
+        "Staff.Initiated.Pct"
     )
     
     x %>% 
         mutate(Name = "STATEWIDE") %>% 
         select(-ends_with(".Drop")) %>% 
-        clean_scraped_df()
+        clean_scraped_df() %>%
+        mutate(Staff.Initiated.Pct = Staff.Initiated.Pct / 100)
 }
 
 #' Scraper class for general new_jersey COVID data

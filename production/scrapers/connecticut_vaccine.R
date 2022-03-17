@@ -103,6 +103,10 @@ connecticut_vaccine_restruct <- function(x){
         stop("Vaccination numbers not as expected, please inspect")
     }
     
+    if(out$Res < 5000 | out$Staff < 3000){
+        stop("Vaccination numbers lower than expected, please inspect")
+    }
+    
     return(out)
     
 }
