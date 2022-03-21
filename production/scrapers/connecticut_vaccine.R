@@ -41,9 +41,9 @@ connecticut_vaccine_restruct <- function(x){
         ##### h = 1650, w = 700
         res_h_txt <- 250
         res_w_txt <- 250
-        res_xoff_txt <- 50
+        res_xoff_txt <- 80
         res_yoff_txt <- 1240
-        st_xoff_txt <- 450
+        st_xoff_txt <- 525
     }
     else{
         ##### h = 944, w = 422
@@ -79,7 +79,7 @@ connecticut_vaccine_restruct <- function(x){
     h_num <- round(h_ * .9)
     
     res_h_num <- res_h_txt - (res_h_txt / 4)
-    res_w_num <- res_w_txt
+    res_w_num <- res_w_txt 
     res_xoff_num <- (res_xoff_txt * 1/4) + res_xoff_txt
     st_h_num <- st_h_txt - (st_h_txt / 4)
     st_w_num <- st_w_txt 
