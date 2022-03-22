@@ -1,12 +1,12 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-connecticut_vaccine_check_date <- function(x, date = Sys.Date()){
-    ct_img2 <- xml2::read_html(x) %>%
+connecticut_vaccine_check_date <- function(url, date = Sys.Date()){
+    ct_img2 <- xml2::read_html(url) %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>%
         .[3] %>%
-        {str_c(x, .)} %>%
+        {str_c(url, .)} %>%
         magick::image_read()
     
     ct_img2 %>%
@@ -18,44 +18,44 @@ connecticut_vaccine_check_date <- function(x, date = Sys.Date()){
         lubridate::mdy() %>%
         error_on_date(date)
 }
-x <- 
-connecticut_vaccine_pull <- function(x){
-    ct_img2 <- xml2::read_html(x) %>%
+
+connecticut_vaccine_pull <- function(url){
+    ct_img_target <- xml2::read_html(url) %>%
         rvest::html_nodes("img") %>%
         rvest::html_attr("src") %>%
         # get by position because names are crazy
         .[3] %>%
-        {str_c(x, .)}
+        {str_c(url, .)}
     
-    magick::image_read(ct_img2)
+    ct_image <- magick::image_read(ct_img_target)
 }
 
-connecticut_vaccine_restruct <- function(x){
-    x <- magick::image_trim(x) %>% 
+connecticut_vaccine_restruct <- function(ct_image){
+    ct_image_brightened <- magick::image_trim(ct_image) %>% 
         magick::image_modulate(brightness = 120)
     
-    w_ <- magick::image_info(x)$width
-    h_ <- magick::image_info(x)$height
+    w_ <- magick::image_info(ct_image_brightened)$width
+    h_ <- magick::image_info(ct_image_brightened)$height
 
     if (h_ >= 1000){
         ##### h = 1650, w = 700
-        res_h_txt <- 250
-        res_w_txt <- 250
+        h_txt <- 250
+        w_txt <- 250
+        yoff_txt <- 1240
         res_xoff_txt <- 50
-        res_yoff_txt <- 1240
         st_xoff_txt <- 450
     }
     else{
         ##### h = 944, w = 422
-        res_h_txt <- 200
-        res_w_txt <- 160
+        h_txt <- 160
+        w_txt <- 200
+        yoff_txt <- 740
         res_xoff_txt <- 10
-        res_yoff_txt <- 740
         st_xoff_txt <- 250
     }
     
-    in_txt <- magick::image_crop(x, str_c(res_h_txt, "x", res_w_txt, "+", 
-                                          res_xoff_txt, "+", res_yoff_txt)) %>%
+    in_txt <- magick::image_crop(ct_image_brightened, str_c(w_txt, "x", h_txt, "+", 
+                                          res_xoff_txt, "+", yoff_txt)) %>%
         magick::image_convert(type = 'Grayscale') %>%
         magick::image_ocr()
     
@@ -63,12 +63,8 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for inmates, please inspect scrape")
     }
     
-    st_h_txt <- res_h_txt
-    st_w_txt <- res_w_txt
-    st_yoff_txt <- res_yoff_txt
-    
-    st_txt <- magick::image_crop(x, str_c(st_h_txt, "x", st_w_txt, "+", 
-                                          st_xoff_txt, "+", st_yoff_txt)) %>%
+    st_txt <- magick::image_crop(ct_image_brightened, str_c(w_txt, "x", h_txt, "+", 
+                                          st_xoff_txt, "+", yoff_txt)) %>%
         magick::image_modulate(brightness = 200) %>% 
         magick::image_ocr()
     
@@ -76,24 +72,20 @@ connecticut_vaccine_restruct <- function(x){
         stop("Text not as expected for staff, please inspect scrape")
     }
     
-    h_num <- round(h_ * .9)
-    
-    res_h_num <- res_h_txt - (res_h_txt / 4)
-    res_w_num <- res_w_txt
+    w_num <- w_txt
+    h_num <- h_txt - (h_txt / 4)
     res_xoff_num <- (res_xoff_txt * 1/4) + res_xoff_txt
-    st_h_num <- st_h_txt - (st_h_txt / 4)
-    st_w_num <- st_w_txt 
     st_xoff_num <- st_xoff_txt
+    yoff_num <- round(h_ * .9)
         
     out <- tibble(
-        Res = magick::image_crop(x, str_c(res_h_num, "x", res_w_num, "+",
-                                          res_xoff_num, "+", h_num)) %>%
+        Res = magick::image_crop(ct_image_brightened, str_c(w_num, "x", h_num, "+",
+                                          res_xoff_num, "+", yoff_num)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric(),
-    
-        Staff = magick::image_crop(x, str_c(st_h_num, "x", st_w_num, "+",
-                                          st_xoff_num, "+", h_num)) %>%
+        Staff = magick::image_crop(ct_image_brightened, str_c(w_num, "x", h_num, "+",
+                                          st_xoff_num, "+", yoff_num)) %>%
             magick::image_convert(type = 'Grayscale') %>%
             magick::image_ocr() %>%
             string_to_clean_numeric()
