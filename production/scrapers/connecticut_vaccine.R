@@ -73,7 +73,7 @@ connecticut_vaccine_restruct <- function(ct_image){
     }
     
     w_num <- w_txt
-    h_num <- h_txt - (h_txt / 4)
+    h_num <- h_txt - (h_txt / 4)    
     res_xoff_num <- (res_xoff_txt * 1/4) + res_xoff_txt
     st_xoff_num <- st_xoff_txt
     yoff_num <- round(h_ * .9)

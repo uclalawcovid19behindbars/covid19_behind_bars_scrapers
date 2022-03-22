@@ -17,7 +17,7 @@ arkansas_html_pull <- function(x){
 }
 
 arkansas_html_restruct <- function(x){
-    
+
     fsp <- x %>%
         # look for the latest inmate data
         rvest::html_node(xpath = "//strong[contains(text(), 'INMATES')]") %>%
@@ -50,12 +50,30 @@ arkansas_html_restruct <- function(x){
     ak_vars <- data_txt[,2]
     names(ak_vars) <- data_txt[,1]
     
-    staff_dat <- x %>%
-        rvest::html_node(xpath = "//strong[contains(text(), 'DOC STAFF')]") %>%
-        # get the parent
-        rvest::html_node(xpath = "parent::p") %>%
+    stf <- x %>%
+      # look for the latest inmate data
+      rvest::html_node(xpath = "//strong[contains(text(), 'INMATES')]") %>%
+      # get the parent
+      rvest::html_node(xpath = "parent::p")
+    
+    if(str_detect(rvest::html_text(stf), "(?i)testing")){
+      mid_text <- fsp %>%
         rvest::html_text() %>%
-        str_remove("DOC STAFF") %>%
+        str_remove("DOC STAFF")
+    }
+    
+    else{
+      p_txt <- x %>%
+        rvest::html_nodes("p") %>%
+        rvest::html_text()
+      
+      fidx <- which((str_detect(p_txt, "DOC STAFF")))[1] + 1
+      
+      mid_text <- p_txt[fidx] %>%
+        str_c(collapse = "")
+    }
+    
+    staff_dat <- mid_text %>%
         str_split("recovered| – ") %>%
         unlist() %>%
         .[[3]] %>%
