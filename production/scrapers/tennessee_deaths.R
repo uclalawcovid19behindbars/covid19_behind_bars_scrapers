@@ -2,11 +2,11 @@ source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
 tennessee_deaths_check_date <- function(url, date = Sys.Date()){
-    z <- get_src_by_attr(
+    tn_deaths_pdf <- get_src_by_attr(
         url, "a", attr = "href", attr_regex = "COVIDDeaths.pdf$") %>% 
         magick::image_read_pdf(pages = 1)
     
-    z %>%
+    tn_deaths_pdf %>%
         magick::image_crop("600x80+550+280") %>%
         magick::image_ocr() %>%
         str_remove("(?i)updated") %>%
