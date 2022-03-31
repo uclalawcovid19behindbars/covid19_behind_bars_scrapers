@@ -74,6 +74,7 @@ rhode_island_pdf_extract <- function(restruct){
     extract_out <- rename_extractable(df_, ri_col_name_df) %>% 
         as_tibble() %>% 
         filter(!str_detect(Name, "(?i)facilit")) %>% 
+        filter(!str_detect(Name, "(?i)total")) %>% 
         filter(!str_detect(All.Cases.Drop, "(?i)total")) %>% 
         mutate_at(vars(-Name), string_to_clean_numeric) %>%
         select(-ends_with(".Drop")) %>% 

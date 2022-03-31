@@ -32,15 +32,6 @@ cook_county_restruct <- function(x){
         Residents.Active = which(
             str_detect(covid_sub_text,"(?i)currently positive") & 
                 str_detect(covid_sub_text, "(?i)detainees")),
-        
-        Residents.Recovered = which(
-            str_detect(covid_sub_text,"(?i)no longer positive") & 
-                str_detect(covid_sub_text, "(?i)detainees")),
-        
-        Residents.Negative = which(
-            str_detect(covid_sub_text,"(?i)negative") & 
-                str_detect(covid_sub_text, "(?i)detainees")),
-        
         Residents.Deaths = which(
             str_detect(covid_sub_text,"(?i)die") & 
                 str_detect(covid_sub_text, "(?i)detainees")))
@@ -59,38 +50,33 @@ cook_county_restruct <- function(x){
         as_tibble()
     
     # get the staff data which is not part of a list but rather in the main text
-    staff_sub_text <- x %>% 
-        rvest::html_nodes("p") %>% 
-        rvest::html_text() %>%
-        str_remove_all("(?i)covid-19") %>%
-        .[(which(str_starts(., "(?i)as of")) + 1):(
-            which(str_detect(., "(?i)note:")) - 1)] %>%
-        str_replace_all(",([0-9])", "\\1")
+  staff_sub_text <- x %>% 
+      rvest::html_nodes("p") %>% 
+      rvest::html_text() %>%
+      str_remove_all("(?i)covid-19") %>%
+      .[(which(str_starts(., "(?i)as of")) + 1):(
+        which(str_detect(., "(?i)note:")) - 1)] %>%
+      str_replace_all(",([0-9])", "\\1")
         
     # do some sanity checks
     ## there should be three text sections
-    if(length(staff_sub_text) != 3){
+    if(length(staff_sub_text) != 2){
         stop("Website structure is not as expected please inspect")
     }
     
     ## only the first two have to do with positive staff
-    if(any(str_detect(staff_sub_text, "positive") != c(TRUE, TRUE, FALSE))){
-        stop("Website structure is not as expected please inspect")
+    if(any(str_detect(staff_sub_text, "positive") != c(TRUE, FALSE))){
+      stop("Website structure is not as expected please inspect")
     }
     
     ## extract the staff data
     staff_df <- tibble(
-        Staff.Confirmed = sapply(staff_sub_text[1:2], function(x){
+        Staff.Active = sapply(staff_sub_text[1], function(x){
             sum_na_rm(as.numeric(
                 str_extract(unlist(str_split(x, " ")), "[0-9]+")))}) %>%
             sum(),
         
-        Staff.Recovered = sapply(staff_sub_text[2], function(x){
-            sum_na_rm(as.numeric(
-                str_extract(unlist(str_split(x, " ")), "[0-9]+")))}) %>%
-            sum(),
-        
-        Staff.Deaths = staff_sub_text[3] %>%
+        Staff.Deaths = staff_sub_text[2] %>%
             str_split(" ") %>%
             unlist() %>%
             str_extract("six|seven|eight|nine|ten") %>% 
@@ -104,8 +90,6 @@ cook_county_restruct <- function(x){
 
 cook_county_extract <- function(x){
     x %>%
-        mutate(Residents.Confirmed = Residents.Recovered + 
-                   Residents.Deaths + Residents.Active) %>%
         mutate(Name = "Cook County Jail")
         
 }
@@ -124,7 +108,6 @@ cook_county_extract <- function(x){
 #'   \item{Staff Recovered}{Likely cumulative staff recovered.}
 #'   \item{Staff Deaths}{Cumulative staff deaths.}
 #'   \item{Residents Active}{Residents currently infected by virus.}
-#'   \item{Residents Recovered}{Likely cumulative residents recovered.}
 #'   \item{Residents Deaths}{Cumulative resident deaths.}
 #'   \item{Residents Negative}{Likely cumulative negative cases.}
 #' }

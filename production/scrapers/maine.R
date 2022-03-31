@@ -48,7 +48,7 @@ maine_extract <- function(x){
     people_idx <- which(sapply(x$vaccines, function(z){
         any(str_detect(z[,1], "(?i)juvenile"))}))
     
-    vaccines_ <- x$vaccines[[people_idx]] 
+    vaccines_ <- x$vaccines[[people_idx]][-c(1:2),]
     
     vax_col_name_mat <- matrix(c(
         "", "0", "Name",
