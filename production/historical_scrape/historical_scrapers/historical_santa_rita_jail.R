@@ -97,7 +97,7 @@ historical_santa_rita_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.davisvanguard.org/tag/covid-19/",
+            url = "https://covidincustody.org/data",
             id = "historical_santa_rita_jail",
             type = "csv",
             state = "CA",
