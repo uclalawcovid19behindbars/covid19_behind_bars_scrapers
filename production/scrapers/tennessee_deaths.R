@@ -79,7 +79,7 @@ tennessee_deaths_scraper <- R6Class(
         initialize = function(
             log,
             url = "https://www.tn.gov/correction.html",
-            id = "tennessee",
+            id = "tennessee_deaths",
             type = "pdf",
             state = "TN",
             jurisdiction = "state",
