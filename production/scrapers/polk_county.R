@@ -20,11 +20,22 @@ polk_county_pull <- function(x){
 }
 
 polk_county_restruct <- function(x){
-    ExtractTable(x)
+    tbl <- ExtractTable(x)
+    tbl <- polk_county_remove_header(tbl)
+}
+
+polk_county_remove_header <- function(table){
+    header_row <- table[[1]][1,]
+    header_str <- paste(header_row, collapse = " ")
+    
+    if(str_detect(header_str, "Polk County Jail COVID-19 stats")){
+        table <- table[[1]][2:3,]
+    } else {
+        table
+    }
 }
 
 polk_county_extract <- function(x){
-    
     col_name <- matrix(c(
         "Residents.Tadmin", "0", "Inmate Tests Administered",
         "Residents.Confirmed", "1", "Inmates Positive",
@@ -35,7 +46,7 @@ polk_county_extract <- function(x){
     colnames(col_name) <- c("clean", "raw", "check")
     col_name_df <- as_tibble(col_name)
     
-    df_ <- as.data.frame(x[[1]])
+    df_ <- as.data.frame(x)
     
     check_names_extractable(df_, col_name_df)
     
