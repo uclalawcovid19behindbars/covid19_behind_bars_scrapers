@@ -25,6 +25,9 @@ illinois_youth_restruct <- function(x){
 }
 
 illinois_youth_extract <- function(x){
+    x <- x %>%
+      janitor::row_to_names(row_number = 1) 
+  
     check_names(x, 
                 c("IYC Facility", 
                   "Confirmed COVID-19 Cases *", 
@@ -32,9 +35,7 @@ illinois_youth_extract <- function(x){
     
     clean <- x %>%
         janitor::row_to_names(row_number = 1) %>%
-        select(Name = "", 
-               Residents.Confirmed = `Youth`,
-               Staff.Confirmed = `Staff`) %>%
+        setNames(., c("Name", "Residents.Confirmed", "Staff.Confirmed")) %>%
         mutate(Name = str_c(toupper(Name), " YOUTH"))
     
     out <- clean %>%
