@@ -28,7 +28,7 @@ last_df <- pull_last_update()
 
 # Read old facility counts for comparison to new_df (from read_scrape_data)
 old_df <- stringr::str_c(
-    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/", 
     "latest-data/latest_facility_counts.csv") %>% 
     read_csv()
 
@@ -36,7 +36,7 @@ old_df <- stringr::str_c(
 new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
 
 old_state_df <- stringr::str_c(
-    "https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/", 
+    "https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/", 
     "latest-data/latest_state_counts.csv") %>% 
     read_csv()
 

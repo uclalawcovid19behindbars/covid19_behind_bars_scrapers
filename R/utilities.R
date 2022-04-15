@@ -851,7 +851,7 @@ track_recent_covid_increases <- function(
     arrange(State) %>%
     select(State, ends_with(c(".Confirmed", ".Deaths", ".Active"))) %>%
     mutate(Date = latest_scrape_date)
-  historical_state <- read_csv("https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv") 
+  historical_state <- read_csv("https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv")  
   n_days_closest_deltastart <- as.integer(min(abs(delta_start_date - historical_state$Date)))
   lookaround_delta_start_date <- c(delta_start_date, 
                                    (delta_start_date + lubridate::days(n_days_closest_deltastart)),
