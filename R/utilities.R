@@ -846,12 +846,12 @@ track_recent_covid_increases <- function(
   ## get state-wide data 
   latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) %>%
     filter(!is.na(Val)) %>%
-    select(State, Measure, Val) %>%
+    select(State, Measure, Val, Date.UCLA) %>%
     pivot_wider(names_from = "Measure", values_from = "Val") %>%
     arrange(State) %>%
-    select(State, ends_with(c(".Confirmed", ".Deaths", ".Active"))) %>%
-    mutate(Date = latest_scrape_date)
-  historical_state <- read_csv("https://raw.githubusercontent.com/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv") 
+    select(State, Date.UCLA, ends_with(c(".Confirmed", ".Deaths", ".Active"))) %>%
+    mutate(Date = Date.UCLA) #not always correct
+  historical_state <- read_csv("https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/historical-data/historical_state_counts.csv") 
   n_days_closest_deltastart <- as.integer(min(abs(delta_start_date - historical_state$Date)))
   lookaround_delta_start_date <- c(delta_start_date, 
                                    (delta_start_date + lubridate::days(n_days_closest_deltastart)),
