@@ -14,7 +14,7 @@ sacramento_county_jail_check_date <- function(x, date = Sys.Date()){
 
 sacramento_county_jail_pull <- function(x){
     "1a4iXz_MHMvzanwnCbcE1m5xLwQ4_Ut0sAlm4gE4EDKA" %>%
-        googlesheets4::read_sheet()
+        googlesheets4::read_sheet(skip = 1)
 }
 
 sacramento_county_jail_restruct <- function(x){

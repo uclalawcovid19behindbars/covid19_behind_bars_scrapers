@@ -17,7 +17,7 @@ santa_clara_county_jail_check_date <- function(x, date=Sys.Date()){
 
 santa_clara_county_jail_pull <- function(x){
     "1-Z4rttjVPf4gplH59Qdr0hhMHnDnZZr7rAmO1BAp5ls" %>%
-        googlesheets4::read_sheet()
+        googlesheets4::read_sheet(skip = 1)
 }
 
 santa_clara_county_jail_restruct <- function(x){

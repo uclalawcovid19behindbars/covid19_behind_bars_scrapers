@@ -30,7 +30,7 @@ sf_county_jail_check_date <- function(x, date=Sys.Date()){
 
 sf_county_jail_pull <- function(x){
     z = "1F2iSIveA0jglb2SILgN4fobYozSMNS_Ff-7x8OGs7tM" %>%
-        googlesheets4::read_sheet()
+        googlesheets4::read_sheet(skip = 1)
     
     # for some reason this is saved weird and we need to do some
     # minimal edits in order to save teh file

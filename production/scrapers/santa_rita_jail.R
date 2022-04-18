@@ -17,7 +17,7 @@ santa_rita_jail_check_date <- function(x, date=Sys.Date()){
 
 santa_rita_jail_pull <- function(x){
     "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
-        googlesheets4::read_sheet()
+        googlesheets4::read_sheet(skip = 1)
 }
 
 santa_rita_jail_restruct <- function(x){
