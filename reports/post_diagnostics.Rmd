@@ -11,7 +11,7 @@ output:
 library(tidyverse)
 library(kableExtra)
 library(behindbarstools)
-#library(glue)
+library(glue)
 library(googlesheets4)
 gs4_auth("ucla.law.covid.staff@gmail.com", scopes = "https://www.googleapis.com/auth/drive")
 ```
@@ -33,7 +33,7 @@ old_df <- stringr::str_c(
     read_csv()
 
 # Read old and new state aggregate counts for comparison
-new_state_df <- calc_aggregate_counts(state = TRUE)
+new_state_df <- behindbarstool::calc_aggregate_counts(state = TRUE)
 
 old_state_df <- stringr::str_c(
     "https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/", 

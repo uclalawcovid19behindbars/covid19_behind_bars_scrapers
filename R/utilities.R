@@ -846,7 +846,7 @@ track_recent_covid_increases <- function(
   ## get state-wide data 
   latest_state <- calc_aggregate_counts(state = TRUE, all_dates = FALSE) %>%
     filter(!is.na(Val)) %>%
-    select(State, Measure, Val, Date.UCLA) %>%
+    select(State, Measure, Val) %>%
     pivot_wider(names_from = "Measure", values_from = "Val") %>%
     arrange(State) %>%
     select(State, ends_with(c(".Confirmed", ".Deaths", ".Active"))) %>%
