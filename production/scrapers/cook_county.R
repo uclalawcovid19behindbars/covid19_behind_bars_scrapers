@@ -31,10 +31,10 @@ cook_county_restruct <- function(x){
     res_idx <- list(
         Residents.Active = which(
             str_detect(covid_sub_text,"(?i)currently positive") & 
-                str_detect(covid_sub_text, "(?i)detainees")),
+                str_detect(covid_sub_text, "(?i)custody")),
         Residents.Deaths = which(
             str_detect(covid_sub_text,"(?i)die") & 
-                str_detect(covid_sub_text, "(?i)detainees")))
+                str_detect(covid_sub_text, "(?i)custody")))
     
     # make sure we have 1 and only 1 entry for each concept
     if(!all(sapply(res_idx, length) <= 1)){
