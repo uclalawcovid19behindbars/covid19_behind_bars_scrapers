@@ -87,7 +87,8 @@ get_california_vaccine_bi_table <- function(x, idx){
         sapply(rvest::html_children(p), function(z){
             z %>% 
                 rvest::html_nodes("div") %>%
-                rvest::html_attr("title")})})) %>%
+                rvest::html_attr("title") %>%
+                str_remove("%")})})) %>%
         as.data.frame()
     
     names(dat_df) <- tab %>%
@@ -142,16 +143,21 @@ california_vaccine_bi_restruct <- function(x){
                 s_tab <- get_california_vaccine_bi_table(z, 1) %>%
                     rename("Name" = "Institution", 
                            "Residents.Population" = "Current Population", 
-                           "Residents.Initiated" = "Partially Vaccinated", 
-                           "Residents.Completed" = "Fully Vaccinated") %>%
+                           "Residents.Initiated.Pct" = "% Partially Vaccinated", 
+                           "Residents.Completed.Pct" = "% Fully Vaccinated") %>%
+                    mutate(Residents.Initiated.Pct = (
+                            (as.numeric(Residents.Initiated.Pct) + as.numeric(Residents.Completed.Pct)) / 100),
+                           Residents.Completed.Pct = (as.numeric(Residents.Completed.Pct) / 100)) %>% 
                     select(Name, starts_with("Res"))
             }
             if(j == 2){
                 s_tab <- get_california_vaccine_bi_table(z, 2) %>%
                     rename("Name" = "Institution", 
                            "Staff.Population" = "Current Population", 
-                           "Staff.Initiated" = "Partially Vaccinated", 
-                           "Staff.Completed" = "Fully Vaccinated") %>%
+                           "Staff.Initiated.Pct" = "% Partially Vaccinated", 
+                           "Drop.Staff.Completed.Pct" = "% Fully Vaccinated") %>%
+                    mutate(Staff.Initiated.Pct = 
+                               (as.numeric(Staff.Initiated.Pct) + as.numeric(Drop.Staff.Completed.Pct))/ 100) %>% 
                     select(Name, starts_with("Staff"))
             }
             s_tab
@@ -172,13 +178,14 @@ california_vaccine_bi_restruct <- function(x){
     statewide_pct <- lhtml %>% 
         .[[1]] %>%
         rvest::html_nodes(".mainText") 
-    res_part_pct <- statewide_pct %>% .[1] %>% rvest::html_text() %>% string_to_clean_numeric()
-    res_full_pct <- statewide_pct %>% .[2] %>% rvest::html_text() %>% string_to_clean_numeric()
-    staff_part_pct <- statewide_pct %>% .[3] %>% rvest::html_text() %>% string_to_clean_numeric()
-    staff_full_pct <- statewide_pct %>% .[4] %>% rvest::html_text() %>% string_to_clean_numeric()
+    res_full_pct <- statewide_pct %>% .[1] %>% rvest::html_text() %>% string_to_clean_numeric()
+    res_up_to_dat_pct <- statewide_pct %>% .[2] %>% rvest::html_text() %>% string_to_clean_numeric()
+    staff_full_pct <- statewide_pct %>% .[3] %>% rvest::html_text() %>% string_to_clean_numeric()
+    staff_up_to_date_pct <- statewide_pct %>% .[4] %>% rvest::html_text() %>% string_to_clean_numeric()
     statewide_pct <- tibble(Name = "STATEWIDE",
-                            Residents.Initiated.Pct = (res_part_pct + res_full_pct)/100,
-                            Staff.Initiated.Pct = (staff_part_pct + staff_full_pct)/100)
+                            Residents.Initiated.Pct = as.double(res_full_pct),
+                            Staff.Initiated.Pct = as.double(staff_full_pct))
+
     out <- fac_tab %>%
         bind_rows(statewide_pct)
     return(out)
@@ -190,10 +197,7 @@ california_vaccine_bi_extract <- function(x){
     x %>% 
         mutate_at(vars(-Name), string_to_clean_numeric) %>% 
         as_tibble() %>% 
-        clean_scraped_df() %>%
-        # inititaited needs to include completed to match our definition
-        mutate(Staff.Initiated = Staff.Initiated + Staff.Completed) %>%
-        mutate(Residents.Initiated = Residents.Initiated + Residents.Completed)
+        clean_scraped_df()
         
 }
 
@@ -212,8 +216,7 @@ california_vaccine_bi_extract <- function(x){
 #' \describe{
 #'   \item{Institution Name}{}
 #'   \item{Current Population}{}
-#'   \item{Partially Vaccinated}{}
-#'   \item{Fully Vaccinated}{}
+#'   \item{% Partially Vaccinated}{}
 #'   \item{% Fully Vaccinated}{}
 #' }
 
