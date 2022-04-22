@@ -33,7 +33,7 @@ old_df <- stringr::str_c(
     read_csv()
 
 # Read old and new state aggregate counts for comparison
-new_state_df <- behindbarstool::calc_aggregate_counts(state = TRUE)
+new_state_df <- behindbarstools::calc_aggregate_counts(state = TRUE)
 
 old_state_df <- stringr::str_c(
     "https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/", 
@@ -44,7 +44,10 @@ old_state_df <- stringr::str_c(
 cpp_df <- behindbarstools::read_cpp_data()
 
 # Read in historical state counts to plot highest increases in cumulative and active cases among staff and residents in last week
-state_df <- read_csv("../data/historical-data/historical_state_counts.csv") %>%
+state_df <- str_c(
+  "https://media.githubusercontent.com/media/uclalawcovid19behindbars/data/master/", 
+  "historical-data/historical_state_counts.csv") %>%
+  read_csv() %>%
   mutate(Name = State)
 
 # Read in facility data for all dates to plot highest increases in cumulative and active cases among staff and residents in last week

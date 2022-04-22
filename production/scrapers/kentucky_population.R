@@ -24,7 +24,7 @@ kentucky_population_pull <- function(x, date = Sys.Date(), days = 7){
 }
 
 kentucky_population_restruct <- function(x, date = Sys.Date()){
-    browser()
+    #browser()
     pdf_date <- magick::image_read_pdf(x) %>% 
         magick::image_crop("900x100+800+240") %>% 
         magick::image_ocr() %>% 
