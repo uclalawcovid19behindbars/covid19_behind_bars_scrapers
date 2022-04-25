@@ -1,21 +1,20 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-sf_county_jail_check_date <- function(x, date=Sys.Date()){
-    z = "1F2iSIveA0jglb2SILgN4fobYozSMNS_Ff-7x8OGs7tM" %>%
-        googlesheets4::read_sheet()
+sf_county_jail_check_date <- function(sheet_id, date=Sys.Date()){
+    raw_sheet = googlesheets4::read_sheet(sheet_id, skip = 1)
     
     # for some reason this is saved weird and we need to do some
     # minimal edits in order to save teh file
-    for(c in names(z)){
-        for(j in 1:length(z[[c]])){
-            if(length(z[[c]][[j]]) == 0){
-                z[[c]][[j]] <- NA
+    for(c in names(raw_sheet)){
+        for(j in 1:length(raw_sheet[[c]])){
+            if(length(raw_sheet[[c]][[j]]) == 0){
+                raw_sheet[[c]][[j]] <- NA
             }
         }
     }
     
-    z %>%
+    raw_sheet %>%
         mutate_all(unlist) %>%
         janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::mdy(`As of Date`)) %>%
@@ -28,21 +27,20 @@ sf_county_jail_check_date <- function(x, date=Sys.Date()){
         error_on_date(date)
 }
 
-sf_county_jail_pull <- function(x){
-    z = "1F2iSIveA0jglb2SILgN4fobYozSMNS_Ff-7x8OGs7tM" %>%
-        googlesheets4::read_sheet(skip = 1)
+sf_county_jail_pull <- function(sheet_id){
+    raw_sheet = googlesheets4::read_sheet(sheet_id, skip = 1)
     
     # for some reason this is saved weird and we need to do some
     # minimal edits in order to save teh file
-    for(c in names(z)){
-        for(j in 1:length(z[[c]])){
-            if(length(z[[c]][[j]]) == 0){
-                z[[c]][[j]] <- NA
+    for(c in names(raw_sheet)){
+        for(j in 1:length(raw_sheet[[c]])){
+            if(length(raw_sheet[[c]][[j]]) == 0){
+                raw_sheet[[c]][[j]] <- NA
             }
         }
     }
     
-    z %>%
+    raw_sheet %>%
         mutate_all(unlist)
 }
 
@@ -94,7 +92,8 @@ sf_county_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://covidincustody.org/data",
+            # data is hosted at https://covidincustody.org/data
+            url = "1F2iSIveA0jglb2SILgN4fobYozSMNS_Ff-7x8OGs7tM",
             id = "sf_county_jail",
             type = "csv",
             state = "CA",
