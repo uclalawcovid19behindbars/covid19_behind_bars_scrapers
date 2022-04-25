@@ -1,9 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-sacramento_county_jail_check_date <- function(x, date = Sys.Date()){
-    "1a4iXz_MHMvzanwnCbcE1m5xLwQ4_Ut0sAlm4gE4EDKA" %>%
-        googlesheets4::read_sheet() %>%
+sacramento_county_jail_check_date <- function(sheet_id, date = Sys.Date()){
+        googlesheets4::read_sheet(sheet_id, skip = 1) %>%
         janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>%
@@ -12,9 +11,8 @@ sacramento_county_jail_check_date <- function(x, date = Sys.Date()){
         error_on_date(date)
 }
 
-sacramento_county_jail_pull <- function(x){
-    "1a4iXz_MHMvzanwnCbcE1m5xLwQ4_Ut0sAlm4gE4EDKA" %>%
-        googlesheets4::read_sheet(skip = 1)
+sacramento_county_jail_pull <- function(sheet_id){
+    googlesheets4::read_sheet(sheet_id, skip = 1)
 }
 
 sacramento_county_jail_restruct <- function(x){
@@ -63,7 +61,8 @@ sacramento_county_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://covidincustody.org/data",
+            # data is hosted at https://covidincustody.org/data
+            url = "1a4iXz_MHMvzanwnCbcE1m5xLwQ4_Ut0sAlm4gE4EDKA",
             id = "sacramento_county_jail",
             type = "csv",
             state = "CA",
