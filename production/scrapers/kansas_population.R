@@ -24,7 +24,6 @@ kansas_population_restruct <- function(x){
 }
 
 kansas_population_extract <- function(x){
-
     x_ <- x[[1]] %>% 
         select(seq(0, 16) %>% as.character()) %>% 
         rownames_to_column() %>% 
@@ -34,7 +33,7 @@ kansas_population_extract <- function(x){
     
     # Check relevant column positions 
     if (!all(c(str_detect(x_[1,1], "(?i)NAME OF FACILITY"), 
-               str_detect(x_[1,6], "(?i)CURRENT")))){
+               str_detect(x_[2,6], "(?i)CURRENT")))){
         warning("Column names not as expected. Inspect raw file.")
     }
     
