@@ -24,9 +24,10 @@ illinois_youth_restruct <- function(x){
         rvest::html_table()
 }
 
-illinois_youth_extract <- function(x){
-    x <- x %>%
-      janitor::row_to_names(row_number = 1) 
+illinois_youth_extract <- function(raw_data){
+    x <- suppressWarnings(
+        janitor::row_to_names(raw_data, row_number = 1) # warning suggests dup names where none exist
+    )
   
     check_names(x, 
                 c("IYC Facility", 
