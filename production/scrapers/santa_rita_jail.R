@@ -1,9 +1,8 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-santa_rita_jail_check_date <- function(x, date=Sys.Date()){
-    "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
-        googlesheets4::read_sheet() %>%
+santa_rita_jail_check_date <- function(sheet_id, date=Sys.Date()){
+        googlesheets4::read_sheet(sheet_id, skip = 1) %>%
         janitor::clean_names(case = "title") %>%
         mutate(Date = lubridate::round_date(`As of Date`, unit = "day")) %>%
         mutate(Date = as.Date(Date)) %>% 
@@ -15,9 +14,8 @@ santa_rita_jail_check_date <- function(x, date=Sys.Date()){
         error_on_date(date)
 }
 
-santa_rita_jail_pull <- function(x){
-    "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw" %>%
-        googlesheets4::read_sheet(skip = 1)
+santa_rita_jail_pull <- function(sheet_id){
+        googlesheets4::read_sheet(sheet_id, skip = 1)
 }
 
 santa_rita_jail_restruct <- function(x){
@@ -69,7 +67,8 @@ santa_rita_jail_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://covidincustody.org/data",
+            # data is hosted at https://covidincustody.org/data
+            url = "196jMpPfuE4IMlplsd7K_3mP1l018cIbS-oTO2SuVklw",
             id = "santa_rita_jail",
             type = "csv",
             state = "CA",
