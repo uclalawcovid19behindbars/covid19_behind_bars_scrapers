@@ -8,7 +8,7 @@ hawaii_date_check <- function(url, date = Sys.Date()){
         magick::image_read()
     
     img %>%
-        magick::image_crop("700x100+400+200") %>%
+        magick::image_crop("700x100+750+350") %>%
         magick::image_ocr() %>%
         str_split("Updated|[:space:]") %>%
         unlist() %>%
