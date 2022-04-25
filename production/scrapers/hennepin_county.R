@@ -25,14 +25,14 @@ hennepin_county_restruct <- function(x){
 
 hennepin_county_extract <- function(x){
     exp_names <- c(
-        Residents.Population = "CURRENT POPULATION",
-        Drop.Res.Iso = "MEDICALLY ISOLATED",
-        Drop.Res.Quar = "QUARANTINE",
-        Drop.Res.Active = "TOTAL POSITIVE IN CUSTODY",
-        Residents.Confirmed = "TOTAL POSITIVE TO DATE",
-        Residents.Pending = "PENDING",
-        Residents.Negative = "CONFIRMED NEGATIVE",
-        Residents.Tested = "TOTAL TESTED"
+        Residents.Population = "Current population",
+        Drop.Res.Iso = "Medically isolated",
+        Drop.Res.Quar = "Quarantine",
+        Drop.Res.Active = "Total positive in custody",
+        Residents.Confirmed = "Total positive to date",
+        Residents.Pending = "Pending",
+        Residents.Negative = "Confirmed negative",
+        Residents.Tested = "Total tested"
     )
     
     df_ <- x
