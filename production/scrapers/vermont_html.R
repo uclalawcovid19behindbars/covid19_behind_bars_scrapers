@@ -65,18 +65,6 @@ vermont_html_restruct <- function(x){
 }
 
 vermont_html_extract <- function(x){
-    
-    in_state_tab_extract <- x$in_state %>%
-        mutate(Name = "State-wide for non-facility",
-               Residents.Tested = subset(., X1 == "Total Incarcerated Individuals Tested", select = X2),
-               Residents.Tadmin = subset(., X1 == "Total Tests Conducted", select = X2)) %>%
-        select(Name, starts_with("Residents.")) %>%
-        unique() %>%
-        unnest(cols = c(Residents.Tested, Residents.Tadmin), 
-               names_repair = "unique") %>%
-        rename(Residents.Tested = X2...2,
-               Residents.Tadmin = X2...3)
-    
     out_state_tab_extract <- x$out_state %>%
         mutate(Name = "Out-of-State",
                Residents.Confirmed = subset(., X1 == "Unique Positive Cases*", select = X2),
@@ -110,8 +98,7 @@ vermont_html_extract <- function(x){
     fac_data <- facility_tab_extract %>%
         full_join(staff_tab_extract, by = "Name") 
     
-    out <- in_state_tab_extract %>%
-        bind_rows(out_state_tab_extract) %>%
+    out <- out_state_tab_extract %>%
         bind_rows(fac_data) %>%
         clean_scraped_df()
     
