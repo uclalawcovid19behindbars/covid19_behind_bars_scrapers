@@ -47,11 +47,11 @@ connecticut_vaccine_restruct <- function(ct_image){
     }
     else{
         ##### h = 944, w = 422
-        h_txt <- 160
+        h_txt <- 190
         w_txt <- 200
-        yoff_txt <- 740
+        yoff_txt <- 720
         res_xoff_txt <- 10
-        st_xoff_txt <- 250
+        st_xoff_txt <- 260
     }
     
     in_txt <- magick::image_crop(ct_image_brightened, str_c(w_txt, "x", h_txt, "+", 
