@@ -13,9 +13,10 @@ nevada_check_date <- function(url, date = Sys.Date()){
     remDr$open(silent = TRUE)
     remDr$navigate(url)
     
-    site_date <- remDr$findElement(using = "css", "transform")$getElementText() %>% 
+    site_date <- remDr$findElement(
+            using = "xpath", "//span[contains(text(),'20')]" # look for year 20xx
+            )$getElementText() %>%
         unlist() %>%
-        {.[str_detect(., "20")]} %>% # look for year 20xx
         lubridate::mdy()
 
     remDr$close()
