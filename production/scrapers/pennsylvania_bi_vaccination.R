@@ -27,8 +27,9 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
     
     viz_labels <- remDr$getPageSource()[[1]] %>%
         xml2::read_html() %>%
-        rvest::html_nodes(xpath="//div[@class='slicerItemContainer']") %>%
-        rvest::html_attr("aria-label")
+        rvest::html_nodes(xpath="//div[@class='slicerCheckbox']") %>%
+        rvest::html_nodes(xpath="//span[@class='slicerText']") %>%
+        rvest::html_attr("title")
     
     html_list <- list()
     iters <- 1
@@ -40,8 +41,8 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
             if(!(l %in% names(html_list))){
                 
                 src_str <- str_c(
-                    "//div[@class='slicerItemContainer' and @aria-label='",
-                    l, "']/div")
+                    "//span[@class='slicerText' and @title='",
+                    l, "']")
                 
                 elCB <- remDr$findElement("xpath", src_str)
                 
@@ -74,8 +75,9 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
         # make a list of the new visible elements
         viz_labels <- remDr$getPageSource()[[1]] %>%
             xml2::read_html() %>%
-            rvest::html_nodes(xpath="//div[@class='slicerItemContainer']") %>%
-            rvest::html_attr("aria-label")
+            rvest::html_nodes(xpath="//div[@class='slicerCheckbox']") %>%
+            rvest::html_nodes(xpath="//span[@class='slicerText']") %>%
+            rvest::html_attr("title")
         
         # is there any new facility info to grab? if yes run this whole loop
         # again
