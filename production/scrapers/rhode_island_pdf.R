@@ -53,15 +53,15 @@ rhode_island_pdf_extract <- function(restruct){
         "total", "2", "Residents.Confirmed",
         "deaths", "3", "Residents.Deaths",
         "recovered", "4", "Residents.Recovered",
-        "inmates active**", "5", "Residents.Active",
-        "past 48 hours", "6", "Residents.DayActive.Drop",
+        "active", "5", "Residents.Active",
+        "past 72 hours", "6", "Residents.DayActive.Drop",
         "population", "7", "Residents.Population",
         "% population fully vaccinated***", "8", "Residents.Completed.Pct",
         "total", "9", "Staff.Confirmed",
         "deaths", "10", "Staff.Deaths",
-        "staff recovered", "11", "Staff.Recovered",
+        "recovered", "11", "Staff.Recovered",
         "active**", "12", "Staff.Active",
-        "past 48 hours", "13", "Staff.DayActive.Drop"
+        "past 72 hours", "13", "Staff.DayActive.Drop"
     ), ncol = 3, nrow = 14, byrow = TRUE)
     
     colnames(ri_col_name_mat) <- c("check", "raw", "clean")
