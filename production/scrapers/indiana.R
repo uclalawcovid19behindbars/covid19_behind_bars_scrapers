@@ -115,7 +115,7 @@ indiana_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.in.gov/idoc/3780.htm",
+            url = "https://www.in.gov/idoc/home/idoc-facility-covid-19-statistics/",
             id = "indiana",
             type = "img",
             state = "IN",
