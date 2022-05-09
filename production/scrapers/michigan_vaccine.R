@@ -1,13 +1,14 @@
 source("./R/generic_scraper.R")
 source("./R/utilities.R")
 
-michigan_vaccine_date_check <- function(x, date = Sys.Date()){
-    base_html <- rvest::read_html(x)
+michigan_vaccine_date_check <- function(url, date = Sys.Date()){
+    base_html <- rvest::read_html(url)
     
     base_html %>% 
         rvest::html_nodes("caption") %>% 
         rvest::html_text() %>% 
-        {.[str_detect(., "(?i)correction")]} %>% 
+        {.[str_detect(., "(?i)corrections")]} %>%
+        .[[2]] %>%
         lubridate::mdy() %>% 
         error_on_date(date)
 }
@@ -22,12 +23,12 @@ michigan_vaccine_restruct <- function(x){
         rvest::html_nodes("caption") %>%
         rvest::html_text() 
     
-    prison_idx <- which(str_detect(captions, "(?i)detained"))
+    prison_idx <- which(str_detect(captions, "(?i)detained")) %>% .[2]
     
     x %>% 
         rvest::html_nodes("table") %>% 
-        rvest::html_table() %>% 
-        .[[prison_idx]] 
+        .[prison_idx] %>%
+        rvest::html_table()
 }
 
 michigan_vaccine_extract <- function(x){
@@ -46,8 +47,10 @@ michigan_vaccine_extract <- function(x){
         Age16.Drop = "age_group_16_49", 
         Vulnerable.Drop = "number_of_doses_given_to_medically_vulnerable"
     )
+
+    df_ <- as.data.frame(x) %>%
+        janitor::row_to_names(row_number = 1)
     
-    df_ <- janitor::clean_names(x)
     check_names(df_, exp_names, detect = TRUE)
     names(df_) <- names(exp_names)
     
@@ -90,7 +93,7 @@ michigan_vaccine_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://www.michigan.gov/coronavirus/0,9753,7-406-98178_103214-547150--,00.html",
+            url = "https://www.michigan.gov/coronavirus/resources/covid-19-vaccine/covid-19-dashboard",
             id = "michigan_vaccine",
             type = "html",
             state = "MI",
