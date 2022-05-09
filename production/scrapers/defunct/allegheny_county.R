@@ -23,6 +23,7 @@ allegheny_county_pull <- function(x){
 }
 
 allegheny_county_restruct <- function(x){
+    browser()
     tabs <- x %>%
         rvest::html_nodes("table") %>%
         .[c(1, 3)] %>%
