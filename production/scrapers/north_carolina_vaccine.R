@@ -21,6 +21,7 @@ north_carolina_vaccine_pull <- function(x){
 }
 
 north_carolina_vaccine_restruct <- function(x){
+    browser()
     txt <- x %>%
         rvest::html_nodes("section") %>%
         rvest::html_text() %>% 
