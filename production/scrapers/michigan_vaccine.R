@@ -8,7 +8,6 @@ michigan_vaccine_date_check <- function(url, date = Sys.Date()){
         rvest::html_nodes("caption") %>% 
         rvest::html_text() %>% 
         {.[str_detect(., "(?i)corrections")]} %>%
-        .[[2]] %>%
         lubridate::mdy() %>% 
         error_on_date(date)
 }
@@ -23,7 +22,7 @@ michigan_vaccine_restruct <- function(x){
         rvest::html_nodes("caption") %>%
         rvest::html_text() 
     
-    prison_idx <- which(str_detect(captions, "(?i)detained")) %>% .[2]
+    prison_idx <- which(str_detect(captions, "(?i)detained"))
     
     x %>% 
         rvest::html_nodes("table") %>% 
