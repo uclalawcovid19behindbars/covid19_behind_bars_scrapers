@@ -6,9 +6,9 @@ san_diego_jails_check_date <- function(x, date = Sys.Date()){
 
     html_obj %>%
         rvest::html_nodes("ul") %>%
-        .[str_detect(rvest::html_text(.), "(?i)jail daily figures")] %>%
+        .[str_detect(rvest::html_text(.), "(?i)jail status")] %>%
         rvest::html_text() %>%
-        str_split("(?i)covid-19 jail daily figures as of |\n") %>%
+        str_split("(?i)covid-19 jail status report as of |\n") %>%
         unlist() %>%
         .[2] %>%
         lubridate::mdy() %>%
@@ -19,7 +19,7 @@ san_diego_jails_pull <- function(x) {
     html_obj <- xml2::read_html(x)
     html_obj %>%
         rvest::html_nodes("a") %>%
-        .[str_detect(rvest::html_text(.), "(?i)jail daily figures")] %>%
+        .[str_detect(rvest::html_text(.), "(?i)jail status")] %>%
         rvest::html_attr("href") %>%
         xml2::url_absolute(x) %>%
         magick::image_read_pdf()
