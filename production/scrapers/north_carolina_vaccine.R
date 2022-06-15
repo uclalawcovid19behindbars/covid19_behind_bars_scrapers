@@ -21,7 +21,6 @@ north_carolina_vaccine_pull <- function(x){
 }
 
 north_carolina_vaccine_restruct <- function(x){
-    browser()
     txt <- x %>%
         rvest::html_nodes("section") %>%
         rvest::html_text() %>% 
@@ -31,7 +30,7 @@ north_carolina_vaccine_restruct <- function(x){
         stringr::str_to_lower() %>% 
         unlist() 
     
-    tibble(
+    out <- tibble(
         Staff.Initiated = stringr::str_extract(
             txt, pattern = "(?<=info).*(?=partially vaccinated staff)"), 
         Staff.Completed = stringr::str_extract(
@@ -40,7 +39,11 @@ north_carolina_vaccine_restruct <- function(x){
             txt, pattern = "(?<=fully vaccinated staff).*(?=partially vaccinated offenders)"), 
         Residents.Completed = stringr::str_extract(
             txt, pattern = "(?<=partially vaccinated offenders).*(?=fully vaccinated offenders)")
-    )
+    ) %>%
+    subset(str_length(Staff.Initiated) < 20) # this line removes excess text row for Staff.Initiated
+    
+    out
+    
 }
 
 north_carolina_vaccine_extract <- function(x){
