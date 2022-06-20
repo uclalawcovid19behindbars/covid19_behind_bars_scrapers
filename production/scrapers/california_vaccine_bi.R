@@ -72,133 +72,180 @@ california_vaccine_bi_pull <- function(x, wait = 20){
     xml2::read_html(tf)
 }
 
-get_california_vaccine_bi_table <- function(x, idx){
-    tab <- x %>%
-        rvest::html_nodes(".tableEx") %>%
-        .[idx] %>% 
-        rvest::html_node(".innerContainer")
+pull_california_vaccine_column <- function(html, length, name, colno, typeno) {
+    xbase1 <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container['
+    xbase2 <- ']/transform/div/div[3]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/div['
+    hold <- html
+    out <- do.call(rbind, lapply(1:length, function(p, html) {
+        html <- hold
+        select <- xbase1 %>%
+            str_c(., typeno, xbase2, p, ']/div[', colno, ']')
+        out <- html %>%
+            rvest::html_nodes(xpath = select) %>%
+            rvest::html_text()
+    })) %>%
+        as.data.frame() 
+    colnames(out) <- name
+    out <- out %>%
+        mutate(rowid = 1:length)
     
-    col_dat <- tab %>%
-        rvest::html_node(".bodyCells") %>%
-        rvest::html_node("div") %>%
-        rvest::html_children()
- 
-    dat_df <- do.call(rbind, lapply(col_dat, function(p){
-        sapply(rvest::html_children(p), function(z){
-            z %>% 
-                rvest::html_nodes("div") %>%
-                rvest::html_attr("title") %>%
-                str_remove("%")})})) %>%
-        as.data.frame()
-    
-    names(dat_df) <- tab %>%
-        rvest::html_node(".columnHeaders") %>%
-        rvest::html_node("div") %>%
-        rvest::html_nodes("div") %>% 
-        rvest::html_attr("title") %>%
-        na.omit() %>%
-        as.vector()
-    
-    dat_df
+    out
 }
 
-get_california_vaccine_bi_percentages <- function(x){
-    tab <- x %>%
-        rvest::html_nodes(".tableEx") %>%
-        .[1] %>% 
-        rvest::html_node(".innerContainer")
-    x %>% 
-        rvest::html_nodes(".mainText") %>%
-        rvest::html_text()
+get_california_vaccine_bi_residents <- function(x) {
+    baseraw <- str_c('./results/raw_files/', Sys.Date(), '_california_vaccine/')
+    xbase <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[18]/transform/div/div[3]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/div['
+    firsttable <- baseraw %>%
+        str_c(., 'first.html') %>%
+        rvest::read_html()
+    lasttable <- baseraw %>%
+        str_c(., 'last.html') %>%
+        rvest::read_html()
     
-        
-        
+    ## Pull First Resident Table
+    firstresname <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Name', colno = 2, typeno = 18)
+    firstrespop <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Residents.Population', colno = 3, typeno = 18)
+    firstrespvax <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Residents.Initiated.Pct', colno = 4, typeno = 18)
+    firstresfvax <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Residents.Completed.Pct', colno = 5, typeno = 18)
+    
+    firstres <- firstresname %>%
+        merge(firstrespop, by = 'rowid') %>%
+        merge(firstrespvax, by = 'rowid') %>%
+        merge(firstresfvax, by = 'rowid') 
+    
+    ## Pull Last Resident Table
+    lastresname <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Name', colno = 2, typeno = 18)
+    lastrespop <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Residents.Population', colno = 3, typeno = 18)
+    lastrespvax <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Residents.Initiated.Pct', colno = 4, typeno = 18)
+    lastresfvax <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Residents.Completed.Pct', colno = 5, typeno = 18)
+    
+    lastres <- lastresname %>%
+        merge(lastrespop, by = 'rowid') %>%
+        merge(lastrespvax, by = 'rowid') %>%
+        merge(lastresfvax, by = 'rowid') 
+    
+    res_table <- firstres %>%
+        rbind(lastres) %>%
+        select(-c(rowid)) %>%
+        as.data.frame() %>%
+        mutate(Residents.Initiated.Pct = as.character(str_replace_all(Residents.Initiated.Pct, '%', '')),
+               Residents.Completed.Pct = as.character(str_replace_all(Residents.Completed.Pct, '%', '')),
+               Residents.Initiated.Pct = ifelse(str_length(Residents.Initiated.Pct)==1, str_c('0.0', Residents.Initiated.Pct), Residents.Initiated.Pct),
+               Residents.Initiated.Pct = ifelse(str_length(Residents.Initiated.Pct)==2, str_c('0.', Residents.Initiated.Pct), Residents.Initiated.Pct),
+               Residents.Completed.Pct = ifelse(str_length(Residents.Completed.Pct)==1, str_c('0.0', Residents.Completed.Pct), Residents.Completed.Pct),
+               Residents.Completed.Pct = ifelse(str_length(Residents.Completed.Pct)==2, str_c('0.', Residents.Completed.Pct), Residents.Completed.Pct),
+               Residents.Population = string_to_clean_numeric(Residents.Population)
+        )
+    
+    res_table
+    
+}
+
+get_california_vaccine_bi_staff <- function(x) {
+    baseraw <- str_c('./results/raw_files/', Sys.Date(), '_california_vaccine/')
+    xbase <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[18]/transform/div/div[3]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/div['
+    firsttable <- baseraw %>%
+        str_c(., 'first.html') %>%
+        rvest::read_html()
+    lasttable <- baseraw %>%
+        str_c(., 'last.html') %>%
+        rvest::read_html()
+    
+    ## Pull First Resident Table
+    firstname <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Name', colno = 2, typeno = 19)
+    firstpop <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Staff.Population', colno = 3, typeno = 19)
+    firstpvax <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Staff.Initiated.Pct', colno = 4, typeno = 19)
+    firstfvax <- pull_california_vaccine_column(html = firsttable, length = 20, name = 'Staff.Completed.Pct', colno = 5, typeno = 19)
+    
+    first_staff <- firstname %>%
+        merge(firstpop, by = 'rowid') %>%
+        merge(firstpvax, by = 'rowid') %>%
+        merge(firstfvax, by = 'rowid') 
+    
+    ## Pull Last Resident Table
+    lastname <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Name', colno = 2, typeno = 19)
+    lastpop <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Staff.Population', colno = 3, typeno = 19)
+    lastpvax <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Staff.Initiated.Pct', colno = 4, typeno = 19)
+    lastfvax <- pull_california_vaccine_column(html = lasttable, length = 20, name = 'Staff.Completed.Pct', colno = 5, typeno = 19)
+    
+    last_staff <- lastname %>%
+        merge(lastpop, by = 'rowid') %>%
+        merge(lastpvax, by = 'rowid') %>%
+        merge(lastfvax, by = 'rowid') 
+    
+    staff_table <- first_staff %>%
+        rbind(last_staff) %>%
+        select(-c(rowid))%>%
+        mutate(Staff.Initiated.Pct = as.character(str_replace_all(Staff.Initiated.Pct, '%', '')),
+               Staff.Completed.Pct = as.character(str_replace_all(Staff.Completed.Pct, '%', '')),
+               Staff.Initiated.Pct = ifelse(str_length(Staff.Initiated.Pct)==1, str_c('0.0', Staff.Initiated.Pct), Staff.Initiated.Pct),
+               Staff.Initiated.Pct = ifelse(str_length(Staff.Initiated.Pct)==2, str_c('0.', Staff.Initiated.Pct), Staff.Initiated.Pct),
+               Staff.Completed.Pct = ifelse(str_length(Staff.Completed.Pct)==1, str_c('0.0', Staff.Completed.Pct), Staff.Completed.Pct),
+               Staff.Completed.Pct = ifelse(str_length(Staff.Completed.Pct)==2, str_c('0.', Staff.Completed.Pct), Staff.Completed.Pct),
+               Staff.Population = string_to_clean_numeric(Staff.Population)
+        )
+    
+    staff_table
+    
+}
+
+get_california_vaccine_bi_statewide <- function(x) {
+    baseraw <- str_c('./results/raw_files/', Sys.Date(), '_california_vaccine/')
+    xbase <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[18]/transform/div/div[3]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/div['
+    xres.pct <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[10]/transform/div/div[3]/div/visual-modern/div/svg/g[2]/text'
+    xstaff.pct <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[12]/transform/div/div[3]/div/visual-modern/div/svg/g[2]/text'
+    firsttable <- baseraw %>%
+        str_c(., 'first.html') %>%
+        rvest::read_html()
+    
+    res.pct <- firsttable %>%
+        rvest::html_nodes(xpath = xres.pct) %>%
+        rvest::html_text() %>%
+        str_replace_all(., '%', '') %>%
+        str_c('0.', .)
+    
+    staff.pct <- firsttable %>%
+        rvest::html_nodes(xpath = xstaff.pct) %>%
+        rvest::html_text() %>%
+        str_replace_all(., '%', '')%>%
+        str_c('0.', .)
+    
+    out <- data.frame('Name' = c('STATEWIDE'),
+                      'Residents.Initiated.Pct' = res.pct,
+                      'Staff.Initiated.Pct' = staff.pct)
+    
+    out
+    
+    
 }
 
 california_vaccine_bi_restruct <- function(x){
-    sub_files <- x %>%
-        rvest::html_nodes("iframe") %>%
-        rvest::html_attr("src") %>%
-        str_replace("\\./", "./results/raw_files/")
+    staff_table <- get_california_vaccine_bi_staff() %>%
+        unique()
+    residents_table <- get_california_vaccine_bi_residents() %>%
+        unique()
+    statewide <- get_california_vaccine_bi_statewide()
     
-    lhtml <- lapply(sub_files, xml2::read_html)
+    data_table <- staff_table %>%
+        left_join(residents_table, by = 'Name') %>%
+        plyr::rbind.fill(statewide) 
     
-    span_text <- lhtml[[1]] %>%
-        rvest::html_nodes("span") %>%
-        rvest::html_text() %>%
-        str_remove_all(" ") %>%
-        str_to_lower()
+    data_table
     
-    staff_idx <- which(str_detect(span_text, "staffvaccination"))
-    rez_idx <- which(str_detect(span_text, "patientvaccination"))
-    
-    # make sure the tables are talking about who we think they are talking about
-    if(staff_idx < rez_idx){
-        warning("Staff table may appear before prisoner table. Please inspect.")
-    }
-    
-    vac_list <- lapply(1:2, function(j){
-        unique(bind_rows(lapply(lhtml, function(z){
-            if(j == 1){
-                s_tab <- get_california_vaccine_bi_table(z, 1) %>%
-                    rename("Name" = "Institution", 
-                           "Residents.Population" = "Current Population", 
-                           "Residents.Initiated.Pct" = "% Partially Vaccinated", 
-                           "Residents.Completed.Pct" = "% Fully Vaccinated") %>%
-                    mutate(Residents.Initiated.Pct = (
-                            (as.numeric(Residents.Initiated.Pct) + as.numeric(Residents.Completed.Pct)) / 100),
-                           Residents.Completed.Pct = (as.numeric(Residents.Completed.Pct) / 100)) %>% 
-                    select(Name, starts_with("Res"))
-            }
-            if(j == 2){
-                s_tab <- get_california_vaccine_bi_table(z, 2) %>%
-                    rename("Name" = "Institution", 
-                           "Staff.Population" = "Current Population", 
-                           "Staff.Initiated.Pct" = "% Partially Vaccinated", 
-                           "Drop.Staff.Completed.Pct" = "% Fully Vaccinated") %>%
-                    mutate(Staff.Initiated.Pct = 
-                               (as.numeric(Staff.Initiated.Pct) + as.numeric(Drop.Staff.Completed.Pct))/ 100) %>% 
-                    select(Name, starts_with("Staff"))
-            }
-            s_tab
-        })))
-    })
-    
-    # if we have 40 or more observations odds are good we are not catching
-    # everything
-    if(any(lapply(vac_list, nrow) >= 40)){
-        warning(
-            "The hacky strategy we are using of sorting by facility may no ",
-            "longer work. Please inspect.")
-    }
-    
-    fac_tab <- as_tibble(full_join(vac_list[[1]], vac_list[[2]], by = "Name"))
-    
-    ## get statewide percentages
-    statewide_pct <- lhtml %>% 
-        .[[1]] %>%
-        rvest::html_nodes(".mainText") 
-    res_full_pct <- statewide_pct %>% .[1] %>% rvest::html_text() %>% string_to_clean_numeric()
-    res_up_to_dat_pct <- statewide_pct %>% .[2] %>% rvest::html_text() %>% string_to_clean_numeric()
-    staff_full_pct <- statewide_pct %>% .[3] %>% rvest::html_text() %>% string_to_clean_numeric()
-    staff_up_to_date_pct <- statewide_pct %>% .[4] %>% rvest::html_text() %>% string_to_clean_numeric()
-    statewide_pct <- tibble(Name = "STATEWIDE",
-                            Residents.Initiated.Pct = as.double(res_full_pct),
-                            Staff.Initiated.Pct = as.double(staff_full_pct))
-
-    out <- fac_tab %>%
-        bind_rows(statewide_pct)
-    return(out)
-
 }
 
 
 california_vaccine_bi_extract <- function(x){
-    x %>% 
-        mutate_at(vars(-Name), string_to_clean_numeric) %>% 
-        as_tibble() %>% 
-        clean_scraped_df()
-        
+    out <- x %>% 
+        #mutate_at(vars(-Name), string_to_clean_numeric) %>% 
+        mutate_at(vars(-Name), as.numeric) %>% 
+        mutate(Residents.Initiated.Pct = ifelse(Name != 'STATEWIDE', round(Residents.Initiated.Pct+Residents.Completed.Pct, 2), Residents.Initiated.Pct),
+               Staff.Initiated.Pct = ifelse(Name != 'STATEWIDE', round(Staff.Initiated.Pct+Staff.Completed.Pct, 2), Staff.Initiated.Pct)) %>%
+        as_tibble() #%>% 
+    #clean_scraped_df()
+    
+    out
+    
 }
 
 #' Scraper class for general California vaccine COVID data from dashboard
