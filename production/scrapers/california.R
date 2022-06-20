@@ -33,7 +33,7 @@ california_check_date <- function(x, date = Sys.Date()){
     error_on_date(site_date, date)
 }
 
-california_pull <- function(x, wait = 20){
+california_pull <- function(x, wait = 10){
     # scrape from the power bi iframe directly
     y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(
@@ -42,63 +42,140 @@ california_pull <- function(x, wait = 20){
             "pageName=ReportSection90204f76f18a02b19c96")
     
     remDr <- initiate_remote_driver()
+    # Create Subdirectory for CA HTML output
+    sub_dir <- str_c("./results/raw_files/", Sys.Date(), "_california")
+    dir.create(sub_dir, showWarnings = FALSE)
+    html_list <- list()
+    # Open RemDr
     remDr$open(silent = TRUE)
     remDr$navigate(y)
     
     Sys.sleep(wait)
     
-    out_html <- xml2::read_html(remDr$getPageSource()[[1]])
+    remDr$screenshot(TRUE)
+    webEls <- remDr$findElements(value="//div[@title='Institution']")
+    webEls[[1]]$clickElement()
+    Sys.sleep(wait)
+    remDr$screenshot(TRUE)
+    html_list[["first"]] <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    webEls <- remDr$findElements(value="//div[@title='Institution']")
+    webEls[[1]]$clickElement()
+    Sys.sleep(wait)
+    remDr$screenshot(TRUE)
+    html_list[["last"]] <- xml2::read_html(remDr$getPageSource()[[1]])
+    
+    fns <- str_c(sub_dir, "/", names(html_list), ".html")
+    
+    Map(xml2::write_html, html_list, fns)
+    
+    iframes <- lapply(str_remove(fns, "/results/raw_files"), function(fn)
+        htmltools::tags$iframe(
+            src = fn, 
+            style="display:block", 
+            height="500", width="1200"
+        )  
+    )
+    
+    x <- htmltools::tags$html(
+        htmltools::tags$body(
+            iframes
+        )
+    )
+    
+    tf <- tempfile(fileext = ".html")
+    
+    htmltools::save_html(x, file = tf)
     
     remDr$close()
     
-    out_html
+    xml2::read_html(tf)
+    
+}
+
+pull_california_column <- function(html, length, name, colno) {
+    xbase <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[2]/transform/div/div[3]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/'   
+    info <- do.call(rbind, lapply(1:length, function(p, x) {
+        x <- html
+        select <- xbase %>%
+            str_c(., 'div[', p, ']/div[', colno, ']') # 3 designates the name column
+        out <- x %>%
+            rvest::html_nodes(xpath = select) %>%
+            rvest::html_text()})) %>%
+        as.data.frame() 
+    
+    colnames(info) <- name
+    info <- info %>%
+        mutate(rowid = 1:length)
+    
+    info
+    
 }
 
 california_restruct <- function(x, date = Sys.Date()){
-
-    tab <- x %>%
-        rvest::html_node(".tableEx") %>%
-        rvest::html_node(".innerContainer")
-    
-    col_dat <- tab %>%
-        rvest::html_node(".bodyCells") %>%
-        rvest::html_node("div") %>%
-        rvest::html_children()
-    
-    dat_df <- do.call(rbind, lapply(col_dat, function(p){
-        sapply(rvest::html_children(p), function(z){
-            z %>% 
-                rvest::html_nodes("div") %>%
-                rvest::html_attr("title")})})) %>%
-        as.data.frame()
-
-    names(dat_df) <- tab %>%
-        rvest::html_node(".columnHeaders") %>%
-        rvest::html_node("div") %>%
-        rvest::html_nodes("div") %>% 
-        rvest::html_attr("title") %>%
-        na.omit() %>%
-        as.vector()
-    
-    dat_df %>%
-        select(-Institution) %>%
-        rename(Name = "Institution Name") %>%
+    baseraw <- str_c('./results/raw_files/', Sys.Date(), '_california/')
+    firsttable <- baseraw %>%
+        str_c(., 'first.html') %>%
+        rvest::read_html()
+    lasttable <- baseraw %>%
+        str_c(., 'last.html') %>%
+        rvest::read_html()
+    # Pull First Table Section
+    first.name <- pull_california_column(html = firsttable, length = 22, name = 'Name', colno = 3)
+    first.confirmed <- pull_california_column(html = firsttable, length = 22, name = 'Residents.Confirmed', colno = 4)
+    first.dropnew <- pull_california_column(html = firsttable, length = 22, name = 'Drop.New', colno = 5)
+    first.active <- pull_california_column(html = firsttable, length = 22, name = 'Residents.Active', colno = 6)
+    first.ractive <- pull_california_column(html = firsttable, length = 22, name = 'Released.Active', colno = 7)
+    first.recovered <- pull_california_column(html = firsttable, length = 22, name = 'Residents.Recovered', colno = 8)
+    first.deaths <- pull_california_column(html = firsttable, length = 22, name = 'Residents.Deaths', colno = 9)
+    dat_first <- first.name %>%
+        merge(first.confirmed, by = 'rowid') %>%
+        merge(first.dropnew, by = 'rowid') %>%
+        merge(first.active, by = 'rowid') %>%
+        merge(first.ractive, by = 'rowid') %>%
+        merge(first.recovered, by = 'rowid') %>%
+        merge(first.deaths, by = 'rowid') %>%
+        select(-c(rowid)) %>%
         mutate_at(vars(-Name), string_to_clean_numeric) %>%
         as_tibble()
+    # Pull Last Table Section
+    last.name <- pull_california_column(html = lasttable, length = 22, name = 'Name', colno = 3)
+    last.confirmed <- pull_california_column(html = lasttable, length = 22, name = 'Residents.Confirmed', colno = 4)
+    last.dropnew <- pull_california_column(html = lasttable, length = 22, name = 'Drop.New', colno = 5)
+    last.active <- pull_california_column(html = lasttable, length = 22, name = 'Residents.Active', colno = 6)
+    last.ractive <- pull_california_column(html = lasttable, length = 22, name = 'Released.Active', colno = 7)
+    last.recovered <- pull_california_column(html = lasttable, length = 22, name = 'Residents.Recovered', colno = 8)
+    last.deaths <- pull_california_column(html = lasttable, length = 22, name = 'Residents.Deaths', colno = 9)
+    dat_last <- last.name %>%
+        merge(last.confirmed, by = 'rowid') %>%
+        merge(last.dropnew, by = 'rowid') %>%
+        merge(last.active, by = 'rowid') %>%
+        merge(last.ractive, by = 'rowid') %>%
+        merge(last.recovered, by = 'rowid') %>%
+        merge(last.deaths, by = 'rowid') %>%
+        select(-c(rowid)) %>%
+        mutate_at(vars(-Name), string_to_clean_numeric) %>%
+        as_tibble()
+    
+    dat_combined <- dat_first %>%
+        rbind(dat_last) %>%
+        unique()
+    
+    pull_check <- dat_combined %>%
+        row.names() %>%
+        length()
+    
+    if(pull_check < 35) {
+        warning('DANGER, WILL ROBINSON!: Fewer than  35 facility observations were pulled for CA - typically 35 facility obs are pulled for this scraper.')
+    }
+    
+    dat_combined
+    
 }
 
 california_extract <- function(x){
-    ext <- c(
-        "Name", "Confirmed", "New In Last 14 Days", "Active In Custody",
-        "Released While Active", "Resolved", "Deaths"
-    )
-    
-    check_names(x, ext)
     
     ext_df <- x
-    names(ext_df) <- c(
-        "Name", "Residents.Confirmed", "Drop.New", "Residents.Active",
-        "Drop.Released", "Residents.Recovered", "Residents.Deaths")
     
     ext_df %>%
         select(-contains("Drop"))
