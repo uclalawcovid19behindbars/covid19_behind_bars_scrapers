@@ -70,7 +70,7 @@ kentucky_scraper <- R6Class(
         log = NULL,
         initialize = function(
             log,
-            url = "https://corrections.ky.gov/Facilities/Pages/covid19.aspx",
+            url = "https://corrections.ky.gov/covidupdates/Pages/default.aspx",
             id = "kentucky",
             type = "img",
             state = "KY",
