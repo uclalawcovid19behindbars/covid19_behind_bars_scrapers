@@ -7,7 +7,7 @@ idaho_date_check <- function(x, date = Sys.Date()){
     base_html %>%
         rvest::html_nodes("p") %>%
         rvest::html_text() %>% 
-        {.[which(str_detect(., "(?i)idaho facilities"))+2]} %>% 
+        {.[which(str_detect(., "current as of"))]} %>% 
         str_extract("\\d{1,2}/\\d{1,2}/\\d{2,4}") %>% 
         lubridate::mdy() %>%
         error_on_date(date)
@@ -19,7 +19,7 @@ idaho_pull <- function(x){
 
 idaho_restruct <- function(x){
     x %>%
-        rvest::html_nodes(".covid-table") %>%
+        rvest::html_nodes("table") %>%
         lapply(rvest::html_table, header = TRUE)
 }
 
@@ -31,8 +31,8 @@ idaho_extract <- function(x){
         Residents.Pending = "Pending",
         Residents.Negative = "Negative",
         Drop.Residents.Active = "Positive",
-        Drop.Residents.Asymp = "Asymptomatic Positive",
-        Residents.Confirmed = "Inactive",
+        Drop.Residents.Asymp = "Asymptomatic\n\t\t\tPositive *",
+        Residents.Recovered = "Inactive",
         Residents.Deaths = "Deaths"
     )
     
@@ -41,32 +41,14 @@ idaho_extract <- function(x){
     
     nlist <- lapply(x, names)
     
-    staff_idx <- which((sapply(nlist, length) == 3) &
-        sapply(nlist, function(z){
-            all(suppressWarnings(z == c("Location", "Positive", "Inactive")))}))
-    
-    if(length(staff_idx) != 1){
-        stop("Scraper is not as expected. Please inspect")
-    }
-    
     sw %>%
         mutate_all(as.numeric) %>%
         mutate(Name = "State-Wide") %>%
         mutate(Residents.Confirmed = 
-                   Residents.Confirmed + Residents.Deaths + 
+                   Residents.Recovered + Residents.Deaths + 
                    Drop.Residents.Asymp + Drop.Residents.Active) %>%
         mutate(Residents.Active = 
                    Drop.Residents.Asymp + Drop.Residents.Active) %>%
-        bind_rows(
-            x[[staff_idx]] %>%
-                rename(Name = Location) %>%
-                clean_scraped_df() %>%
-                mutate(Staff.Active = ifelse(is.na(Positive), 0, Positive)) %>%
-                mutate(Inactive = ifelse(is.na(Inactive), 0, Inactive)) %>%
-                mutate(Staff.Confirmed = Staff.Active + Inactive) %>%
-                mutate(Staff.Recovered = Inactive) %>%
-                select(-Positive, -Inactive)
-        ) %>%
         clean_scraped_df() %>%
         select(-starts_with("Drop")) %>%
         as_tibble()
@@ -80,8 +62,6 @@ idaho_extract <- function(x){
 #' facility are considered inactive if they tested positive in the past.
 #' \describe{
 #'   \item{Facility_Name}{The facility name}
-#'   \item{Staff Positive}{Staff Active}
-#'   \item{Staff Inactive}{Staff Recovered}
 #'   \item{Residents Tested}{state-wide only, tests administered}
 #'   \item{Residents Pending}{state-wide only}
 #'   \item{Residents Negative}{state-wide only}
