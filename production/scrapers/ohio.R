@@ -5,7 +5,7 @@ ohio_check_date <- function(url, date = Sys.Date()){
     src <-  get_src_by_attr(url, "a", attr = "href", attr_regex = "(?i)covid")
     img <- magick::image_read_pdf(src, pages = 1) 
     
-    date_box <- magick::image_crop(img, "500x240+1000+160") %>% 
+    date_box <- magick::image_crop(img, "500x240+900+160") %>% 
         magick::image_ocr()
     
     date_box %>%
