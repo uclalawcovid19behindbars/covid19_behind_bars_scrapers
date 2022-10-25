@@ -6,7 +6,7 @@ Part of this project includes scraping state DOC websites, the federal BOP websi
 
 1. Save a copy of the website in [perma.cc](perma.cc)
 2. Extract the raw source where the data we would like to collect is hosted. 
-3. Save this object to a flate file on your system
+3. Save this object to a flat file on your system
 4. Convert the raw data to a matrix, data frame, vector, or list of those objects 
 5. Clean and filter to the variables of concern for the project
 6. Do basic data checks
