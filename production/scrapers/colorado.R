@@ -22,13 +22,13 @@ colorado_check_date <- function(url, date = Sys.Date()){
 
 colorado_pull <- function(url){
   
-    # these are the names of the csv tabs we want dowloaded
+    # these are the names of the csv tabs we want downloaded
     download_labs <- c(
         "COVIDCNTSDEATHRFAC", "COVIDCNTSACTVFAC", "COVIDCNTSTESTRFAC",
         "COVIDCNTSTOTPOSFAC", "COVIDINMVAC", "COVIDCNTSDEATHRFAC (2)"
     )
     
-    # go back and check to see if old files exist and delete them if tehy do
+    # go back and check to see if old files exist and delete them if they do
     for(dls in download_labs){
         out_file <- stringr::str_c("/tmp/sel_dl/", dls, ".csv")
         if(file.exists(out_file)){
@@ -61,18 +61,22 @@ colorado_pull <- function(url){
           using = 'xpath',
           stringr::str_c("//div[@title='", dls, "']"))$clickElement()
         Sys.sleep(2)
+        remDr$findElement("css", "body")$sendKeysToElement(list(key = "end"))
+        Sys.sleep(2)
         remDr$findElement(
           using = 'xpath',
           "//label[@data-tb-test-id='crosstab-options-dialog-radio-csv-Label']"
           )$clickElement()
-        Sys.sleep(2)
+        Sys.sleep(4)
         remDr$findElement(
             using = 'xpath', "//button[contains(text(),'Download')]"
             )$clickElement()
         Sys.sleep(4)
+        remDr$navigate(tableau_url)
+        Sys.sleep(2)
     }
 
-    # Tquit our current selenium instance
+    # Quit our current selenium instance
     remDr$close()
     
     # lets aggregate the files into one readable file,
