@@ -54,37 +54,63 @@ california_pull <- function(x, wait = 20){
     out_html
 }
 
+california_pull_col <- function(html,num) {
+    header_front_xpath <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[2]/transform/div/div[2]/div/visual-modern/div/div/div[2]/div[1]/div[2]/div[2]/div['
+    header_end_xpath <- ']/div'
+    front_xpath <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[2]/transform/div/div[2]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/div['
+    middle_xpath <- ']/div['
+    end_xpath <- ']'
+    header <- html %>%
+        rvest::html_nodes(xpath = str_c(header_front_xpath, num, header_end_xpath)) %>%
+        rvest::html_text() %>%
+        str_squish()
+    column <- do.call(rbind, lapply(1:22, function(x) html %>% rvest::html_nodes(xpath = str_c(front_xpath, x, middle_xpath, num+1, end_xpath)) %>% rvest::html_text())) %>% as.data.frame()
+    colnames(column) <- header
+    return(column)
+    
+}
+
 california_restruct <- function(x, date = Sys.Date()){
-
-    tab <- x %>%
-        rvest::html_node(".tableEx") %>%
-        rvest::html_node(".innerContainer")
     
-    col_dat <- tab %>%
-        rvest::html_node(".bodyCells") %>%
-        rvest::html_node("div") %>%
-        rvest::html_children()
+    name.abb <- x %>%
+        california_pull_col(html = ., num = 1) %>%
+        mutate(merge.no = 1:22)
+    name.full <- x %>%
+        california_pull_col(html = ., num = 2)%>%
+        mutate(merge.no = 1:22)
+    res.confirmed <- x %>%
+        california_pull_col(html = ., num = 3)%>%
+        mutate(merge.no = 1:22)
+    res.new <- x %>%
+        california_pull_col(html = ., num = 4)%>%
+        mutate(merge.no = 1:22)
+    res.active <- x %>%
+        california_pull_col(html = ., num = 5)%>%
+        mutate(merge.no = 1:22)
+    res.release.active <- x %>%
+        california_pull_col(html = ., num = 6)%>%
+        mutate(merge.no = 1:22)
+    res.resolved <- x %>%
+        california_pull_col(html = ., num = 7)%>%
+        mutate(merge.no = 1:22)
+    res.deaths <- x %>%
+        california_pull_col(html = ., num = 8)%>%
+        mutate(merge.no = 1:22)
     
-    dat_df <- do.call(rbind, lapply(col_dat, function(p){
-        sapply(rvest::html_children(p), function(z){
-            z %>% 
-                rvest::html_nodes("div") %>%
-                rvest::html_attr("title")})})) %>%
-        as.data.frame()
-
-    names(dat_df) <- tab %>%
-        rvest::html_node(".columnHeaders") %>%
-        rvest::html_node("div") %>%
-        rvest::html_nodes("div") %>% 
-        rvest::html_attr("title") %>%
-        na.omit() %>%
-        as.vector()
-    
-    dat_df %>%
+    out_data <- name.abb %>%
+        left_join(name.full, by = 'merge.no') %>%
+        left_join(res.confirmed, by = 'merge.no') %>%
+        left_join(res.new, by = 'merge.no') %>%
+        left_join(res.active, by = 'merge.no') %>%
+        left_join(res.release.active, by = 'merge.no') %>%
+        left_join(res.resolved, by = 'merge.no') %>%
+        left_join(res.deaths, by = 'merge.no') %>%
+        select(-merge.no) %>%
         select(-Institution) %>%
         rename(Name = "Institution Name") %>%
         mutate_at(vars(-Name), string_to_clean_numeric) %>%
         as_tibble()
+    
 }
 
 california_extract <- function(x){
