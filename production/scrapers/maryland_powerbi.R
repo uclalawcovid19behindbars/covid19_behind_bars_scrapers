@@ -14,44 +14,74 @@ maryland_powerbi_pull <- function(x){
     remDr$navigate(src_url)
     Sys.sleep(6)
     
-    base_html <- remDr$getPageSource()
+    base_html <- remDr$getPageSource()[[1]]
     
     remDr$close()
     
-    xml2::read_html(base_html[[1]])
+    out_html <- xml2::read_html(base_html)
+    
+    out_html
 }
 
-maryland_powerbi_restruct <- function(x){
-    tab <- x %>%
-        rvest::html_node(".tableEx") %>%
-        rvest::html_node(".innerContainer")
+maryland_powerbi_pull_col <- function(html, num) {
     
-    col_dat <- tab %>%
-        rvest::html_node(".bodyCells") %>%
-        rvest::html_node("div") %>%
-        rvest::html_children()
+    header_front_xpath <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[4]/transform/div/div[2]/div/visual-modern/div/div/div[2]/div[1]/div[2]/div[2]/div['
+    header_end_xpath <- ']/div'
+    front_xpath <- '/html/body/div[1]/report-embed/div/div/div[1]/div/div/div/exploration-container/div/div/docking-container/div/div/div/div/exploration-host/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]/visual-container-repeat/visual-container[4]/transform/div/div[2]/div/visual-modern/div/div/div[2]/div[1]/div[4]/div/div['
+    middle_xpath <- ']/div['
+    end_xpath <- ']'
     
-    dat_df <- do.call(rbind, lapply(col_dat, function(p){
-        sapply(rvest::html_children(p), function(z){
-            z %>% 
-                rvest::html_nodes("div") %>%
-                rvest::html_attr("title")})})) %>%
+    header <- html %>%
+        rvest::html_nodes(xpath = str_c(header_front_xpath, num, header_end_xpath)) %>%
+        rvest::html_text() %>%
+        str_squish()
+    
+    column <- do.call(rbind, lapply(1:21, function(x) html %>% 
+                                        rvest::html_nodes(xpath = str_c(front_xpath, x, middle_xpath, num+1, end_xpath)) %>% 
+                                        rvest::html_text())) %>% 
         as.data.frame()
     
-    names(dat_df) <- tab %>%
-        rvest::html_node(".columnHeaders") %>%
-        rvest::html_node("div") %>%
-        rvest::html_nodes("div") %>% 
-        rvest::html_attr("title") %>%
-        na.omit() %>%
-        as.vector()
+    colnames(column) <- header
     
-    dat_df %>%
+    return(column)
+    
+}
+
+maryland_powerbi_restruct <- function(x, date = Sys.Date()){
+    fac.name <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 1) %>%
+        mutate(merge.no = 1:21)
+    staff.confirmed <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 2)%>%
+        mutate(merge.no = 1:21)
+    staff.recoveries <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 3)%>%
+        mutate(merge.no = 1:21)
+    staff.deaths <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 4)%>%
+        mutate(merge.no = 1:21)
+    res.confirmed <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 5)%>%
+        mutate(merge.no = 1:21)
+    res.recoveries <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 6)%>%
+        mutate(merge.no = 1:21)
+    res.deaths <- x %>%
+        maryland_powerbi_pull_col(html = ., num = 7)%>%
+        mutate(merge.no = 1:21)
+    
+    out_data <- fac.name %>%
+        left_join(staff.confirmed, by = 'merge.no') %>%
+        left_join(staff.recoveries, by = 'merge.no') %>%
+        left_join(staff.deaths, by = 'merge.no') %>%
+        left_join(res.confirmed, by = 'merge.no') %>%
+        left_join(res.recoveries, by = 'merge.no') %>%
+        left_join(res.deaths, by = 'merge.no') %>%
+        select(-merge.no) %>%
         rename(Name = "Facility Name") %>%
-        mutate_at(vars(-Name), string_to_clean_numeric) %>%
-        as_tibble() %>%
-        mutate_if(is.numeric, function(x) ifelse(is.na(x), 0, x)) %>%
-        filter(!str_detect(Name, "(?i)total"))
+        mutate_at(vars(-Name), as.numeric) %>%
+        as_tibble()
+    
 }
 
 maryland_powerbi_extract <- function(x){
@@ -126,4 +156,3 @@ if(sys.nframe() == 0){
     maryland_powerbi$validate_extract()
     maryland_powerbi$save_extract()
 }
-
