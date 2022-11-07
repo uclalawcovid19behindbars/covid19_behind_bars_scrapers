@@ -11,8 +11,9 @@ nevada_check_date <- function(url, date = Sys.Date()){
     remDr <- initiate_remote_driver()
     
     remDr$open(silent = TRUE)
+    Sys.sleep(4)
     remDr$navigate(url)
-    
+    Sys.sleep(4)
     site_date <- remDr$findElement(
         using = "xpath", "//span[contains(text(),'20')]" # look for year 20xx
     )$getElementText() %>%
