@@ -113,8 +113,8 @@ pennsylvania_bi_cases_scraper <- R6Class(
             # The landing page for the BI report is https://www.cor.pa.gov/Pages/COVID-19.aspx
             url = str_c(
                 "https://app.powerbigov.us/view?r=",
-                "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
-                "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
+                "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYmZhZWM4ND",
+                "c3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
             id = "pennsylvania_bi_cases",
             type = "html",
             state = "PA",
