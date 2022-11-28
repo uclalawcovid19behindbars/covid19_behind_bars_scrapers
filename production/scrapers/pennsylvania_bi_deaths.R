@@ -4,6 +4,11 @@ source("./R/selenium_driver.R")
 
 pennsylvania_bi_deaths_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
+    url = str_c(
+        "https://app.powerbigov.us/view?r=",
+        "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYm",
+        "ZhZWM4NDc3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgt",
+        "NGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9")
     deaths_page <- str_c(url,"&pageName=ReportSectionc6adf1f0d7011b2ed62c")
     
     remDr <- initiate_remote_driver()
@@ -30,7 +35,7 @@ pennsylvania_bi_deaths_pull <- function(url, wait = 7){
 }
 
 pennsylvania_bi_deaths_restruct  <- function(raw_html){
-    val_sr_str <- "//text[@class='label' and contains(@transform,'translate')]"
+    val_sr_str <- "//text[@class='label sub-selectable' and contains(@transform,'translate')]"
     lab_sr_str <- "//text[@class='setFocusRing']//title"
 
     tibble(
@@ -73,8 +78,9 @@ pennsylvania_bi_deaths_scraper <- R6Class(
             # The landing page for the BI report is https://www.cor.pa.gov/Pages/COVID-19.aspx
             url = str_c(
                 "https://app.powerbigov.us/view?r=",
-                "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
-                "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
+                "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYm",
+                "ZhZWM4NDc3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgt",
+                "NGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
             id = "pennsylvania_bi_deaths",
             type = "html",
             state = "PA",
