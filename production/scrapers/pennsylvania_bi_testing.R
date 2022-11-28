@@ -4,11 +4,6 @@ source("./R/selenium_driver.R")
 
 pennsylvania_bi_testing_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
-    url = str_c(
-    "https://app.powerbigov.us/view?r=",
-    "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYm",
-    "ZhZWM4NDc3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgt",
-    "NGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9")
     remDr <- initiate_remote_driver()
     remDr$open(silent = TRUE)
     remDr$navigate(url)
