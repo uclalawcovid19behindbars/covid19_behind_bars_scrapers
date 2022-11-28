@@ -4,13 +4,18 @@ source("./R/selenium_driver.R")
 
 pennsylvania_bi_cases_pull <- function(url, wait = 7){
     # scrape from the power bi iframe directly
-    cases_page <- str_c(url,"&pageName=ReportSection331d709ad3ad8215c6c6")
-    
+
     remDr <- initiate_remote_driver()
     remDr$open(silent = TRUE)
-    remDr$navigate(cases_page)
+    remDr$navigate(url)
     
     Sys.sleep(wait)
+    
+    next_node <- remDr$findElement("xpath", "//button[@aria-label='Next Page']")
+    next_node$clickElement()
+    Sys.sleep(2)
+    next_node$clickElement()
+    Sys.sleep(2)
     
     raw_html <- xml2::read_html(remDr$getPageSource()[[1]])
 
@@ -113,8 +118,9 @@ pennsylvania_bi_cases_scraper <- R6Class(
             # The landing page for the BI report is https://www.cor.pa.gov/Pages/COVID-19.aspx
             url = str_c(
                 "https://app.powerbigov.us/view?r=",
-                "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYmZhZWM4ND",
-                "c3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
+                "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYm",
+                "ZhZWM4NDc3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgt",
+                "NGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9"),
             id = "pennsylvania_bi_cases",
             type = "html",
             state = "PA",
