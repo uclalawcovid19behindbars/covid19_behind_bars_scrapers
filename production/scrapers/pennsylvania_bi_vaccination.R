@@ -6,8 +6,9 @@ pennsylvania_bi_vaccination_pull <- function(url, wait = 10){
     # scrape from the power bi iframe directly
     y <- "https://app.powerbigov.us/view?r=" %>%
         str_c(
-            "eyJrIjoiMTcyY2I2MjMtZjJjNC00NjNjLWJjNWYtNTZlZWE1YmRkYWYwIiwidCI",
-            "6IjQxOGUyODQxLTAxMjgtNGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9",
+            "eyJrIjoiMzQ4MGIzNzUtYmU5Mi00MGQxLTlkMTgtYm",
+            "ZhZWM4NDc3YmIxIiwidCI6IjQxOGUyODQxLTAxMjgt",
+            "NGRkNS05YjZjLTQ3ZmM1YTlhMWJkZSJ9",
             "&pageName=ReportSection7b14ce996120a5295481")
     
     remDr <- initiate_remote_driver()
@@ -166,7 +167,7 @@ pennsylvania_bi_vaccination_restruct  <- function(x){
         # rep(c("Residents.", "Staff."), each = length(card_labs)/2)
         
         card_vals <- sapply(data_cards, function(z){
-            rvest::html_text(rvest::html_nodes(z, "title"))
+            rvest::html_text(rvest::html_nodes(z, "text.value"))
             }) %>%
             string_to_clean_numeric()
         
